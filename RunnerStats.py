@@ -68,7 +68,7 @@ def average_run_time(results: list[list[str]]) -> str:
     ans: datetime.timedelta = total_run_time(results) / len(results)
     total_seconds: int = round(ans.total_seconds())
     mins, secs = divmod(total_seconds, 60)
-    return f"{mins}:{secs}"
+    return f"{mins:02d}:{secs:02d}"
 
 def first_run_location(results: list[list[str]]) -> str:
     return results[-1][0]
