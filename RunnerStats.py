@@ -150,9 +150,16 @@ def most_runs_per_location(results: list[list[str]]) -> int:
 def most_runs_per_location_location(results: list[list[str]]) -> str:
     return Counter(map(lambda result: result[0], results)).most_common(1)[0][0]
 
+def num_unique_locations(results: list[list[str]]) -> int:
+    return len(set(map(lambda result: result[0], results)))
+
 def tourism_percentage(results: list[list[str]]) -> float:
     """Between 0 and 1"""
-    return len(set(map(lambda result: result[0], results))) / num_runs(results)
+    return num_unique_locations(results) / num_runs(results)
+
+def tourism_percentage_formatted(results: list[list[str]]) -> str:
+    """xx.xx%"""
+    return f"{tourism_percentage(results)*100:.2f}%"
 
 ################################################################################
 # Main to print all statistics
@@ -191,7 +198,8 @@ def main(runner_id: int) -> None:
         ("Year with Most Runs", most_runs_per_year_year),
         ("Most Runs At A Location", most_runs_per_location),
         ("Location with Most Runs", most_runs_per_location_location),
-        ("Tourism Percentage", tourism_percentage)
+        ("Number of Unique Locations", num_unique_locations),
+        ("Tourism Percentage", tourism_percentage_formatted),
     )
     print(f"\nStats for Runner {runner_id}\n")
     for stat_name, stat_func in stats:
