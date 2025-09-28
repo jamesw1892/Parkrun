@@ -12,9 +12,9 @@ def get_num_months(first_run_date: datetime.date, last_run_date: datetime.date) 
 
 def activity_graph(results: list[list[str]]) -> None:
     """
-    Display a graph of the number of parkrun events the parkrunner completed
-    each month from their first to their most recent, including months in
-    between where none were completed.
+    Display a column graph of the number of parkrun events the parkrunner
+    completed each month from their first to their most recent, including months
+    in between where none were completed.
     """
 
     # Extract the "Run Date" column (assuming it's the second column in the results)
