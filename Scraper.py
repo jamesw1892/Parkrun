@@ -37,7 +37,7 @@ def fetch_runner_results(number: int) -> list[list[str]]:
     1: Date in form DD/MM/YYYY
     2: Run number (int, of the location)
     3: Position (int)
-    4: Time in form MM:SS
+    4: Time in form [H:]MM:SS
     5: Age grading in form xx.xx%
     6: PB? Empty string or "PB" if it's the best and not the only time the
     parkrunner has run at this location

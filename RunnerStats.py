@@ -25,7 +25,7 @@ def calc_pb(results: list[list[str]]) -> list[str]:
     Given a list of results of the form output by `Scraper.fetch_runner_results`
     return the one result of the same form with the fastest time.
     """
-    return min(results, key=lambda result: datetime.datetime.strptime(result[4], "%M:%S").time())
+    return min(results, key=result_to_timedelta)
 
 def calc_best_age_grade(results: list[list[str]]) -> list[str]:
     """
@@ -46,7 +46,8 @@ def result_to_timedelta(result: list[str]) -> datetime.timedelta:
     Given a single result, return a timedelta object representing the run time
     """
     splat_time: list[str] = result[4].split(":")
-    return datetime.timedelta(minutes=int(splat_time[0]), seconds=int(splat_time[1]))
+    hours: int = 0 if len(splat_time) == 2 else int(splat_time[0])
+    return datetime.timedelta(hours=hours, minutes=int(splat_time[-2]), seconds=int(splat_time[-1]))
 
 ################################################################################
 # Statistic functions
@@ -80,7 +81,7 @@ def first_run_position(results: list[list[str]]) -> int:
     return int(results[-1][3])
 
 def first_run_time(results: list[list[str]]) -> str:
-    """String in the form MM:SS"""
+    """String in the form [H:]MM:SS"""
     return results[-1][4]
 
 def first_run_age_grade(results: list[list[str]]) -> str:
@@ -98,7 +99,7 @@ def last_run_position(results: list[list[str]]) -> int:
     return int(results[0][3])
 
 def last_run_time(results: list[list[str]]) -> str:
-    """String in the form MM:SS"""
+    """String in the form [H:]MM:SS"""
     return results[0][4]
 
 def last_run_age_grade(results: list[list[str]]) -> str:
@@ -113,7 +114,7 @@ def pb_date(results: list[list[str]]) -> str:
     return calc_pb(results)[1]
 
 def pb_time(results: list[list[str]]) -> str:
-    """String in the form MM:SS"""
+    """String in the form [H:]MM:SS"""
     return calc_pb(results)[4]
 
 def best_age_grade_location(results: list[list[str]]) -> str:
