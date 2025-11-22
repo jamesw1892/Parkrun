@@ -13,6 +13,7 @@ import datetime
 from collections import Counter
 import os
 from dotenv import load_dotenv
+from texttable import Texttable
 
 load_dotenv()
 
@@ -162,49 +163,66 @@ def tourism_percentage_formatted(results: list[list[str]]) -> str:
     return f"{tourism_percentage(results)*100:.2f}%"
 
 ################################################################################
+# List of statistic names corresponding to the function to calculate them
+################################################################################
+
+STATS: tuple[tuple[str, Callable[[list[list[str]]], Any]]] = (
+    ("Num Runs", num_runs),
+    ("Total Kilometres Run", total_kms_run),
+    ("Total Run Time", total_run_time),
+    ("Average Run Time", average_run_time),
+    ("First Run Location", first_run_location),
+    ("First Run Date", first_run_date),
+    ("First Run Position", first_run_position),
+    ("First Run Time", first_run_time),
+    ("First Run Age Grade", first_run_age_grade),
+    ("Last Run Location", last_run_location),
+    ("Last Run Date", last_run_date),
+    ("Last Run Position", last_run_position),
+    ("Last Run Time", last_run_time),
+    ("Last Run Age Grade", last_run_age_grade),
+    ("PB Location", pb_location),
+    ("PB Date", pb_date),
+    ("PB Time", pb_time),
+    ("Best Age Grade Location", best_age_grade_location),
+    ("Best Age Grade Date", best_age_grade_date),
+    ("Best Age Grade", best_age_grade),
+    ("Best Finish Position Location", best_finish_position_location),
+    ("Best Finish Position Date", best_finish_position_date),
+    ("Best Finish Position", best_finish_position),
+    ("Most Runs In A Year", most_runs_per_year),
+    ("Year with Most Runs", most_runs_per_year_year),
+    ("Most Runs At A Location", most_runs_per_location),
+    ("Location with Most Runs", most_runs_per_location_location),
+    ("Number of Unique Locations", num_unique_locations),
+    ("Tourism Percentage", tourism_percentage_formatted),
+)
+
+################################################################################
 # Main to print all statistics
 ################################################################################
 
-def main(runner_id: int) -> None:
+def main(runner_env_strs: list[str]) -> None:
     """
-    Print all the statistics for the given runner.
+    Print a table with the statistics for each given parkrunner side-by-side.
     """
-    results: list[list[str]] = fetch_runner_results(runner_id)
-    stats: tuple[tuple[str, Callable[[list[list[str]]], Any]]] = (
-        ("Num Runs", num_runs),
-        ("Total Kilometres Run", total_kms_run),
-        ("Total Run Time", total_run_time),
-        ("Average Run Time", average_run_time),
-        ("First Run Location", first_run_location),
-        ("First Run Date", first_run_date),
-        ("First Run Position", first_run_position),
-        ("First Run Time", first_run_time),
-        ("First Run Age Grade", first_run_age_grade),
-        ("Last Run Location", last_run_location),
-        ("Last Run Date", last_run_date),
-        ("Last Run Position", last_run_position),
-        ("Last Run Time", last_run_time),
-        ("Last Run Age Grade", last_run_age_grade),
-        ("PB Location", pb_location),
-        ("PB Date", pb_date),
-        ("PB Time", pb_time),
-        ("Best Age Grade Location", best_age_grade_location),
-        ("Best Age Grade Date", best_age_grade_date),
-        ("Best Age Grade", best_age_grade),
-        ("Best Finish Position Location", best_finish_position_location),
-        ("Best Finish Position Date", best_finish_position_date),
-        ("Best Finish Position", best_finish_position),
-        ("Most Runs In A Year", most_runs_per_year),
-        ("Year with Most Runs", most_runs_per_year_year),
-        ("Most Runs At A Location", most_runs_per_location),
-        ("Location with Most Runs", most_runs_per_location_location),
-        ("Number of Unique Locations", num_unique_locations),
-        ("Tourism Percentage", tourism_percentage_formatted),
-    )
-    print(f"\nStats for Runner {runner_id}\n")
-    for stat_name, stat_func in stats:
-        stat: Any = stat_func(results)
-        print(f"{stat_name}: {stat}")
+
+    runner_ids  : list[int] = []
+    runner_names: list[str] = []
+    for runner_env_str in runner_env_strs:
+        runner_ids.append(int(os.getenv(runner_env_str)))
+        runner_names.append(runner_env_str.removeprefix("PARKRUNNER_"))
+
+    runner_results: list[list[list[str]]] = [fetch_runner_results(runner_id) for runner_id in runner_ids]
+
+    table = Texttable(180)
+    table.header(["Name"] + runner_names)
+    table.add_row(["Number"] + runner_ids)
+    for stat_name, stat_func in STATS:
+        table.add_row([stat_name] + [stat_func(runner_result) for runner_result in runner_results])
+    print(table.draw())
 
 if __name__ == "__main__":
-    main(int(os.getenv("PARKRUNNER_ME")))
+    main([
+        "PARKRUNNER_ME",
+    ])
