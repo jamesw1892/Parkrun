@@ -1,7 +1,7 @@
 import datetime
 from collections import Counter
-from RunnerResult import RunnerResult
-from Time import Time
+from models.runner_result import RunnerResult
+from models.time import Time
 
 class Runner:
     def __init__(self, number: int, name: str, results: list[RunnerResult]):

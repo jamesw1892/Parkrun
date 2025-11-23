@@ -1,9 +1,9 @@
 from __future__ import annotations
 import datetime
-from Position import Position
-from AgeGrade import AgeGrade
-from Time import Time
-from PB import PB
+from models.position import Position
+from models.age_grade import AgeGrade
+from models.time import Time
+from models.pb import PB
 
 class RunnerResult:
     def __init__(

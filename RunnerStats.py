@@ -2,7 +2,7 @@
 Print a table with statistics about each given parkrunner side-by-side.
 """
 
-from Runner import Runner
+from models.runner import Runner
 from typing import Any
 from Scraper import fetch_runner_results
 from collections.abc import Callable

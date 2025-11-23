@@ -1,5 +1,5 @@
-from Runner import Runner
-from RunnerResult import RunnerResult
+from models.runner import Runner
+from models.runner_result import RunnerResult
 import requests
 from bs4 import BeautifulSoup, Tag
 import Cache
