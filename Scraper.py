@@ -1,8 +1,9 @@
+from Runner import Runner
+from RunnerResult import RunnerResult
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 import Cache
 import logging
-import json
 
 logger = logging.getLogger(__name__)
 
@@ -28,46 +29,52 @@ def fetch_events():
     response.raise_for_status() # Raise a HTTPError for bad responses (4xx and 5xx)
     return response.json() # Parse the response as JSON
 
-def fetch_runner_results(number: int) -> list[list[str]]:
+def fetch_runner_results(number: int) -> Runner:
     """
-    Returns a list with an element for each parkrun the parkrunner has
-    completed. Each element is a list of strings where the elements are:
-
-    0: Location name
-    1: Date in form DD/MM/YYYY
-    2: Run number (int, of the location)
-    3: Position (int)
-    4: Time in form [H:]MM:SS
-    5: Age grading in form xx.xx%
-    6: PB? Empty string or "PB" if it's the best and not the only time the
-    parkrunner has run at this location
+    Return a Runner object containing each parkrun the parkrunner has completed.
     """
 
     url: str = f"https://www.parkrun.org.uk/parkrunner/{number}/all/"
+    type_name: str = "runner_results"
+    file_name: str = f"{number}.html"
 
-    data: None | str = Cache.check_cache("runner_results", f"{number}.json")
-    if data is None:
+    html: None | str = Cache.check_cache(type_name, file_name)
+    if html is None:
 
         # Fetch
         response = session.get(url)
         response.raise_for_status() # Raise a HTTPError for bad responses (4xx and 5xx)
+        html = response.text
 
-        # Parse the HTML response
-        soup = BeautifulSoup(response.text, 'html.parser')
+        Cache.write_cache(type_name, file_name, html)
 
-        # Ignore other tables as can be worked out from main table
-        _, _, all_results_table = soup.findAll('table', {'id': 'results'})
+    # Parse the HTML response
+    soup = BeautifulSoup(html, 'html.parser')
 
-        # Extract rows from the table
-        rows = all_results_table.find_all('tr')
-        results = []
-        for row in rows[1:]: # Skip the header row
-            cols = row.find_all('td')
-            results.append([col.text.strip() for col in cols])
+    # Extract name
+    h2s: list[Tag] = soup.findAll('h2')
+    assert len(h2s) == 1, f"Unexpectedly found not 1 h2 tag in the runner results page of '{number}'"
+    name: str = h2s[0].contents[0].strip()
 
-        data = json.dumps(results)
-        Cache.write_cache("runner_results", f"{number}.json", data)
-    else:
-        results = json.loads(data)
+    # Ignore other tables as can be worked out from main table
+    results_tables: list[Tag] = soup.findAll('table', {'id': 'results'})
+    assert len(results_tables) == 3, f"Unexpectedly found not 3 tables with id 'results' in the runner results page of '{number}'"
+    all_results_table: Tag = results_tables[2]
 
-    return results
+    # Extract rows from the table
+    rows: list[Tag] = all_results_table.find_all('tr')
+    results = []
+    for row in rows[1:]: # Skip the header row
+        cols = row.find_all('td')
+        results.append([col.text.strip() for col in cols])
+
+    return Runner(number, name, [RunnerResult.from_table(result) for result in results])
+
+if __name__ == "__main__":
+    import os
+    import dotenv
+    dotenv.load_dotenv()
+    runner = fetch_runner_results(int(os.getenv("PARKRUNNER_ME")))
+    print(runner)
+    for result in runner.results:
+        print(result)

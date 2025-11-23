@@ -19,6 +19,11 @@ class RunnerResult:
         self.time: datetime.timedelta = time
         self.age_grading: float = age_grading
         self.pb: bool = pb
+        # TODO: Create separate objects for these?
+        # location could link to event data to get lat/longs
+        # Position could have function to format it as 1st etc
+        # Time could also have __str__ function
+        # Age grading could store as string and float
 
     @staticmethod
     def from_table(table_row: list[str]) -> RunnerResult:
@@ -54,3 +59,15 @@ class RunnerResult:
     
     def __repr__(self) -> str:
         return f"RunnerResult(run number {self.run_number} at {self.location} on {self.date}: position {self.position}, time {self.time}, age grading {self.age_grading}, pb {self.pb})"
+
+    def __str__(self) -> str:
+        return f"{self.date} {self.location}: {self.position} {self.time} {self.age_grading}"
+
+    def format_for_position(self) -> str:
+        return f"{self.position} ({self.date}, {self.location})"
+
+    def format_for_time(self) -> str:
+        return f"{self.time} ({self.date}, {self.location})"
+
+    def format_for_age_grading(self) -> str:
+        return f"{self.age_grading} ({self.date}, {self.location})"
