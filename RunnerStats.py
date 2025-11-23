@@ -1,9 +1,5 @@
 """
-Calculate statistics about the given runner.
-
-Functions are written for each statistic producing atomic results where
-possible. Each function takes the results table with type list[list[str]] and
-outputs the statistic of whatever type.
+Print a table with statistics about each given parkrunner side-by-side.
 """
 
 from Runner import Runner
@@ -32,13 +28,9 @@ STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
     ("Tourism Percentage"        , lambda runner: f"{runner.tourism_percentage * 100:.2f}%"),
 )
 
-################################################################################
-# Main to print all statistics
-################################################################################
-
 def main(runner_env_strs: list[str]) -> None:
     """
-    Print a table with the statistics for each given parkrunner side-by-side.
+    Print a table with statistics about each given parkrunner side-by-side.
     """
 
     runner_ids  : list[int] = []

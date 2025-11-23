@@ -5,7 +5,7 @@ Objective: to scrape the Parkrun API (or website since the API has been deprecat
 ## Entry Points
 
 - `Graphs.py`: Uses `Scraper.py` to fetch and graph stats of a given parkrunner.
-- `RunnerStats.py`: Uses `Scraper.py` to fetch, calculate, and print stats about a given parkrunner.
+- `RunnerStats.py`: Uses `Scraper.py` to fetch, calculate, and print a table with statistics about parkrunners side-by-side.
 
 ## Helpers
 
