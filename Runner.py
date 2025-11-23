@@ -1,6 +1,7 @@
 import datetime
 from collections import Counter
 from RunnerResult import RunnerResult
+from Time import Time
 
 class Runner:
     def __init__(self, number: int, name: str, results: list[RunnerResult]):
@@ -11,14 +12,14 @@ class Runner:
 
         # Calculated stats
         # TODO: Move these to different function?
-        self.best_time: RunnerResult = min(results, key=lambda result: result.time)
+        self.best_time: RunnerResult = min(results, key=lambda result: result.time.timedelta)
         self.best_position: RunnerResult = min(results, key=lambda result: result.position.value)
         self.best_age_grade: RunnerResult = max(results, key=lambda result: result.age_grade.value)
         self.first_result: RunnerResult = results[-1]
         self.latest_result: RunnerResult = results[0]
 
-        self.total_run_time: datetime.timedelta = sum(map(lambda result: result.time, results), start=datetime.timedelta())
-        self.average_run_time: datetime.timedelta = self.total_run_time / len(results)
+        self.total_run_time: Time = Time.from_timedelta(sum(map(lambda result: result.time.timedelta, results), start=datetime.timedelta()))
+        self.average_run_time: Time = Time.from_timedelta(self.total_run_time.timedelta / len(results))
         # total_seconds: int = round(ans.total_seconds())
         # mins, secs = divmod(total_seconds, 60)
         # return f"{mins:02d}:{secs:02d}"
