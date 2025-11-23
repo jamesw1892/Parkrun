@@ -1,3 +1,4 @@
+import datetime
 from collections import Counter
 from RunnerResult import RunnerResult
 
@@ -15,6 +16,12 @@ class Runner:
         self.best_age_grading: RunnerResult = max(results, key=lambda result: result.age_grading)
         self.first_result: RunnerResult = results[0]
         self.latest_result: RunnerResult = results[-1]
+
+        self.total_run_time: datetime.timedelta = sum(map(lambda result: result.time, results), start=datetime.timedelta())
+        self.average_run_time: datetime.timedelta = self.total_run_time / len(results)
+        # total_seconds: int = round(ans.total_seconds())
+        # mins, secs = divmod(total_seconds, 60)
+        # return f"{mins:02d}:{secs:02d}"
 
         self.unique_locations: set[str] = set(map(lambda result: result.location, results))
         self.num_unique_locations: int = len(self.unique_locations)
