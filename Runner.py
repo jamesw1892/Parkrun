@@ -12,7 +12,7 @@ class Runner:
         # Calculated stats
         # TODO: Move these to different function?
         self.best_time: RunnerResult = min(results, key=lambda result: result.time)
-        self.best_position: RunnerResult = min(results, key=lambda result: result.position)
+        self.best_position: RunnerResult = min(results, key=lambda result: result.position.value)
         self.best_age_grading: RunnerResult = max(results, key=lambda result: result.age_grading)
         self.first_result: RunnerResult = results[0]
         self.latest_result: RunnerResult = results[-1]

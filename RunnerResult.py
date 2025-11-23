@@ -1,5 +1,6 @@
 from __future__ import annotations
 import datetime
+from Position import Position
 
 class RunnerResult:
     def __init__(
@@ -7,7 +8,7 @@ class RunnerResult:
         location: str,
         date: datetime.date,
         run_number: int,
-        position: int,
+        position: Position,
         time: datetime.timedelta,
         age_grading: float,
         pb: bool,
@@ -15,13 +16,12 @@ class RunnerResult:
         self.location: str = location
         self.date: datetime.date = date
         self.run_number: int = run_number
-        self.position: int = position
+        self.position: Position = position
         self.time: datetime.timedelta = time
         self.age_grading: float = age_grading
         self.pb: bool = pb
         # TODO: Create separate objects for these?
         # location could link to event data to get lat/longs
-        # Position could have function to format it as 1st etc
         # Time could also have __str__ function
         # Age grading could store as string and float
 
@@ -47,7 +47,7 @@ class RunnerResult:
             table_row[0],
             datetime.datetime.strptime(table_row[1], "%d/%M/%Y").date(),
             int(table_row[2]),
-            int(table_row[3]),
+            Position(table_row[3]),
             datetime.timedelta(
                 hours = 0 if len(splat_time) == 2 else int(splat_time[0]),
                 minutes = int(splat_time[-2]),
@@ -56,7 +56,7 @@ class RunnerResult:
             float(table_row[5].removesuffix("%")) / 100,
             table_row[6] == "PB",
         )
-    
+
     def __repr__(self) -> str:
         return f"RunnerResult(run number {self.run_number} at {self.location} on {self.date}: position {self.position}, time {self.time}, age grading {self.age_grading}, pb {self.pb})"
 
