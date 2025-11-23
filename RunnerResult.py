@@ -3,6 +3,7 @@ import datetime
 from Position import Position
 from AgeGrade import AgeGrade
 from Time import Time
+from PB import PB
 
 class RunnerResult:
     def __init__(
@@ -13,7 +14,7 @@ class RunnerResult:
         position: Position,
         time: Time,
         age_grade: AgeGrade,
-        pb: bool,
+        pb: PB,
     ):
         self.location: str = location
         self.date: datetime.date = date
@@ -21,7 +22,7 @@ class RunnerResult:
         self.position: Position = position
         self.time: Time = time
         self.age_grade: AgeGrade = age_grade
-        self.pb: bool = pb
+        self.pb: PB = pb
         # TODO: Create separate objects for these?
         # location could link to event data to get lat/longs
 
@@ -48,14 +49,14 @@ class RunnerResult:
             Position(table_row[3]),
             Time.from_string(table_row[4]),
             AgeGrade(table_row[5]),
-            table_row[6] == "PB",
+            PB.from_string(table_row[6]),
         )
 
     def __repr__(self) -> str:
-        return f"RunnerResult(run number {self.run_number} at {self.location} on {self.date}: position {self.position}, time {self.time}, age grade {self.age_grade}, pb {self.pb})"
+        return f"RunnerResult(run number {self.run_number} at {self.location} on {self.date}: position {self.position}, time {self.time}, age grade {self.age_grade}{self.pb.format(', ')})"
 
     def __str__(self) -> str:
-        return f"{self.date} {self.location}: {self.position} {self.time} {self.age_grade}"
+        return f"{self.date} {self.location}: {self.position}, {self.time}, {self.age_grade}{self.pb.format(', ')}"
 
     def format_for_position(self) -> str:
         return f"{self.position} ({self.date}, {self.location})"
