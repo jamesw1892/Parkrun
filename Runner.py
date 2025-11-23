@@ -4,7 +4,7 @@ from RunnerResult import RunnerResult
 
 class Runner:
     def __init__(self, number: int, name: str, results: list[RunnerResult]):
-        """Assume results in ascending order of date"""
+        """Assume results in descending order of date"""
         self.number: int = number
         self.name: str = name
         self.results: list[RunnerResult] = results
@@ -14,8 +14,8 @@ class Runner:
         self.best_time: RunnerResult = min(results, key=lambda result: result.time)
         self.best_position: RunnerResult = min(results, key=lambda result: result.position.value)
         self.best_age_grade: RunnerResult = max(results, key=lambda result: result.age_grade.value)
-        self.first_result: RunnerResult = results[0]
-        self.latest_result: RunnerResult = results[-1]
+        self.first_result: RunnerResult = results[-1]
+        self.latest_result: RunnerResult = results[0]
 
         self.total_run_time: datetime.timedelta = sum(map(lambda result: result.time, results), start=datetime.timedelta())
         self.average_run_time: datetime.timedelta = self.total_run_time / len(results)
