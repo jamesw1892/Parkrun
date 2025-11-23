@@ -27,6 +27,8 @@ if not os.path.exists(cache_dir):
 SAT_HR_RESULT_START: int = 10
 SAT_HR_RESULT_END: int = 13
 
+ENCODING = "utf-8"
+
 def most_recent_saturday(reference: datetime = None):
     """
     Caches become invalidated after midday on Saturday since this is when
@@ -71,7 +73,7 @@ def check_cache(type_name: str, file_name: str) -> None | str:
         return None
 
     logger.debug("Cache hit: %s/%s", type_name, file_name)
-    with open(file_path) as f:
+    with open(file_path, encoding=ENCODING) as f:
         return f.read()
 
 def write_cache(type_name: str, file_name: str, contents: str) -> None:
@@ -80,7 +82,7 @@ def write_cache(type_name: str, file_name: str, contents: str) -> None:
         os.mkdir(sub_cache_dir)
 
     file_path: str = os.path.join(sub_cache_dir, file_name)
-    with open(file_path, "w") as f:
+    with open(file_path, "w", encoding=ENCODING) as f:
         f.write(contents)
 
     logger.debug("Updated cache: %s/%s", type_name, file_name)
