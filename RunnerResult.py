@@ -1,6 +1,7 @@
 from __future__ import annotations
 import datetime
 from Position import Position
+from AgeGrade import AgeGrade
 
 class RunnerResult:
     def __init__(
@@ -10,7 +11,7 @@ class RunnerResult:
         run_number: int,
         position: Position,
         time: datetime.timedelta,
-        age_grading: float,
+        age_grade: AgeGrade,
         pb: bool,
     ):
         self.location: str = location
@@ -18,12 +19,11 @@ class RunnerResult:
         self.run_number: int = run_number
         self.position: Position = position
         self.time: datetime.timedelta = time
-        self.age_grading: float = age_grading
+        self.age_grade: AgeGrade = age_grade
         self.pb: bool = pb
         # TODO: Create separate objects for these?
         # location could link to event data to get lat/longs
         # Time could also have __str__ function
-        # Age grading could store as string and float
 
     @staticmethod
     def from_table(table_row: list[str]) -> RunnerResult:
@@ -36,7 +36,7 @@ class RunnerResult:
         2: Run number (int, of the location)
         3: Position (int)
         4: Time in form [H:]MM:SS
-        5: Age grading in form xx.xx%
+        5: Age grade in form xx.xx%
         6: PB? Empty string or "PB" if it's the best and not the only time the
         parkrunner has run at this location
         """
@@ -53,15 +53,15 @@ class RunnerResult:
                 minutes = int(splat_time[-2]),
                 seconds = int(splat_time[-1])
             ),
-            float(table_row[5].removesuffix("%")) / 100,
+            AgeGrade(table_row[5]),
             table_row[6] == "PB",
         )
 
     def __repr__(self) -> str:
-        return f"RunnerResult(run number {self.run_number} at {self.location} on {self.date}: position {self.position}, time {self.time}, age grading {self.age_grading}, pb {self.pb})"
+        return f"RunnerResult(run number {self.run_number} at {self.location} on {self.date}: position {self.position}, time {self.time}, age grade {self.age_grade}, pb {self.pb})"
 
     def __str__(self) -> str:
-        return f"{self.date} {self.location}: {self.position} {self.time} {self.age_grading}"
+        return f"{self.date} {self.location}: {self.position} {self.time} {self.age_grade}"
 
     def format_for_position(self) -> str:
         return f"{self.position} ({self.date}, {self.location})"
@@ -69,5 +69,5 @@ class RunnerResult:
     def format_for_time(self) -> str:
         return f"{self.time} ({self.date}, {self.location})"
 
-    def format_for_age_grading(self) -> str:
-        return f"{self.age_grading} ({self.date}, {self.location})"
+    def format_for_age_grade(self) -> str:
+        return f"{self.age_grade} ({self.date}, {self.location})"

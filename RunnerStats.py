@@ -20,7 +20,7 @@ STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
     ("First Run"                 , lambda runner: runner.first_result),
     ("Lastest Run"               , lambda runner: runner.latest_result),
     ("Best Time"                 , lambda runner: runner.best_time.format_for_time()),
-    ("Best Age Grade"            , lambda runner: runner.best_age_grading.format_for_age_grading()),
+    ("Best Age Grade"            , lambda runner: runner.best_age_grade.format_for_age_grade()),
     ("Best Position"             , lambda runner: runner.best_position.format_for_position()),
     ("Most Runs In A Year"       , lambda runner: f"{runner.most_runs_per_year_count} ({runner.most_runs_per_year_year})"),
     ("Most Runs At A Location"   , lambda runner: f"{runner.most_runs_per_location_count} ({runner.most_runs_per_location_location})"),
