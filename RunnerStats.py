@@ -13,8 +13,8 @@ from texttable import Texttable
 load_dotenv()
 
 STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
+    ("Name"                      , lambda runner: runner.name),
     ("Num Runs"                  , lambda runner: len(runner.results)),
-    ("Total Kilometres Run"      , lambda runner: len(runner.results) * 5),
     ("Total Run Time"            , lambda runner: runner.total_run_time),
     ("Average Run Time"          , lambda runner: runner.average_run_time),
     ("First Run"                 , lambda runner: runner.first_result),
@@ -28,27 +28,20 @@ STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
     ("Tourism Percentage"        , lambda runner: f"{runner.tourism_percentage * 100:.2f}%"),
 )
 
-def main(runner_env_strs: list[str]) -> None:
+def main(runner_ids: list[int]) -> None:
     """
     Print a table with statistics about each given parkrunner side-by-side.
     """
 
-    runner_ids  : list[int] = []
-    runner_names: list[str] = []
-    for runner_env_str in runner_env_strs:
-        runner_ids.append(int(os.getenv(runner_env_str)))
-        runner_names.append(runner_env_str.removeprefix("PARKRUNNER_"))
-
     runners: list[Runner] = [fetch_runner_results(runner_id) for runner_id in runner_ids]
 
     table = Texttable(180)
-    table.header(["Name"] + runner_names)
-    table.add_row(["Number"] + runner_ids)
+    table.header(["Number"] + runner_ids)
     for stat_name, stat_func in STATS:
         table.add_row([stat_name] + [stat_func(runner) for runner in runners])
     print(table.draw())
 
 if __name__ == "__main__":
     main([
-        "PARKRUNNER_ME",
+        int(os.getenv("PARKRUNNER_ME")),
     ])
