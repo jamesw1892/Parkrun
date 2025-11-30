@@ -44,7 +44,7 @@ class RunnerResult:
 
         return RunnerResult(
             table_row[0],
-            datetime.datetime.strptime(table_row[1], "%d/%M/%Y").date(),
+            datetime.datetime.strptime(table_row[1], "%d/%m/%Y").date(),
             int(table_row[2]),
             Position(table_row[3]),
             Time.from_string(table_row[4]),
