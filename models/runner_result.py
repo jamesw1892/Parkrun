@@ -55,8 +55,14 @@ class RunnerResult:
     def __repr__(self) -> str:
         return f"RunnerResult(run number {self.run_number} at {self.location} on {self.date}: position {self.position}, time {self.time}, age grade {self.age_grade}{self.pb.format(', ')})"
 
+    def format_for_event(self) -> str:
+        return f"{self.date} {self.location}"
+
+    def format_for_result(self) -> str:
+        return f"{self.position}, {self.time}, {self.age_grade}{self.pb.format(', ')}"
+
     def __str__(self) -> str:
-        return f"{self.date} {self.location}: {self.position}, {self.time}, {self.age_grade}{self.pb.format(', ')}"
+        return f"{self.format_for_event()}: {self.format_for_result()}"
 
     def format_for_position(self) -> str:
         return f"{self.position} ({self.date}, {self.location})"

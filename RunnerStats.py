@@ -6,7 +6,6 @@ from models.runner import Runner
 from typing import Any
 from Scraper import fetch_runner_results
 from collections.abc import Callable
-import os
 from texttable import Texttable
 
 STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
@@ -41,7 +40,10 @@ def main(runner_ids: list[int]) -> None:
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
+    from os import getenv
+
     load_dotenv()
+
     main([
-        int(os.getenv("PARKRUNNER_ME")),
+        int(getenv("PARKRUNNER_ME")),
     ])
