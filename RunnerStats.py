@@ -24,7 +24,7 @@ STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
     ("Tourism Percentage"        , lambda runner: f"{runner.tourism_percentage * 100:.2f}%"),
 )
 
-def main(runner_ids: list[int]) -> None:
+def runner_stats(runner_ids: list[int]) -> None:
     """
     Print a table with statistics about each given parkrunner side-by-side.
     """
@@ -36,13 +36,3 @@ def main(runner_ids: list[int]) -> None:
     for stat_name, stat_func in STATS:
         table.add_row([stat_name] + [stat_func(runner) for runner in runners])
     print(table.draw())
-
-if __name__ == "__main__":
-    from dotenv import load_dotenv
-    from os import getenv
-
-    load_dotenv()
-
-    main([
-        int(getenv("PARKRUNNER_ME")),
-    ])

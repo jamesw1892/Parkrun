@@ -1,8 +1,16 @@
 Objective: to scrape the Parkrun API (or website since the API has been deprecated for years) to get info and use to show stats and graphs.
 
+# Usage
+
+1. Copy the file `.env.example` and name the copy `.env`
+2. Edit it to include the parkrun numbers you're interested in (numbers can be found on barcodes, results emails and online at https://www.parkrun.org.uk/). It is often displayed following an 'A' but don't include the 'A' in the `.env` file.
+3. Edit `Main.py` to change which parkrunner(s) to act on and the start and end dates for graphs.
+4. Uncomment the graph or stat function you want to run and comment the rest out.
+5. Run `python Main.py`
+
 # Files
 
-## Entry Points
+## Graph and Stat Functions
 
 - `RunnerStats.py`: Print a table with statistics about parkrunners side-by-side.
 - `CommonRunComparison.py`: Print a table with a side-by-side comparison of runs that parkrunners did together.

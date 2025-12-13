@@ -54,13 +54,3 @@ def time_graph(
     plt.legend()
     plt.tight_layout()
     plt.show()
-
-if __name__ == "__main__":
-    from dotenv import load_dotenv
-    from os import getenv
-
-    load_dotenv()
-
-    time_graph([
-        int(getenv("PARKRUNNER_ME")),
-    ], datetime.date(2025, 1, 1), datetime.date(2026, 1, 1))

@@ -9,7 +9,7 @@ from functools import reduce
 from texttable import Texttable
 from typing import Iterable
 
-def main(runner_ids: list[int]) -> None:
+def common_run_comparison(runner_ids: list[int]) -> None:
     """
     Print a table allowing side-by-side comparisons of the runs that all given
     parkrunners did together.
@@ -38,13 +38,3 @@ def main(runner_ids: list[int]) -> None:
     for event in sorted(rows):
         table.add_row([event] + rows[event])
     print(table.draw())
-
-if __name__ == "__main__":
-    from dotenv import load_dotenv
-    from os import getenv
-
-    load_dotenv()
-
-    main([
-        int(getenv("PARKRUNNER_ME")),
-    ])
