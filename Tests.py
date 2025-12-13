@@ -2,7 +2,7 @@ from parameterized import parameterized
 import unittest
 import datetime
 from Cache import most_recent_saturday, SAT_HR_RESULT_START, SAT_HR_RESULT_END
-from Graphs import get_num_months
+from ActivityGraph import _get_num_months
 
 class TestMostRecentSaturday(unittest.TestCase):
 
@@ -64,7 +64,7 @@ class TestActivityGraph(unittest.TestCase):
         (2024, 12, 2025, 1, 2),
     ])
     def test_num_months(self, start_year: int, start_month: int, end_year: int, end_month: int, expected: int):
-        self.assertEqual(get_num_months(datetime.date(start_year, start_month, 1), datetime.date(end_year, end_month, 1)), expected)
+        self.assertEqual(_get_num_months(datetime.date(start_year, start_month, 1), datetime.date(end_year, end_month, 1)), expected)
 
 if __name__ == "__main__":
     unittest.main()

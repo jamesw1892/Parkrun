@@ -5,6 +5,10 @@ import datetime
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
+def _get_num_months(start_date: datetime.date, end_date: datetime.date) -> int:
+    """Return the number of months between the given dates including both ends"""
+    return (end_date.year - start_date.year) * 12 + end_date.month - start_date.month + 1
+
 def activity_graph(
         runner_ids: list[int],
         start_date: datetime.date = None,
@@ -44,7 +48,7 @@ def activity_graph(
     # that month
     months: list[str] = []
     runner_counts: list[list[int]] = [[] for _ in runner_ids]
-    num_months: int = (end_date.year - start_date.year) * 12 + end_date.month - start_date.month + 1
+    num_months: int = _get_num_months(start_date, end_date)
     for month_num in range(num_months):
         years_to_add, month = divmod(start_date.month + month_num, 12)
         year: int = start_date.year + years_to_add
