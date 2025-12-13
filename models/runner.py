@@ -38,5 +38,8 @@ class Runner:
         self.most_runs_per_location_location: str = res[0]
         self.most_runs_per_location_count: int = res[1]
 
+    def format_identity(self) -> str:
+        return f"{self.name} ({self.number}, {self.age_category})"
+
     def __repr__(self) -> str:
-        return f"Runner({self.name} ({self.number}, {self.age_category}), {len(self.results)} results)"
+        return f"Runner({self.format_identity()}, {len(self.results)} results)"
