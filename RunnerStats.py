@@ -7,10 +7,7 @@ from typing import Any
 from Scraper import fetch_runner_results
 from collections.abc import Callable
 import os
-from dotenv import load_dotenv
 from texttable import Texttable
-
-load_dotenv()
 
 STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
     ("Name"                      , lambda runner: runner.name),
@@ -43,6 +40,8 @@ def main(runner_ids: list[int]) -> None:
     print(table.draw())
 
 if __name__ == "__main__":
+    from dotenv import load_dotenv
+    load_dotenv()
     main([
         int(os.getenv("PARKRUNNER_ME")),
     ])
