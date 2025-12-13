@@ -4,10 +4,10 @@ Objective: to scrape the Parkrun API (or website since the API has been deprecat
 
 ## Entry Points
 
-- `Graphs.py`: Uses `Scraper.py` to fetch and graph stats of a given parkrunner.
-- `RunnerStats.py`: Uses `Scraper.py` to fetch, calculate, and print a table with statistics about parkrunners side-by-side.
-- `CommonRunComparison.py`: Uses `Scraper.py` to fetch results and print a table with a side-by-side comparison of runs that parkrunners did together.
+- `RunnerStats.py`: Print a table with statistics about parkrunners side-by-side.
+- `CommonRunComparison.py`: Print a table with a side-by-side comparison of runs that parkrunners did together.
 - `ActivityGraph.py`: Graphs the number of parkruns that parkrunners did each month.
+- `TimeGraph.py`: Graphs the finish times of parkrunners.
 
 ## Models
 
