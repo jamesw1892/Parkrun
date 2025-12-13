@@ -14,6 +14,7 @@ load_dotenv()
 
 STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
     ("Name"                      , lambda runner: runner.name),
+    ("Age Category"              , lambda runner: runner.age_category),
     ("Num Runs"                  , lambda runner: len(runner.results)),
     ("Total Run Time"            , lambda runner: runner.total_run_time),
     ("Average Run Time"          , lambda runner: runner.average_run_time),

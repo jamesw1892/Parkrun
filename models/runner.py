@@ -4,10 +4,11 @@ from models.runner_result import RunnerResult
 from models.time import Time
 
 class Runner:
-    def __init__(self, number: int, name: str, results: list[RunnerResult]):
+    def __init__(self, number: int, name: str, age_category: str, results: list[RunnerResult]):
         """Assume results in descending order of date"""
         self.number: int = number
         self.name: str = name
+        self.age_category: str = age_category
         self.results: list[RunnerResult] = results
 
         # Calculated stats
@@ -38,4 +39,4 @@ class Runner:
         self.most_runs_per_location_count: int = res[1]
 
     def __repr__(self) -> str:
-        return f"Runner({self.name} ({self.number}), {len(self.results)} results)"
+        return f"Runner({self.name} ({self.number}, {self.age_category}), {len(self.results)} results)"
