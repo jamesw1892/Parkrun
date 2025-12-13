@@ -1,27 +1,50 @@
 import datetime
 from dotenv import load_dotenv
-from os import getenv
+import os
+from ParkrunException import ParkrunException
 
 load_dotenv()
 
-# Arguments
-runner_ids: list[int] = [
-    int(getenv("PARKRUNNER_ME")),
-    int(getenv("PARKRUNNER_BOB")),
-]
-start_date: datetime.date = datetime.date(2025, 1, 1)
-end_date: datetime.date = datetime.date(2026, 1, 1)
+def get_parkrunner_id(env_name: str) -> int:
+    """
+    Return the parkrunner ID as an integer by reading the env file or printing
+    an error if there is one.
+    """
 
-# Graphs
-from ActivityGraph import activity_graph
-from TimeGraph import time_graph
+    if env_name not in os.environ:
+        raise ParkrunException(f"'{env_name}' not found in .env file")
 
-#activity_graph(runner_ids, start_date, end_date)
-#time_graph(runner_ids, start_date, end_date)
+    env_value: str = os.getenv(env_name)
 
-# Stats
-from CommonRunComparison import common_run_comparison
-from RunnerStats import runner_stats
+    try:
+        return int(env_value)
+    except:
+        raise ParkrunException(f"Value of environment variable '{env_name}' must be an integer, not '{env_value}'")
 
-#common_run_comparison(runner_ids)
-runner_stats(runner_ids)
+try:
+
+    # Arguments
+    runner_ids: list[int] = [
+        get_parkrunner_id("PARKRUNNER_ME"),
+        get_parkrunner_id("PARKRUNNER_BOB"),
+    ]
+    start_date: datetime.date = datetime.date(2025, 1, 1)
+    end_date: datetime.date = datetime.date(2026, 1, 1)
+
+    # Graphs
+    from ActivityGraph import activity_graph
+    from TimeGraph import time_graph
+
+    #activity_graph(runner_ids, start_date, end_date)
+    #time_graph(runner_ids, start_date, end_date)
+
+    # Stats
+    from CommonRunComparison import common_run_comparison
+    from RunnerStats import runner_stats
+
+    #common_run_comparison(runner_ids)
+    runner_stats(runner_ids)
+
+except ParkrunException as e:
+    print(e)
+    exit(1)

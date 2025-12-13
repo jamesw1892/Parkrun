@@ -1,5 +1,6 @@
 from models.runner import Runner
 from models.runner_result import RunnerResult
+from ParkrunException import ParkrunException
 import requests
 from bs4 import BeautifulSoup, Tag
 import Cache
@@ -43,6 +44,8 @@ def fetch_runner_results(number: int) -> Runner:
 
         # Fetch
         response = session.get(url)
+        if response.status_code == 404:
+            raise ParkrunException(f"No parkrunner exists with number '{number}'")
         response.raise_for_status() # Raise a HTTPError for bad responses (4xx and 5xx)
         html = response.text
 

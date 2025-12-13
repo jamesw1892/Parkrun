@@ -1,0 +1,2 @@
+class ParkrunException(Exception):
+    pass
