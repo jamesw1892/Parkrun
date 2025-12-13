@@ -9,8 +9,7 @@ from collections.abc import Callable
 from texttable import Texttable
 
 STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
-    ("Name"                      , lambda runner: runner.name),
-    ("Age Category"              , lambda runner: runner.age_category),
+    ("Most Recent Age Category"  , lambda runner: runner.most_recent_age_category),
     ("Num Runs"                  , lambda runner: len(runner.results)),
     ("Total Run Time"            , lambda runner: runner.total_run_time),
     ("Average Run Time"          , lambda runner: runner.average_run_time),
@@ -33,7 +32,7 @@ def main(runner_ids: list[int]) -> None:
     runners: list[Runner] = [fetch_runner_results(runner_id) for runner_id in runner_ids]
 
     table = Texttable(180)
-    table.header(["Number"] + runner_ids)
+    table.header(["Parkrunner"] + [runner.format_identity() for runner in runners])
     for stat_name, stat_func in STATS:
         table.add_row([stat_name] + [stat_func(runner) for runner in runners])
     print(table.draw())

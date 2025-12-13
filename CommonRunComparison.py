@@ -25,20 +25,16 @@ def main(runner_ids: list[int]) -> None:
     print(f"{len(events_in_common)} events in common")
 
     rows: dict[str, list[str]] = {event_in_common: [] for event_in_common in events_in_common}
-    names: list[str] = []
-    age_categories: list[str] = []
+    identities: list[str] = []
     for runner in runners:
-        names.append(runner.name)
-        age_categories.append(runner.age_category)
+        identities.append(runner.format_identity())
         for result in runner.results:
             event: str = result.format_for_event()
             if event in rows:
                 rows[event].append(result.format_for_result())
 
     table = Texttable(180)
-    table.header(["Number"] + runner_ids)
-    table.add_row(["Name"] + names)
-    table.add_row(["Age Category"] + age_categories)
+    table.header(["Parkrunner"] + identities)
     for event in sorted(rows):
         table.add_row([event] + rows[event])
     print(table.draw())

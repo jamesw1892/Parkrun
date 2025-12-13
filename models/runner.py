@@ -4,11 +4,11 @@ from models.runner_result import RunnerResult
 from models.time import Time
 
 class Runner:
-    def __init__(self, number: int, name: str, age_category: str, results: list[RunnerResult]):
+    def __init__(self, number: int, name: str, most_recent_age_category: str, results: list[RunnerResult]):
         """Assume results in descending order of date"""
         self.number: int = number
         self.name: str = name
-        self.age_category: str = age_category
+        self.most_recent_age_category: str = most_recent_age_category
         self.results: list[RunnerResult] = results
 
         # Calculated stats

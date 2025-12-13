@@ -56,8 +56,8 @@ def fetch_runner_results(number: int) -> Runner:
     assert len(h2s) == 1, f"Unexpectedly found not 1 h2 tag in the runner results page of '{number}'"
     name: str = h2s[0].contents[0].strip()
 
-    # Extract age category
-    age_category: str = h2s[0].findNext('p').contents[-1].split()[-1]
+    # Extract most recent age category
+    most_recent_age_category: str = h2s[0].findNext('p').contents[-1].split()[-1]
 
     # Ignore other tables as can be worked out from main table
     results_tables: list[Tag] = soup.findAll('table', {'id': 'results'})
@@ -71,7 +71,7 @@ def fetch_runner_results(number: int) -> Runner:
         cols = row.find_all('td')
         results.append([col.text.strip() for col in cols])
 
-    return Runner(number, name, age_category, [RunnerResult.from_table(result) for result in results])
+    return Runner(number, name, most_recent_age_category, [RunnerResult.from_table(result) for result in results])
 
 if __name__ == "__main__":
     import os
