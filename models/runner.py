@@ -30,13 +30,15 @@ class Runner:
 
         self.tourism_percentage: float = self.num_unique_locations / len(results)
 
-        res = Counter(map(lambda result: result.date.year, results)).most_common(1)[0]
-        self.most_runs_per_year_year: int = res[0]
-        self.most_runs_per_year_count: int = res[1]
+        self.year_counter: Counter = Counter(result.date.year for result in results)
+        most_common_year = self.year_counter.most_common(1)[0]
+        self.most_runs_per_year_year: int = most_common_year[0]
+        self.most_runs_per_year_count: int = most_common_year[1]
 
-        res = Counter(map(lambda result: result.location, results)).most_common(1)[0]
-        self.most_runs_per_location_location: str = res[0]
-        self.most_runs_per_location_count: int = res[1]
+        self.locations_counter: Counter = Counter(result.location for result in results)
+        most_common_location: tuple[str, int] = self.locations_counter.most_common(1)[0]
+        self.most_runs_per_location_location: str = most_common_location[0]
+        self.most_runs_per_location_count: int = most_common_location[1]
 
     def format_identity(self) -> str:
         return f"{self.name} ({self.number})"
