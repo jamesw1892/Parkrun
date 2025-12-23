@@ -15,6 +15,7 @@ Objective: to scrape the Parkrun API (or website since the API has been deprecat
 - `RunnerStats.py`: Print a table with statistics about parkrunners side-by-side.
 - `CommonRunComparison.py`: Print a table with a side-by-side comparison of runs that parkrunners did together.
 - `MostCommon.py`: Print a table with a thing about the parkrunner sorted by how many times that thing occurred, side-by-side for each given parkrunner.
+- `PbProgress.py`: Print a table with information about each time each parkrunner improved their PB side-by-side.
 - `ActivityGraph.py`: Graphs the number of parkruns that parkrunners did each month.
 - `TimeGraph.py`: Graphs the finish times of parkrunners.
 

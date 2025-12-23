@@ -42,6 +42,7 @@ try:
     from CommonRunComparison import common_run_comparison
     from MostCommon import most_common_year, most_common_location, most_common_month, most_common_time_seconds
     from RunnerStats import runner_stats
+    from PbProgress import pb_progress
 
     #common_run_comparison(runner_ids)
     #most_common_year(runner_ids)
@@ -49,6 +50,7 @@ try:
     #most_common_month(runner_ids)
     #most_common_time_seconds(runner_ids)
     runner_stats(runner_ids)
+    #pb_progress(runner_ids)
 
 except ParkrunException as e:
     print(e)
