@@ -22,6 +22,7 @@ STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
     ("Most Runs At A Location"   , lambda runner: f"{runner.most_runs_per_location_count} ({runner.most_runs_per_location_location})"),
     ("Number of Unique Locations", lambda runner: runner.num_unique_locations),
     ("Tourism Percentage"        , lambda runner: f"{runner.tourism_percentage * 100:.2f}%"),
+    ("Consistency"               , lambda runner: f"{runner.consistency * 100:.2f}%")
 )
 
 def runner_stats(runner_ids: list[int]) -> None:

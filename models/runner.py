@@ -29,6 +29,7 @@ class Runner:
         self.num_unique_locations: int = len(self.unique_locations)
 
         self.tourism_percentage: float = self.num_unique_locations / len(results)
+        self.__consistency = None
 
         self.year_counter: Counter = Counter(result.date.year for result in results)
         most_common_year = self.year_counter.most_common(1)[0]
@@ -39,6 +40,24 @@ class Runner:
         most_common_location: tuple[str, int] = self.locations_counter.most_common(1)[0]
         self.most_runs_per_location_location: str = most_common_location[0]
         self.most_runs_per_location_count: int = most_common_location[1]
+
+    @property
+    def consistency(self) -> float:
+        """
+        A float between 0 and 1 representing the percentage of weeks between the
+        first and last parkruns that the parkrunner has run.
+        NOTE: This does not consider the Christmas and New Years Day parkruns.
+        """
+
+        if self.__consistency is None:
+
+            start_date: datetime.date = self.results[-1].date
+            end_date  : datetime.date = self.results[0].date
+            weeks: int = (end_date - start_date).days // 7 + 1
+
+            self.__consistency: float = len(self.results) / weeks
+
+        return self.__consistency
 
     def format_identity(self) -> str:
         return f"{self.name} ({self.number})"
