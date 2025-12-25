@@ -1,58 +1,160 @@
 from parameterized import parameterized
 import unittest
 import datetime
-from Cache import most_recent_saturday, SAT_HR_RESULT_START, SAT_HR_RESULT_END
+from Cache import most_recent_parkrun, HR_RESULT_START, HR_RESULT_END
 from ActivityGraph import _get_num_months
 
-class TestMostRecentSaturday(unittest.TestCase):
+class TestMostRecentParkrun(unittest.TestCase):
 
     def test_today_is_saturday_before_start(self):
-        dt = datetime.datetime(2025, 8, 16, SAT_HR_RESULT_START - 1, 59)  # Saturday
-        result = most_recent_saturday(dt)
-        expected = datetime.datetime(2025, 8, 9, SAT_HR_RESULT_END)
+        reference = datetime.datetime(2025, 8, 16, HR_RESULT_START - 1, 59)  # Saturday
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2025, 8, 9, HR_RESULT_END)
         self.assertEqual(result, expected)
 
     def test_today_is_saturday_after_start(self):
-        dt = datetime.datetime(2025, 8, 16, SAT_HR_RESULT_START)  # Saturday
-        result = most_recent_saturday(dt)
-        expected = datetime.datetime(2025, 8, 16, SAT_HR_RESULT_END)
+        reference = datetime.datetime(2025, 8, 16, HR_RESULT_START)  # Saturday
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2025, 8, 16, HR_RESULT_END)
         self.assertEqual(result, expected)
 
     def test_today_is_saturday_before_end(self):
-        dt = datetime.datetime(2025, 8, 16, SAT_HR_RESULT_END)  # Saturday
-        result = most_recent_saturday(dt)
-        expected = datetime.datetime(2025, 8, 16, SAT_HR_RESULT_END)
+        reference = datetime.datetime(2025, 8, 16, HR_RESULT_END)  # Saturday
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2025, 8, 16, HR_RESULT_END)
         self.assertEqual(result, expected)
 
     def test_today_is_saturday_after_end(self):
-        dt = datetime.datetime(2025, 8, 16, SAT_HR_RESULT_END, 1)  # Saturday
-        result = most_recent_saturday(dt)
-        expected = datetime.datetime(2025, 8, 16, SAT_HR_RESULT_END)
+        reference = datetime.datetime(2025, 8, 16, HR_RESULT_END, 1)  # Saturday
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2025, 8, 16, HR_RESULT_END)
         self.assertEqual(result, expected)
 
     def test_today_is_sunday(self):
-        dt = datetime.datetime(2025, 8, 17)  # Sunday
-        result = most_recent_saturday(dt)
-        expected = datetime.datetime(2025, 8, 16, SAT_HR_RESULT_END)
+        reference = datetime.datetime(2025, 8, 17)  # Sunday
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2025, 8, 16, HR_RESULT_END)
         self.assertEqual(result, expected)
 
     def test_today_is_monday(self):
-        dt = datetime.datetime(2025, 8, 18)  # Monday
-        result = most_recent_saturday(dt)
-        expected = datetime.datetime(2025, 8, 16, SAT_HR_RESULT_END)
+        reference = datetime.datetime(2025, 8, 18)  # Monday
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2025, 8, 16, HR_RESULT_END)
         self.assertEqual(result, expected)
 
     def test_today_is_friday(self):
-        dt = datetime.datetime(2025, 8, 15)  # Friday
-        result = most_recent_saturday(dt)
-        expected = datetime.datetime(2025, 8, 9, SAT_HR_RESULT_END)
+        reference = datetime.datetime(2025, 8, 15)  # Friday
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2025, 8, 9, HR_RESULT_END)
         self.assertEqual(result, expected)
 
-    def test_none_reference(self):
-        # This test checks that the function returns a Saturday at midday
-        result = most_recent_saturday()
-        self.assertEqual(result.weekday(), 5)
-        self.assertEqual(result.hour, SAT_HR_RESULT_END)
+    def test_christmas_day_before_start(self):
+        reference = datetime.datetime(2025, 12, 25, HR_RESULT_START - 1, 59)
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2025, 12, 20, HR_RESULT_END) # Saturday before Christmas
+        self.assertEqual(result, expected)
+
+    def test_christmas_day_after_start(self):
+        reference = datetime.datetime(2025, 12, 25, HR_RESULT_START)
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2025, 12, 25, HR_RESULT_END)
+        self.assertEqual(result, expected)
+
+    def test_christmas_day_before_end(self):
+        reference = datetime.datetime(2025, 12, 25, HR_RESULT_END)
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2025, 12, 25, HR_RESULT_END)
+        self.assertEqual(result, expected)
+
+    def test_christmas_day_after_end(self):
+        reference = datetime.datetime(2025, 12, 25, HR_RESULT_END, 1)
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2025, 12, 25, HR_RESULT_END)
+        self.assertEqual(result, expected)
+
+    def test_day_after_christmas_day(self):
+        reference = datetime.datetime(2025, 12, 26)
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2025, 12, 25, HR_RESULT_END)
+        self.assertEqual(result, expected)
+
+    def test_sat_after_christmas_day_before_start(self):
+        reference = datetime.datetime(2025, 12, 27, HR_RESULT_START - 1, 59)
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2025, 12, 25, HR_RESULT_END) # Christmas
+        self.assertEqual(result, expected)
+
+    def test_sat_after_christmas_day_after_start(self):
+        reference = datetime.datetime(2025, 12, 27, HR_RESULT_START)
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2025, 12, 27, HR_RESULT_END)
+        self.assertEqual(result, expected)
+
+    def test_sat_after_christmas_day_before_end(self):
+        reference = datetime.datetime(2025, 12, 27, HR_RESULT_END)
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2025, 12, 27, HR_RESULT_END)
+        self.assertEqual(result, expected)
+
+    def test_sat_after_christmas_day_after_end(self):
+        reference = datetime.datetime(2025, 12, 27, HR_RESULT_END, 1)
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2025, 12, 27, HR_RESULT_END)
+        self.assertEqual(result, expected)
+
+    def test_new_years_day_before_start(self):
+        reference = datetime.datetime(2026, 1, 1, HR_RESULT_START - 1, 59)
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2025, 12, 27, HR_RESULT_END) # Saturday before NY
+        self.assertEqual(result, expected)
+
+    def test_new_years_day_after_start(self):
+        reference = datetime.datetime(2026, 1, 1, HR_RESULT_START)
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2026, 1, 1, HR_RESULT_END)
+        self.assertEqual(result, expected)
+
+    def test_new_years_day_before_end(self):
+        reference = datetime.datetime(2026, 1, 1, HR_RESULT_END)
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2026, 1, 1, HR_RESULT_END)
+        self.assertEqual(result, expected)
+
+    def test_new_years_day_after_end(self):
+        reference = datetime.datetime(2026, 1, 1, HR_RESULT_END, 1)
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2026, 1, 1, HR_RESULT_END)
+        self.assertEqual(result, expected)
+
+    def test_day_after_new_years_day(self):
+        reference = datetime.datetime(2026, 1, 2)
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2026, 1, 1, HR_RESULT_END)
+        self.assertEqual(result, expected)
+
+    def test_sat_after_new_years_day_before_start(self):
+        reference = datetime.datetime(2026, 1, 3, HR_RESULT_START - 1, 59)
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2026, 1, 1, HR_RESULT_END) # NY
+        self.assertEqual(result, expected)
+
+    def test_sat_after_new_years_day_after_start(self):
+        reference = datetime.datetime(2026, 1, 3, HR_RESULT_START)
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2026, 1, 3, HR_RESULT_END)
+        self.assertEqual(result, expected)
+
+    def test_sat_after_new_years_day_before_end(self):
+        reference = datetime.datetime(2026, 1, 3, HR_RESULT_END)
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2026, 1, 3, HR_RESULT_END)
+        self.assertEqual(result, expected)
+
+    def test_sat_after_new_years_day_after_end(self):
+        reference = datetime.datetime(2026, 1, 3, HR_RESULT_END, 1)
+        result = most_recent_parkrun(reference)
+        expected = datetime.datetime(2026, 1, 3, HR_RESULT_END)
+        self.assertEqual(result, expected)
 
 class TestActivityGraph(unittest.TestCase):
     @parameterized.expand([
