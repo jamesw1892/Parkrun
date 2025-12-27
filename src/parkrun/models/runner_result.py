@@ -63,12 +63,3 @@ class RunnerResult:
 
     def __str__(self) -> str:
         return f"{self.format_for_event()}: {self.format_for_result()}"
-
-    def format_for_position(self) -> str:
-        return f"{self.position} ({self.date}, {self.location})"
-
-    def format_for_time(self) -> str:
-        return f"{self.time} ({self.date}, {self.location})"
-
-    def format_for_age_grade(self) -> str:
-        return f"{self.age_grade} ({self.date}, {self.location})"

@@ -2,6 +2,7 @@ import datetime
 from collections import Counter
 from parkrun.models.runner_result import RunnerResult
 from parkrun.models.time import Time
+from parkrun.api.utils import minimals, maximals, most_common
 
 class Runner:
     def __init__(self, number: int, name: str, most_recent_age_category: str, results: list[RunnerResult]):
@@ -13,9 +14,9 @@ class Runner:
 
         # Calculated stats
         # TODO: Move these to different function?
-        self.best_time: RunnerResult = min(results, key=lambda result: result.time.timedelta)
-        self.best_position: RunnerResult = min(results, key=lambda result: result.position.value)
-        self.best_age_grade: RunnerResult = max(results, key=lambda result: result.age_grade.value)
+        self.best_times: list[RunnerResult] = minimals(results, key=lambda result: result.time.timedelta)
+        self.best_positions: list[RunnerResult] = minimals(results, key=lambda result: result.position.value)
+        self.best_age_grades: list[RunnerResult] = maximals(results, key=lambda result: result.age_grade.value)
         self.first_result: RunnerResult = results[-1]
         self.latest_result: RunnerResult = results[0]
 
@@ -32,13 +33,13 @@ class Runner:
         self.__consistency = None
 
         self.year_counter: Counter = Counter(result.date.year for result in results)
-        most_common_year = self.year_counter.most_common(1)[0]
-        self.most_runs_per_year_year: int = most_common_year[0]
+        most_common_year: tuple[list[int], int] = most_common(self.year_counter)
+        self.most_runs_per_year_years: list[int] = most_common_year[0]
         self.most_runs_per_year_count: int = most_common_year[1]
 
         self.locations_counter: Counter = Counter(result.location for result in results)
-        most_common_location: tuple[str, int] = self.locations_counter.most_common(1)[0]
-        self.most_runs_per_location_location: str = most_common_location[0]
+        most_common_location: tuple[list[str], int] = most_common(self.locations_counter)
+        self.most_runs_per_location_locations: list[str] = most_common_location[0]
         self.most_runs_per_location_count: int = most_common_location[1]
 
     @property

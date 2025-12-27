@@ -3,11 +3,18 @@ Print a table with statistics about each given parkrunner side-by-side.
 """
 
 from parkrun.models.runner import Runner
+from parkrun.models.runner_result import RunnerResult
 from typing import Any
 from parkrun.api.scraper import fetch_runner_results
 from collections.abc import Callable
 from texttable import Texttable
 import os
+
+def format_events(results: list[RunnerResult]) -> str:
+    return "; ".join(sorted(map(lambda x: x.format_for_event(), results)))
+
+def format_iterable(iterable) -> str:
+    return ", ".join(sorted(map(str, iterable)))
 
 STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
     ("Most Recent Age Category"  , lambda runner: runner.most_recent_age_category),
@@ -16,11 +23,11 @@ STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
     ("Average Run Time"          , lambda runner: runner.average_run_time),
     ("First Run"                 , lambda runner: runner.first_result),
     ("Lastest Run"               , lambda runner: runner.latest_result),
-    ("Best Time"                 , lambda runner: runner.best_time.format_for_time()),
-    ("Best Age Grade"            , lambda runner: runner.best_age_grade.format_for_age_grade()),
-    ("Best Position"             , lambda runner: runner.best_position.format_for_position()),
-    ("Most Runs In A Year"       , lambda runner: f"{runner.most_runs_per_year_count} ({runner.most_runs_per_year_year})"),
-    ("Most Runs At A Location"   , lambda runner: f"{runner.most_runs_per_location_count} ({runner.most_runs_per_location_location})"),
+    ("Best Time"                 , lambda runner: f"{runner.best_times[0].time} ({format_events(runner.best_times)})"),
+    ("Best Age Grade"            , lambda runner: f"{runner.best_age_grades[0].age_grade} ({format_events(runner.best_age_grades)})"),
+    ("Best Position"             , lambda runner: f"{runner.best_positions[0].position} ({format_events(runner.best_positions)})"),
+    ("Most Runs In A Year"       , lambda runner: f"{runner.most_runs_per_year_count} ({format_iterable(runner.most_runs_per_year_years)})"),
+    ("Most Runs At A Location"   , lambda runner: f"{runner.most_runs_per_location_count} ({format_iterable(runner.most_runs_per_location_locations)})"),
     ("Number of Unique Locations", lambda runner: runner.num_unique_locations),
     ("Tourism Percentage"        , lambda runner: f"{runner.tourism_percentage * 100:.2f}%"),
     ("Consistency"               , lambda runner: f"{runner.consistency * 100:.2f}%")
