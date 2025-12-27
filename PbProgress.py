@@ -8,6 +8,7 @@ from models.time import Time
 from Scraper import fetch_runner_results
 from texttable import Texttable
 import datetime
+import os
 
 def s(n: int) -> str:
     """
@@ -71,7 +72,7 @@ def pb_progress(runner_ids: list[int]):
         num_runs_ago.append(num_runs)
 
     # Draw the table
-    table = Texttable(180)
+    table = Texttable(int(os.getenv("TABLE_MAX_WIDTH", 180)))
     table.header(["Date"] + [runner.format_identity() for runner in runners])
 
     # Display a row for each date in ascending order

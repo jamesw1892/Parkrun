@@ -11,6 +11,7 @@ from collections.abc import Callable
 from collections import Counter
 from texttable import Texttable
 from itertools import zip_longest
+import os
 
 def most_common_things_runner(runner_ids: list[int], runner_to_counter: Callable[[Runner], Counter]) -> None:
     """
@@ -29,7 +30,7 @@ def most_common_things_runner(runner_ids: list[int], runner_to_counter: Callable
     counters: list[Counter] = list(map(runner_to_counter, runners))
     most_common_things: list[list[tuple[Any, int]]] = [counter.most_common() for counter in counters]
 
-    table = Texttable(180)
+    table = Texttable(int(os.getenv("TABLE_MAX_WIDTH", 180)))
     table.header(["#"] + [runner.format_identity() for runner in runners])
     position: int = 1
     for runners_thing in zip_longest(*most_common_things):

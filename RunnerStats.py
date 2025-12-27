@@ -7,6 +7,7 @@ from typing import Any
 from Scraper import fetch_runner_results
 from collections.abc import Callable
 from texttable import Texttable
+import os
 
 STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
     ("Most Recent Age Category"  , lambda runner: runner.most_recent_age_category),
@@ -32,7 +33,7 @@ def runner_stats(runner_ids: list[int]) -> None:
 
     runners: list[Runner] = [fetch_runner_results(runner_id) for runner_id in runner_ids]
 
-    table = Texttable(180)
+    table = Texttable(int(os.getenv("TABLE_MAX_WIDTH", 180)))
     table.header(["Parkrunner"] + [runner.format_identity() for runner in runners])
     for stat_name, stat_func in STATS:
         table.add_row([stat_name] + [stat_func(runner) for runner in runners])

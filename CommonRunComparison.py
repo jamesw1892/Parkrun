@@ -8,6 +8,7 @@ from Scraper import fetch_runner_results
 from functools import reduce
 from texttable import Texttable
 from typing import Iterable
+import os
 
 def common_run_comparison(runner_ids: list[int]) -> None:
     """
@@ -33,7 +34,7 @@ def common_run_comparison(runner_ids: list[int]) -> None:
             if event in rows:
                 rows[event].append(result.format_for_result())
 
-    table = Texttable(180)
+    table = Texttable(int(os.getenv("TABLE_MAX_WIDTH", 180)))
     table.header(["Parkrunner"] + identities)
     for event in sorted(rows):
         table.add_row([event] + rows[event])
