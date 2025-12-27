@@ -13,6 +13,7 @@ Objective: to scrape the Parkrun API (or website since the API has been deprecat
 - `.env`: Stores the configuration, particularly the Parkrun numbers of Parkrunners of interest.
 - `.env.example`: Template for `.env`.
 - `src/`: Stores source code:
+    - `cli.py`: Uses command-line arguments to use the `parkrun` package.
     - `main.py`: An example program that uses the `parkrun` package and Parkrunners of interest in `.env` that can be edited as desired.
     - `tests.py`: Unit tests for tricky functions in the `parkrun` package.
     - `parkrun/`: `parkrun` package source code:
