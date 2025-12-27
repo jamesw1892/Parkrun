@@ -1,5 +1,5 @@
-from models.runner import Runner
-from Scraper import fetch_runner_results
+from parkrun.models.runner import Runner
+from parkrun.api.scraper import fetch_runner_results
 import datetime
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoLocator

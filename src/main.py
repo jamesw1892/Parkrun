@@ -1,7 +1,7 @@
 import datetime
 from dotenv import load_dotenv
 import os
-from ParkrunException import ParkrunException
+from parkrun.api.parkrun_exception import ParkrunException
 
 load_dotenv()
 
@@ -32,25 +32,25 @@ try:
     end_date: datetime.date = datetime.date(2026, 1, 1)
 
     # Graphs
-    from ActivityGraph import activity_graph
-    from TimeGraph import time_graph
+    from parkrun.graphs.activity import activity_graph
+    from parkrun.graphs.times import time_graph
 
     #activity_graph(runner_ids, start_date, end_date)
     #time_graph(runner_ids, start_date, end_date)
 
     # Stats
-    from CommonRunComparison import common_run_comparison
-    from MostCommon import most_common_year, most_common_location, most_common_month, most_common_time_seconds
-    from RunnerStats import runner_stats
-    from PbProgress import pb_progress
+    from parkrun.tables.common_run_comparison import common_run_comparison
+    from parkrun.tables.most_common import most_common_year, most_common_location, most_common_month, most_common_time_seconds
+    from parkrun.tables.pb_progress import pb_progress
+    from parkrun.tables.runner_stats import runner_stats
 
     #common_run_comparison(runner_ids)
     #most_common_year(runner_ids)
     #most_common_location(runner_ids)
     #most_common_month(runner_ids)
     #most_common_time_seconds(runner_ids)
-    runner_stats(runner_ids)
     #pb_progress(runner_ids)
+    runner_stats(runner_ids)
 
 except ParkrunException as e:
     print(e)

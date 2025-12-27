@@ -1,6 +1,7 @@
-import os
 from datetime import datetime, timedelta, time, date
 import logging
+from pathlib import Path
+from platformdirs import user_cache_dir
 
 logger = logging.getLogger(__name__)
 
@@ -14,10 +15,7 @@ logging.basicConfig(
     ]
 )
 
-cache_dir: str = os.path.join(os.path.dirname(__file__), "cache")
-
-if not os.path.exists(cache_dir):
-    os.mkdir(cache_dir)
+cache_dir: Path = Path(user_cache_dir("parkrun", False, ensure_exists=True))
 
 # The hour of the day that parkrun results could start coming through and
 # that they have definitely come through. We always treat it as a cache miss
@@ -88,22 +86,21 @@ def most_recent_parkrun(reference: datetime = None) -> datetime:
     return datetime.combine(last_parkrun_date, time(HR_RESULT_END))
 
 def check_cache(type_name: str, file_name: str) -> None | str:
-    sub_cache_dir: str = os.path.join(cache_dir, type_name)
-    if not os.path.exists(sub_cache_dir):
+    sub_cache_dir: Path = cache_dir / type_name
+    if not sub_cache_dir.exists():
         logger.debug("Cache miss: Type dir '%s' doesn't exist", type_name)
         return None
 
-    file_path: str = os.path.join(sub_cache_dir, file_name)
-    if not os.path.exists(file_path):
+    file_path: Path = sub_cache_dir / file_name
+    if not file_path.exists():
         logger.debug("Cache miss: File '%s' doesn't exist within existing type dir '%s'", file_name, type_name)
         return None
 
     # If the file in the cache is older than the most recent parkrun then
     # there might be updates so treat the cache as invalid
-    modified: datetime = datetime.fromtimestamp(os.stat(file_path).st_mtime)
+    modified: datetime = datetime.fromtimestamp(file_path.stat().st_mtime)
     if modified < most_recent_parkrun():
         logger.debug("Cache miss: Existing file '%s' within type dir '%s' is out of date", file_name, type_name)
-        #os.remove(file_path)
         return None
 
     logger.debug("Cache hit: %s/%s", type_name, file_name)
@@ -111,11 +108,11 @@ def check_cache(type_name: str, file_name: str) -> None | str:
         return f.read()
 
 def write_cache(type_name: str, file_name: str, contents: str) -> None:
-    sub_cache_dir: str = os.path.join(cache_dir, type_name)
-    if not os.path.exists(sub_cache_dir):
-        os.mkdir(sub_cache_dir)
+    sub_cache_dir: Path = cache_dir / type_name
+    if not sub_cache_dir.exists():
+        sub_cache_dir.mkdir()
 
-    file_path: str = os.path.join(sub_cache_dir, file_name)
+    file_path: Path = sub_cache_dir / file_name
     with open(file_path, "w", encoding=ENCODING) as f:
         f.write(contents)
 

@@ -3,8 +3,8 @@ Print a table allowing side-by-side comparisons of the runs that all given
 parkrunners did together.
 """
 
-from models.runner import Runner
-from Scraper import fetch_runner_results
+from parkrun.models.runner import Runner
+from parkrun.api.scraper import fetch_runner_results
 from functools import reduce
 from texttable import Texttable
 from typing import Iterable

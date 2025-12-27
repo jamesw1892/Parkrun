@@ -1,5 +1,5 @@
-from models.runner import Runner
-from Scraper import fetch_runner_results
+from parkrun.models.runner import Runner
+from parkrun.api.scraper import fetch_runner_results
 from collections import Counter
 import datetime
 import matplotlib.pyplot as plt

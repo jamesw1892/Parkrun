@@ -1,7 +1,7 @@
 import datetime
 from collections import Counter
-from models.runner_result import RunnerResult
-from models.time import Time
+from parkrun.models.runner_result import RunnerResult
+from parkrun.models.time import Time
 
 class Runner:
     def __init__(self, number: int, name: str, most_recent_age_category: str, results: list[RunnerResult]):

@@ -1,9 +1,9 @@
-from models.runner import Runner
-from models.runner_result import RunnerResult
-from ParkrunException import ParkrunException
+from parkrun.models.runner import Runner
+from parkrun.models.runner_result import RunnerResult
+from parkrun.api.parkrun_exception import ParkrunException
+from parkrun.api.cache import check_cache, write_cache
 import requests
 from bs4 import BeautifulSoup, Tag
-import Cache
 import logging
 
 logger = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ def fetch_runner_results(number: int) -> Runner:
     type_name: str = "runner_results"
     file_name: str = f"{number}.html"
 
-    html: None | str = Cache.check_cache(type_name, file_name)
+    html: None | str = check_cache(type_name, file_name)
     if html is None:
 
         # Fetch
@@ -49,7 +49,7 @@ def fetch_runner_results(number: int) -> Runner:
         response.raise_for_status() # Raise a HTTPError for bad responses (4xx and 5xx)
         html = response.text
 
-        Cache.write_cache(type_name, file_name, html)
+        write_cache(type_name, file_name, html)
 
     # Parse the HTML response
     soup = BeautifulSoup(html, 'html.parser')

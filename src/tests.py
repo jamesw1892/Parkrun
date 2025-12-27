@@ -1,8 +1,8 @@
 from parameterized import parameterized
 import unittest
 import datetime
-from Cache import most_recent_parkrun, HR_RESULT_START, HR_RESULT_END
-from ActivityGraph import _get_num_months
+from parkrun.api.cache import most_recent_parkrun, HR_RESULT_START, HR_RESULT_END
+from parkrun.graphs.activity import _get_num_months
 
 class TestMostRecentParkrun(unittest.TestCase):
 

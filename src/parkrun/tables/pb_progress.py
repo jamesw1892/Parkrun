@@ -3,9 +3,9 @@ Print a table with information about each time each parkrunner improved their PB
 side-by-side.
 """
 
-from models.runner import Runner
-from models.time import Time
-from Scraper import fetch_runner_results
+from parkrun.models.runner import Runner
+from parkrun.models.time import Time
+from parkrun.api.scraper import fetch_runner_results
 from texttable import Texttable
 import datetime
 import os

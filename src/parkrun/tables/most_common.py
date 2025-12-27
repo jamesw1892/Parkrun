@@ -4,9 +4,9 @@ thing occurred, side-by-side for each given parkrunner.
 """
 
 from typing import Any
-from models.runner import Runner
-from models.runner_result import RunnerResult
-from Scraper import fetch_runner_results
+from parkrun.models.runner import Runner
+from parkrun.models.runner_result import RunnerResult
+from parkrun.api.scraper import fetch_runner_results
 from collections.abc import Callable
 from collections import Counter
 from texttable import Texttable
