@@ -4,6 +4,8 @@ from collections import Counter
 import datetime
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
+from texttable import Texttable
+import os
 
 def _get_num_months(start_date: datetime.date, end_date: datetime.date) -> int:
     """Return the number of months between the given dates including both ends"""
@@ -59,6 +61,13 @@ def activity_graph(
         months.append(month_year)
         for runner_index in range(len(frequencies)):
             runner_counts[runner_index].append(frequencies[runner_index].get(month_year, 0))
+
+    # Print the data too
+    table = Texttable(int(os.getenv("TABLE_MAX_WIDTH", 180)))
+    table.header(["Parkrunner"] + [runner.format_identity() for runner in runners])
+    for index, month in enumerate(months):
+        table.add_row([month] + [count[index] for count in runner_counts])
+    print(table.draw())
 
     # Plot the data with legend labelled with the runner's identity string
     plt.clf()
