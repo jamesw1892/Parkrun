@@ -54,11 +54,11 @@ def pb_progress(runner_ids: list[int]):
 
                 # Calculate the time difference to the previous PB as well as
                 # the number of weeks and runs since
-                diff: str = f"first run"
+                diff: str = f"first parkrun"
                 if current_pb_time is not None:
                     time_diff: Time = Time.from_timedelta(current_pb_time.timedelta - result.time.timedelta)
                     weeks: int = (result.date - current_pb_date).days // 7
-                    diff: str = f"-{time_diff} after {weeks} week{s(weeks)} and {num_runs} run{s(num_runs)}"
+                    diff: str = f"-{time_diff} after {weeks} week{s(weeks)} and {num_runs} parkrun{s(num_runs)}"
 
                 # Display the time and location of the PB plus the difference
                 # to the previous PB
@@ -81,7 +81,7 @@ def pb_progress(runner_ids: list[int]):
 
     # Add a final row of how many weeks and runs their all time PB was ago
     table.add_row(["PB was"] + [
-        f"{weeks} week{s(weeks)} and {num_runs} run{s(num_runs)} ago"
+        f"{weeks} week{s(weeks)} and {num_runs} parkrun{s(num_runs)} ago"
         for weeks, num_runs in zip(weeks_ago, num_runs_ago)
     ])
 
