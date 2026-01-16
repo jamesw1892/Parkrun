@@ -88,22 +88,22 @@ def most_recent_parkrun(reference: datetime = None) -> datetime:
 def check_cache(type_name: str, file_name: str) -> None | str:
     sub_cache_dir: Path = cache_dir / type_name
     if not sub_cache_dir.exists():
-        logger.debug("Cache miss: Type dir '%s' doesn't exist", type_name)
+        logger.debug("miss: Type dir '%s' doesn't exist", type_name)
         return None
 
     file_path: Path = sub_cache_dir / file_name
     if not file_path.exists():
-        logger.debug("Cache miss: File '%s' doesn't exist within existing type dir '%s'", file_name, type_name)
+        logger.debug("miss: File '%s' doesn't exist within existing type dir '%s'", file_name, type_name)
         return None
 
     # If the file in the cache is older than the most recent parkrun then
     # there might be updates so treat the cache as invalid
     modified: datetime = datetime.fromtimestamp(file_path.stat().st_mtime)
     if modified < most_recent_parkrun():
-        logger.debug("Cache miss: Existing file '%s' within type dir '%s' is out of date", file_name, type_name)
+        logger.debug("miss: Existing file '%s' within type dir '%s' is out of date", file_name, type_name)
         return None
 
-    logger.debug("Cache hit: %s/%s", type_name, file_name)
+    logger.debug("hit: %s/%s", type_name, file_name)
     with open(file_path, encoding=ENCODING) as f:
         return f.read()
 
@@ -116,4 +116,4 @@ def write_cache(type_name: str, file_name: str, contents: str) -> None:
     with open(file_path, "w", encoding=ENCODING) as f:
         f.write(contents)
 
-    logger.debug("Updated cache: %s/%s", type_name, file_name)
+    logger.debug("update: %s/%s", type_name, file_name)
