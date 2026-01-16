@@ -2,11 +2,24 @@ Objective: to scrape the Parkrun API (or website since the API has been deprecat
 
 # Usage
 
+## Editing Main.py to call library
+
 1. Copy the file `.env.example` and name the copy `.env`.
 2. Edit it to include the parkrun numbers you're interested in (numbers can be found on barcodes, results emails and online at https://www.parkrun.org.uk/). It is often displayed following an 'A' but don't include the 'A' in the `.env` file. Also adjust other settings stored in `.env` as desired.
 3. Edit `src/main.py` to change which parkrunner(s) to act on and the start and end dates for graphs.
 4. Uncomment the graph or stat function you want to run and comment the rest out.
 5. Run `python src/main.py`.
+
+## Command-Line Interface
+
+Run `python src/cli.py`. It takes command-line arguments and has help text.
+
+If you'd like to make use of `.env` that you may have created as above, you can do e.g.:
+
+```bash
+source .env
+python src/cli.py runner_stats $PARKRUNNER_ME
+```
 
 # Files
 
