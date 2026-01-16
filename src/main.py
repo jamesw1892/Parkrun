@@ -44,13 +44,13 @@ try:
     from parkrun.tables.pb_progress import pb_progress
     from parkrun.tables.runner_stats import runner_stats
 
-    #common_run_comparison(runner_ids)
-    #most_common_year(runner_ids)
-    #most_common_location(runner_ids)
-    #most_common_month(runner_ids)
-    #most_common_time_seconds(runner_ids)
-    #pb_progress(runner_ids)
-    runner_stats(runner_ids)
+    #common_run_comparison(runner_ids, start_date, end_date)
+    #most_common_year(runner_ids, start_date, end_date)
+    #most_common_location(runner_ids, start_date, end_date)
+    #most_common_month(runner_ids, start_date, end_date)
+    #most_common_time_seconds(runner_ids, start_date, end_date)
+    #pb_progress(runner_ids, start_date, end_date)
+    runner_stats(runner_ids, start_date, end_date)
 
 except ParkrunException as e:
     print(e)

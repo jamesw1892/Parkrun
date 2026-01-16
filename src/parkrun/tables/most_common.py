@@ -3,6 +3,7 @@ Print a table with a thing about the parkrunner sorted by how many times that
 thing occurred, side-by-side for each given parkrunner.
 """
 
+import datetime
 from typing import Any
 from parkrun.models.runner import Runner
 from parkrun.models.runner_result import RunnerResult
@@ -13,7 +14,7 @@ from texttable import Texttable
 from itertools import zip_longest
 import os
 
-def most_common_things_runner(runner_ids: list[int], runner_to_counter: Callable[[Runner], Counter]) -> None:
+def most_common_things_runner(runner_ids: list[int], runner_to_counter: Callable[[Runner], Counter], start_date: datetime.date, end_date: datetime.date) -> None:
     """
     Print a table with a column for each parkrunner where the column is the
     list of the things in order from most common to least common. The thing is
@@ -25,6 +26,8 @@ def most_common_things_runner(runner_ids: list[int], runner_to_counter: Callable
     one has been run, from most ran at to least ran at, call the function like
     this: most_common_things_runner(runner_ids, lambda runner: runner.locations_counter)
     """
+
+    # TODO: Restrict to between the dates
 
     runners: list[Runner] = list(map(fetch_runner_results, runner_ids))
     counters: list[Counter] = list(map(runner_to_counter, runners))
@@ -38,7 +41,7 @@ def most_common_things_runner(runner_ids: list[int], runner_to_counter: Callable
         position += 1
     print(table.draw())
 
-def most_common_things_result(runner_ids: list[int], result_to_thing: Callable[[RunnerResult], Any]) -> None:
+def most_common_things_result(runner_ids: list[int], result_to_thing: Callable[[RunnerResult], Any], start_date: datetime.date, end_date: datetime.date) -> None:
     """
     Print a table with a column for each parkrunner where the column is the
     list of the things in order from most common to least common. The thing is
@@ -50,32 +53,32 @@ def most_common_things_result(runner_ids: list[int], result_to_thing: Callable[[
     (without using the locations_counter attribute of Runner), call the function
     like this: most_common_things_result(runner_ids, lambda result: result.location)
     """
-    most_common_things_runner(runner_ids, lambda runner: Counter(map(result_to_thing, runner.results)))
+    most_common_things_runner(runner_ids, lambda runner: Counter(map(result_to_thing, runner.results)), start_date, end_date)
 
-def most_common_month(runner_ids: list[int]) -> None:
+def most_common_month(runner_ids: list[int], start_date: datetime.date, end_date: datetime.date) -> None:
     """
     Print a table of the most common months of the year during which the given
     parkrunners have run.
     """
-    most_common_things_result(runner_ids, lambda result: result.date.strftime("%b"))
+    most_common_things_result(runner_ids, lambda result: result.date.strftime("%b"), start_date, end_date)
 
-def most_common_year(runner_ids: list[int]) -> None:
+def most_common_year(runner_ids: list[int], start_date: datetime.date, end_date: datetime.date) -> None:
     """
     Print a table of the most common years during which the given parkrunners
     have run.
     """
-    most_common_things_runner(runner_ids, lambda runner: runner.year_counter)
+    most_common_things_runner(runner_ids, lambda runner: runner.year_counter, start_date, end_date)
 
-def most_common_location(runner_ids: list[int]) -> None:
+def most_common_location(runner_ids: list[int], start_date: datetime.date, end_date: datetime.date) -> None:
     """
     Print a table of the most common locations the given parkrunners have run
     at.
     """
-    most_common_things_runner(runner_ids, lambda runner: runner.locations_counter)
+    most_common_things_runner(runner_ids, lambda runner: runner.locations_counter, start_date, end_date)
 
-def most_common_time_seconds(runner_ids: list[int]) -> None:
+def most_common_time_seconds(runner_ids: list[int], start_date: datetime.date, end_date: datetime.date) -> None:
     """
     Print a table of the most common seconds at the end of the time out of all
     the given parkrunners' results.
     """
-    most_common_things_result(runner_ids, lambda result: result.time.timedelta.seconds % 60)
+    most_common_things_result(runner_ids, lambda result: result.time.timedelta.seconds % 60, start_date, end_date)

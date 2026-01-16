@@ -17,7 +17,7 @@ def s(n: int) -> str:
     """
     return "" if n == 1 else "s"
 
-def pb_progress(runner_ids: list[int]):
+def pb_progress(runner_ids: list[int], start_date: datetime.date, end_date: datetime.date):
     """
     Print a table with the dates each parkrunner improved their PB along with
     details about that parkrun and how much progress was made over how long.
@@ -45,6 +45,9 @@ def pb_progress(runner_ids: list[int]):
 
         # Go through the results from first to last
         for result in runner.results[::-1]:
+
+            if not (start_date <= result.date <= end_date):
+                continue
 
             num_runs += 1
             if current_pb_time is None or result.time.timedelta < current_pb_time.timedelta:

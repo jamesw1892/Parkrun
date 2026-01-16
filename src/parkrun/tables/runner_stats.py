@@ -2,6 +2,7 @@
 Print a table with statistics about each given parkrunner side-by-side.
 """
 
+import datetime
 from parkrun.models.runner import Runner
 from parkrun.models.runner_result import RunnerResult
 from typing import Any
@@ -33,10 +34,12 @@ STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
     ("Consistency"               , lambda runner: f"{runner.consistency * 100:.2f}%")
 )
 
-def runner_stats(runner_ids: list[int]) -> None:
+def runner_stats(runner_ids: list[int], start_date: datetime.date, end_date: datetime.date) -> None:
     """
     Print a table with statistics about each given parkrunner side-by-side.
     """
+
+    # TODO: Restrict to between the dates
 
     runners: list[Runner] = [fetch_runner_results(runner_id) for runner_id in runner_ids]
 
