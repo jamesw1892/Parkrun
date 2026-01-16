@@ -1,5 +1,7 @@
 Objective: to scrape the Parkrun API (or website since the API has been deprecated for years) to get info and use to show stats and graphs.
 
+![World map of parkruns as multi-coloured dots](img/World%20Map%20Parkruns%20Multicoloured%20Dots.png)
+
 # Usage
 
 ## Editing Main.py to call library
@@ -36,9 +38,12 @@ python src/cli.py runner_stats $PARKRUNNER_ME
             - `scraper.py`: Fetches and parses pages on the parkrun website, caching results.
         - `graphs/`:
             - `activity.py`: Graphs the number of parkruns that parkrunners did each month.
+            - `event_map.py`: Maps all parkrun events in the world.
             - `times.py`: Graphs the finish times of parkrunners.
         - `models/`: Classes to model Parkrunners, locations, times, results, ...:
             - `age_grade.py`: Models the age grade of a run.
+            - `event_collection.py`: Models many parkrun events.
+            - `event.py`: Models a parkrun event.
             - `pb.py`: Models whether a run is a personal best.
             - `position.py`: Models the finish position of a run.
             - `runner_result.py`: Models a run.

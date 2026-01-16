@@ -1,10 +1,12 @@
 from parkrun.models.runner import Runner
 from parkrun.models.runner_result import RunnerResult
+from parkrun.models.event_collection import EventCollection
 from parkrun.api.parkrun_exception import ParkrunException
 from parkrun.api.cache import check_cache, write_cache
 import requests
 from bs4 import BeautifulSoup, Tag
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -24,11 +26,30 @@ session.headers = {
     "Sec-Fetch-User": "?1"
 }
 
-def fetch_events():
-    url = "https://images.parkrun.com/events.json"
-    response = session.get(url)
-    response.raise_for_status() # Raise a HTTPError for bad responses (4xx and 5xx)
-    return response.json() # Parse the response as JSON
+def fetch_events() -> EventCollection:
+    """
+    Return an EventCollection with all events.
+    """
+
+    url: str = "https://images.parkrun.com/events.json"
+    type_name: str = "events"
+    file_name: str = "events.json"
+
+    json_str: str | None = check_cache(type_name, file_name)
+    if json_str is None:
+
+        # Fetch
+        response = session.get(url)
+        response.raise_for_status() # Raise a HTTPError for bad responses (4xx and 5xx)
+        json_data: dict = response.json() # Parse the response as JSON
+        json_str: str = json.dumps(json_data)
+
+        write_cache(type_name, file_name, json_str)
+
+    else:
+        json_data: dict = json.loads(json_str)
+
+    return EventCollection(json_data)
 
 def fetch_runner_results(number: int) -> Runner:
     """
