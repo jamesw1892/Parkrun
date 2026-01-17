@@ -11,7 +11,6 @@ from parkrun.api.utils import date_description
 from functools import reduce
 from texttable import Texttable
 from typing import Iterable
-import os
 
 def common_run_comparison(runner_ids: list[int], start_date: datetime.date, end_date: datetime.date) -> None:
     """

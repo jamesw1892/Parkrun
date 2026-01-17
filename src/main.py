@@ -40,13 +40,14 @@ try:
 
     # Stats
     from parkrun.tables.common_run_comparison import common_run_comparison
-    from parkrun.tables.most_common import most_common_year, most_common_location, most_common_month, most_common_time_seconds
+    from parkrun.tables.most_common import most_common_year, most_common_location, most_common_location_initial, most_common_month, most_common_time_seconds
     from parkrun.tables.pb_progress import pb_progress
     from parkrun.tables.runner_stats import runner_stats
 
     #common_run_comparison(runner_ids, start_date, end_date)
     #most_common_year(runner_ids, start_date, end_date)
     #most_common_location(runner_ids, start_date, end_date)
+    #most_common_location_initial(runner_ids, start_date, end_date)
     #most_common_month(runner_ids, start_date, end_date)
     #most_common_time_seconds(runner_ids, start_date, end_date)
     #pb_progress(runner_ids, start_date, end_date)

@@ -7,7 +7,6 @@ import datetime
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from texttable import Texttable
-import os
 
 def _get_num_months(start_date: datetime.date, end_date: datetime.date) -> int:
     """Return the number of months between the given dates including both ends"""

@@ -13,7 +13,6 @@ from collections.abc import Callable
 from collections import Counter
 from texttable import Texttable
 from itertools import zip_longest
-import os
 
 def most_common_things_runner(runner_ids: list[int], runner_to_counter: Callable[[Runner], Counter], start_date: datetime.date, end_date: datetime.date) -> None:
     """
@@ -74,6 +73,13 @@ def most_common_location(runner_ids: list[int], start_date: datetime.date, end_d
     at.
     """
     most_common_things_runner(runner_ids, lambda runner: runner.locations_counter, start_date, end_date)
+
+def most_common_location_initial(runner_ids: list[int], start_date: datetime.date, end_date: datetime.date) -> None:
+    """
+    Print a table of the most common first letters of parkrun locations that the
+    given parkrunners have run at (including duplicate locations).
+    """
+    most_common_things_result(runner_ids, lambda result: result.location[0], start_date, end_date)
 
 def most_common_time_seconds(runner_ids: list[int], start_date: datetime.date, end_date: datetime.date) -> None:
     """

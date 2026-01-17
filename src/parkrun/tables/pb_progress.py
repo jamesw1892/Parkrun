@@ -10,7 +10,6 @@ from parkrun.api.scraper import fetch_runner_results
 from parkrun.api.utils import date_description
 from texttable import Texttable
 import datetime
-import os
 
 def s(n: int) -> str:
     """

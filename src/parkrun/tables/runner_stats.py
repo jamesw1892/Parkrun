@@ -11,7 +11,6 @@ from parkrun.api.scraper import fetch_runner_results
 from parkrun.api.utils import date_description
 from collections.abc import Callable
 from texttable import Texttable
-import os
 
 def format_events(results: list[RunnerResult]) -> str:
     return "; ".join(sorted(map(lambda x: x.format_for_event(), results)))
