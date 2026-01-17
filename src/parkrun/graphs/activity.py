@@ -24,11 +24,18 @@ def activity_graph(
     """
 
     runners: list[Runner] = [fetch_runner_results(runner_id, start_date, end_date) for runner_id in runner_ids]
+    runners_with_results: list[Runner] = list(filter(lambda runner: len(runner.results) > 0, runners))
+
+    date_desc: str = date_description(start_date, end_date)
+
+    if len(runners_with_results) == 0:
+        print(f"No results for any of the given runners {date_desc}")
+        return
 
     # Calculate first and last date that any of the runners ran (assumes that
     # runner.results is sorted most recent first)
-    first_run_date: datetime.date = min(runner.results[-1].date for runner in runners)
-    last_run_date : datetime.date = max(runner.results[ 0].date for runner in runners)
+    first_run_date: datetime.date = min(runner.results[-1].date for runner in runners_with_results)
+    last_run_date : datetime.date = max(runner.results[ 0].date for runner in runners_with_results)
 
     # Count up the number of times each runner has ran in each month
     frequencies: list[Counter] = [
@@ -66,7 +73,7 @@ def activity_graph(
     plt.clf()
     for runner, counts in zip(runners, runner_counts):
         plt.plot(months, counts, marker="o", label=runner.format_identity())
-    plt.title(f"Parkruns Per Month {date_description(start_date, end_date)}")
+    plt.title(f"Parkruns Per Month {date_desc}")
     plt.xlabel("Month")
     plt.ylabel("Number of Runs")
     plt.xticks(rotation=45, ha="right")

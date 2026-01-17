@@ -23,7 +23,7 @@ def pb_progress(runner_ids: list[int], start_date: datetime.date, end_date: date
     Print a table with the dates each parkrunner improved their PB along with
     details about that parkrun and how much progress was made over how long.
     """
-    today: datetime.date = datetime.datetime.now().date()
+    today: datetime.date = datetime.date.today()
     num_runners: int = len(runner_ids)
 
     runners: list[Runner] = [fetch_runner_results(runner_id, start_date, end_date) for runner_id in runner_ids]
@@ -36,7 +36,7 @@ def pb_progress(runner_ids: list[int], start_date: datetime.date, end_date: date
     # output table.
     dates_and_times: dict[datetime.date, list[str]] = dict()
 
-    weeks_ago: list[datetime.date] = []
+    weeks_ago: list[int] = []
     num_runs_ago: list[int] = []
 
     for runner_index, runner in enumerate(runners):
@@ -69,7 +69,7 @@ def pb_progress(runner_ids: list[int], start_date: datetime.date, end_date: date
                 current_pb_date = result.date
                 num_runs = 0
 
-        weeks_ago.append((today - current_pb_date).days // 7)
+        weeks_ago.append((today - current_pb_date).days // 7 if current_pb_date is not None else 0)
         num_runs_ago.append(num_runs)
 
     print(f"PB progress {date_description(start_date, end_date)}")

@@ -32,11 +32,11 @@ class Runner:
         self.best_times: list[RunnerResult] = minimals(results, key=lambda result: result.time.timedelta)
         self.best_positions: list[RunnerResult] = minimals(results, key=lambda result: result.position.value)
         self.best_age_grades: list[RunnerResult] = maximals(results, key=lambda result: result.age_grade.value)
-        self.first_result: RunnerResult = results[-1]
-        self.latest_result: RunnerResult = results[0]
+        self.first_result: RunnerResult | None = results[-1] if len(results) > 0 else None
+        self.latest_result: RunnerResult | None = results[0] if len(results) > 0 else None
 
         self.total_run_time: Time = Time.from_timedelta(sum(map(lambda result: result.time.timedelta, results), start=datetime.timedelta()))
-        self.average_run_time: Time = Time.from_timedelta(self.total_run_time.timedelta / len(results))
+        self.average_run_time: Time = Time.from_timedelta(self.total_run_time.timedelta / max(len(results), 1))
         # total_seconds: int = round(ans.total_seconds())
         # mins, secs = divmod(total_seconds, 60)
         # return f"{mins:02d}:{secs:02d}"
@@ -44,7 +44,7 @@ class Runner:
         self.unique_locations: set[str] = set(map(lambda result: result.location, results))
         self.num_unique_locations: int = len(self.unique_locations)
 
-        self.tourism_percentage: float = self.num_unique_locations / len(results)
+        self.tourism_percentage: float = self.num_unique_locations / max(len(results), 1)
         self.__consistency = None
 
         self.year_counter: Counter = Counter(result.date.year for result in results)
@@ -68,11 +68,15 @@ class Runner:
 
         if self.__consistency is None:
 
-            start_date: datetime.date = self.results[-1].date
-            end_date  : datetime.date = self.results[0].date
-            weeks: int = (end_date - start_date).days // 7 + 1
+            if len(self.results) == 0:
+                self.__consistency: float = 0.0
+            else:
 
-            self.__consistency: float = len(self.results) / weeks
+                start_date: datetime.date = self.results[-1].date
+                end_date  : datetime.date = self.results[0].date
+                weeks: int = (end_date - start_date).days // 7 + 1
+
+                self.__consistency: float = len(self.results) / weeks
 
         return self.__consistency
 

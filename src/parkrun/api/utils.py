@@ -9,14 +9,14 @@ def maximals(*args, key=None) -> list:
     """
 
     if len(args) == 0:
-        raise ValueError("Empty")
+        return []
 
     iterable = args[0] if len(args) == 1 else args
     it = iter(iterable)
     try:
         first = next(it)
     except StopIteration:
-        raise ValueError("Empty")
+        return []
 
     if key is None:
         key = lambda x: x
@@ -40,14 +40,14 @@ def minimals(*args, key=None) -> list:
     """
 
     if len(args) == 0:
-        raise ValueError("Empty")
+        return []
 
     iterable = args[0] if len(args) == 1 else args
     it = iter(iterable)
     try:
         first = next(it)
     except StopIteration:
-        raise ValueError("Empty")
+        return []
 
     if key is None:
         key = lambda x: x
@@ -72,7 +72,7 @@ def most_common(counter: Counter) -> tuple[list[Any], int]:
 
     frequencies: list[tuple[Any, int]] = counter.most_common()
     values: list[Any] = []
-    max_frequency: int = frequencies[0][1]
+    max_frequency: int = frequencies[0][1] if len(frequencies) > 0 else 0
     for value, frequency in frequencies:
         if frequency != max_frequency:
             break
