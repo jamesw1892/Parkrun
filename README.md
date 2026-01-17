@@ -36,6 +36,7 @@ python src/cli.py runner_stats $PARKRUNNER_ME
             - `cache.py`: Implements `check_cache` and `write_cache` to cache data to not repeatedly hit the website. It intelligently invalidates the cache at the time that results normally come out on Saturdays or Christmas or New Years Day.
             - `parkrun_exception.py`: Custom exception.
             - `scraper.py`: Fetches and parses pages on the parkrun website, caching results.
+            - `utils.py`: Utility functions used by the rest of the package.
         - `graphs/`:
             - `activity.py`: Graphs the number of parkruns that parkrunners did each month.
             - `event_map.py`: Maps all parkrun events in the world.
