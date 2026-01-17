@@ -51,6 +51,7 @@ python src/cli.py runner_stats $PARKRUNNER_ME
             - `time.py`: Models the finish time of a run or any other parkrun-related time, e.g. total/average finish time.
         - `tables/`:
             - `common_run_comparison.py`: Print a table with a side-by-side comparison of runs that parkrunners did together.
+            - `latest_update.py`: Print a table with a summary of the result of each given parkrunner that did the most recent parkrun between the given dates.
             - `most_common.py`: Print a table with a thing about the parkrunner sorted by how many times that thing occurred, side-by-side for each given parkrunner.
             - `pb_progress.py`: Print a table with information about each time each parkrunner improved their PB side-by-side.
             - `runner_stats.py`: Print a table with statistics about parkrunners side-by-side.

@@ -9,6 +9,7 @@ from parkrun import ALL_PARKRUNNER_IDS
 from parkrun.graphs.activity import activity_graph
 from parkrun.graphs.times import time_graph
 from parkrun.tables.common_run_comparison import common_run_comparison
+from parkrun.tables.latest_update import latest_update
 from parkrun.tables.most_common import most_common_location, most_common_location_initial, most_common_month, most_common_time_seconds, most_common_year
 from parkrun.tables.pb_progress import pb_progress
 from parkrun.tables.runner_stats import runner_stats
@@ -17,6 +18,7 @@ command_funcs: dict[str, callable] = {
     "activity": activity_graph,
     "times": time_graph,
     "common_run_comparison": common_run_comparison,
+    "latest_update": latest_update,
     "most_common_location": most_common_location,
     "most_common_location_initial": most_common_location_initial,
     "most_common_month": most_common_month,
