@@ -5,6 +5,7 @@ side-by-side.
 
 from parkrun.models.runner import Runner
 from parkrun.models.time import Time
+from parkrun import TABLE_MAX_WIDTH
 from parkrun.api.scraper import fetch_runner_results
 from parkrun.api.utils import date_description
 from texttable import Texttable
@@ -75,7 +76,7 @@ def pb_progress(runner_ids: list[int], start_date: datetime.date, end_date: date
     print(f"PB progress {date_description(start_date, end_date)}")
 
     # Draw the table
-    table = Texttable(int(os.getenv("TABLE_MAX_WIDTH", 180)))
+    table = Texttable(TABLE_MAX_WIDTH)
     table.header(["Date"] + [runner.format_identity() for runner in runners])
 
     # Display a row for each date in ascending order

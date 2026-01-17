@@ -7,6 +7,7 @@ import datetime
 from typing import Any
 from parkrun.models.runner import Runner
 from parkrun.models.runner_result import RunnerResult
+from parkrun import TABLE_MAX_WIDTH
 from parkrun.api.scraper import fetch_runner_results
 from collections.abc import Callable
 from collections import Counter
@@ -31,7 +32,7 @@ def most_common_things_runner(runner_ids: list[int], runner_to_counter: Callable
     counters: list[Counter] = list(map(runner_to_counter, runners))
     most_common_things: list[list[tuple[Any, int]]] = [counter.most_common() for counter in counters]
 
-    table = Texttable(int(os.getenv("TABLE_MAX_WIDTH", 180)))
+    table = Texttable(TABLE_MAX_WIDTH)
     table.header(["#"] + [runner.format_identity() for runner in runners])
     position: int = 1
     for runners_thing in zip_longest(*most_common_things):

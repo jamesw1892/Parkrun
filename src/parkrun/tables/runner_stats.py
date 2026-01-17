@@ -6,6 +6,7 @@ import datetime
 from parkrun.models.runner import Runner
 from parkrun.models.runner_result import RunnerResult
 from typing import Any
+from parkrun import TABLE_MAX_WIDTH
 from parkrun.api.scraper import fetch_runner_results
 from parkrun.api.utils import date_description
 from collections.abc import Callable
@@ -44,7 +45,7 @@ def runner_stats(runner_ids: list[int], start_date: datetime.date, end_date: dat
 
     print(f"Runner stats {date_description(start_date, end_date)}")
 
-    table = Texttable(int(os.getenv("TABLE_MAX_WIDTH", 180)))
+    table = Texttable(TABLE_MAX_WIDTH)
     table.header(["Parkrunner"] + [runner.format_identity() for runner in runners])
     for stat_name, stat_func in STATS:
         table.add_row([stat_name] + [stat_func(runner) for runner in runners])
