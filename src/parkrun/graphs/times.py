@@ -1,5 +1,6 @@
 from parkrun.models.runner import Runner
 from parkrun.api.scraper import fetch_runner_results
+from parkrun.api.utils import date_description
 import datetime
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoLocator
@@ -22,7 +23,7 @@ def time_graph(
     ran).
     """
 
-    runners: list[Runner] = [fetch_runner_results(runner_id) for runner_id in runner_ids]
+    runners: list[Runner] = [fetch_runner_results(runner_id, start_date, end_date) for runner_id in runner_ids]
 
     # Plot each parkrunner separately but on the same axis - `dates` will be
     # different for each parkrunner but MatPlotLib will work it out.
@@ -31,12 +32,11 @@ def time_graph(
         dates: list[datetime.date] = []
         times: list[int] = []
         for result in runner.results:
-            if start_date <= result.date <= end_date:
-                dates.append(result.date)
+            dates.append(result.date)
 
-                # Plot the time as an integer number of seconds and use
-                # `_format_time` to format the chosen times for the y-axis.
-                times.append(round(result.time.timedelta.total_seconds()))
+            # Plot the time as an integer number of seconds and use
+            # `_format_time` to format the chosen times for the y-axis.
+            times.append(round(result.time.timedelta.total_seconds()))
 
         # Plot the data with legend labelled with the runner's identity string
         plt.plot(dates, times, marker="o", label=runner.format_identity())
@@ -50,7 +50,7 @@ def time_graph(
     plt.gca().yaxis.set_major_locator(AutoLocator())
     plt.gca().yaxis.set_major_formatter(plt.FuncFormatter(_format_time))
 
-    plt.title("Parkrun Finish Times")
+    plt.title(f"Parkrun Finish Times {date_description(start_date, end_date)}")
     plt.legend()
     plt.tight_layout()
     plt.show()

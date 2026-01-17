@@ -1,5 +1,6 @@
 from parkrun.models.runner import Runner
 from parkrun.api.scraper import fetch_runner_results
+from parkrun.api.utils import date_description
 from collections import Counter
 import datetime
 import matplotlib.pyplot as plt
@@ -13,29 +14,21 @@ def _get_num_months(start_date: datetime.date, end_date: datetime.date) -> int:
 
 def activity_graph(
         runner_ids: list[int],
-        start_date: datetime.date = None,
-          end_date: datetime.date = None,
+        start_date: datetime.date = datetime.date.min,
+          end_date: datetime.date = datetime.date.max,
     ) -> None:
     """
     Display a MatPlotLib line graph of the number of parkrun events the given
-    parkrunners ran each month. `start_date` and `end_date` default to the first
-    and last run that any of the given parkrunners ran. Even if they are given,
-    the graph never starts before or ends after the earliest or last parkrun
-    that any of the parkrunners ran.
+    parkrunners ran each month between `start_date` and `end_date`, defaulting
+    to the first and last ever parkrun by any runner.
     """
 
-    runners: list[Runner] = [fetch_runner_results(runner_id) for runner_id in runner_ids]
+    runners: list[Runner] = [fetch_runner_results(runner_id, start_date, end_date) for runner_id in runner_ids]
 
     # Calculate first and last date that any of the runners ran (assumes that
     # runner.results is sorted most recent first)
     first_run_date: datetime.date = min(runner.results[-1].date for runner in runners)
     last_run_date : datetime.date = max(runner.results[ 0].date for runner in runners)
-
-    # If they haven't provided start and end dates then show all runs any of the
-    # runners ran. If they have then only show dates that are both within their
-    # range and that all runners have run
-    start_date = first_run_date if start_date is None else max(start_date, first_run_date)
-    end_date   =  last_run_date if   end_date is None else min(  end_date,  last_run_date)
 
     # Count up the number of times each runner has ran in each month
     frequencies: list[Counter] = [
@@ -50,10 +43,10 @@ def activity_graph(
     # that month
     months: list[str] = []
     runner_counts: list[list[int]] = [[] for _ in runner_ids]
-    num_months: int = _get_num_months(start_date, end_date)
+    num_months: int = _get_num_months(first_run_date, last_run_date)
     for month_num in range(num_months):
-        years_to_add, month = divmod(start_date.month + month_num, 12)
-        year: int = start_date.year + years_to_add
+        years_to_add, month = divmod(first_run_date.month + month_num, 12)
+        year: int = first_run_date.year + years_to_add
         if month == 0:
             month = 12
             year -= 1
@@ -73,7 +66,7 @@ def activity_graph(
     plt.clf()
     for runner, counts in zip(runners, runner_counts):
         plt.plot(months, counts, marker="o", label=runner.format_identity())
-    plt.title("Parkruns Per Month")
+    plt.title(f"Parkruns Per Month {date_description(start_date, end_date)}")
     plt.xlabel("Month")
     plt.ylabel("Number of Runs")
     plt.xticks(rotation=45, ha="right")

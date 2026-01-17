@@ -6,6 +6,7 @@ side-by-side.
 from parkrun.models.runner import Runner
 from parkrun.models.time import Time
 from parkrun.api.scraper import fetch_runner_results
+from parkrun.api.utils import date_description
 from texttable import Texttable
 import datetime
 import os
@@ -25,7 +26,7 @@ def pb_progress(runner_ids: list[int], start_date: datetime.date, end_date: date
     today: datetime.date = datetime.datetime.now().date()
     num_runners: int = len(runner_ids)
 
-    runners: list[Runner] = list(map(fetch_runner_results, runner_ids))
+    runners: list[Runner] = [fetch_runner_results(runner_id, start_date, end_date) for runner_id in runner_ids]
 
     # Populate a dictionary with a key for each date that any parkrunner
     # improved their PB. The corresponding value is a list with an element for
@@ -45,9 +46,6 @@ def pb_progress(runner_ids: list[int], start_date: datetime.date, end_date: date
 
         # Go through the results from first to last
         for result in runner.results[::-1]:
-
-            if not (start_date <= result.date <= end_date):
-                continue
 
             num_runs += 1
             if current_pb_time is None or result.time.timedelta < current_pb_time.timedelta:
@@ -73,6 +71,8 @@ def pb_progress(runner_ids: list[int], start_date: datetime.date, end_date: date
 
         weeks_ago.append((today - current_pb_date).days // 7)
         num_runs_ago.append(num_runs)
+
+    print(f"PB progress {date_description(start_date, end_date)}")
 
     # Draw the table
     table = Texttable(int(os.getenv("TABLE_MAX_WIDTH", 180)))

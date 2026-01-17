@@ -7,6 +7,7 @@ import requests
 from bs4 import BeautifulSoup, Tag
 import logging
 import json
+import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -51,9 +52,14 @@ def fetch_events() -> EventCollection:
 
     return EventCollection(json_data)
 
-def fetch_runner_results(number: int) -> Runner:
+def fetch_runner_results(
+    number: int,
+    start_date: datetime.date = datetime.date.min,
+    end_date: datetime.date = datetime.date.max
+) -> Runner:
     """
-    Return a Runner object containing each parkrun the parkrunner has completed.
+    Return a Runner object containing each parkrun the parkrunner has completed
+    between the start and end dates (inclusive), or all time if not provided.
     """
 
     url: str = f"https://www.parkrun.org.uk/parkrunner/{number}/all/"
@@ -95,13 +101,7 @@ def fetch_runner_results(number: int) -> Runner:
         cols = row.find_all('td')
         results.append([col.text.strip() for col in cols])
 
-    return Runner(number, name, most_recent_age_category, [RunnerResult.from_table(result) for result in results])
+    runner_results: list[RunnerResult] = [RunnerResult.from_table(result) for result in results]
+    runner_results: list[RunnerResult] = list(filter(lambda result: start_date <= result.date <= end_date, runner_results))
 
-if __name__ == "__main__":
-    import os
-    import dotenv
-    dotenv.load_dotenv()
-    runner = fetch_runner_results(int(os.getenv("PARKRUNNER_ME")))
-    print(runner)
-    for result in runner.results:
-        print(result)
+    return Runner(number, name, most_recent_age_category, runner_results, start_date, end_date)

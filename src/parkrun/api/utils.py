@@ -1,3 +1,4 @@
+import datetime
 from collections import Counter
 from typing import Any
 
@@ -78,3 +79,19 @@ def most_common(counter: Counter) -> tuple[list[Any], int]:
         values.append(value)
 
     return (values, max_frequency)
+
+def date_description(start_date: datetime.date, end_date: datetime.date) -> set:
+    """
+    Return a human-readable message describing the date range.
+    """
+
+    if start_date == datetime.date.min:
+        if end_date == datetime.date.max:
+            return "from all time"
+        else:
+            return f"up to {end_date}"
+    else:
+        if end_date == datetime.date.max:
+            return f"since {start_date}"
+        else:
+            return f"between {start_date} and {end_date}"

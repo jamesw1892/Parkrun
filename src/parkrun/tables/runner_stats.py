@@ -7,6 +7,7 @@ from parkrun.models.runner import Runner
 from parkrun.models.runner_result import RunnerResult
 from typing import Any
 from parkrun.api.scraper import fetch_runner_results
+from parkrun.api.utils import date_description
 from collections.abc import Callable
 from texttable import Texttable
 import os
@@ -39,9 +40,9 @@ def runner_stats(runner_ids: list[int], start_date: datetime.date, end_date: dat
     Print a table with statistics about each given parkrunner side-by-side.
     """
 
-    # TODO: Restrict to between the dates
+    runners: list[Runner] = [fetch_runner_results(runner_id, start_date, end_date) for runner_id in runner_ids]
 
-    runners: list[Runner] = [fetch_runner_results(runner_id) for runner_id in runner_ids]
+    print(f"Runner stats {date_description(start_date, end_date)}")
 
     table = Texttable(int(os.getenv("TABLE_MAX_WIDTH", 180)))
     table.header(["Parkrunner"] + [runner.format_identity() for runner in runners])

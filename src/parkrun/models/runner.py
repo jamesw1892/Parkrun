@@ -2,15 +2,30 @@ import datetime
 from collections import Counter
 from parkrun.models.runner_result import RunnerResult
 from parkrun.models.time import Time
-from parkrun.api.utils import minimals, maximals, most_common
+from parkrun.api.utils import minimals, maximals, most_common, date_description
 
 class Runner:
-    def __init__(self, number: int, name: str, most_recent_age_category: str, results: list[RunnerResult]):
-        """Assume results in descending order of date"""
+    def __init__(
+        self,
+        number: int,
+        name: str,
+        most_recent_age_category: str,
+        results: list[RunnerResult],
+        start_date: datetime.date,
+        end_date: datetime.date
+    ):
+        """
+        Assume results in descending order of date. Only stores results
+        between start_date and end_date, but most_recent_age_category could be
+        since then.
+        """
+
         self.number: int = number
         self.name: str = name
         self.most_recent_age_category: str = most_recent_age_category
         self.results: list[RunnerResult] = results
+        self.start_date: datetime.date = start_date
+        self.end_date: datetime.date = end_date
 
         # Calculated stats
         # TODO: Move these to different function?
@@ -46,7 +61,8 @@ class Runner:
     def consistency(self) -> float:
         """
         A float between 0 and 1 representing the percentage of weeks between the
-        first and last parkruns that the parkrunner has run.
+        first and last parkruns that the parkrunner has run between start_date
+        and end_date.
         NOTE: This does not consider the Christmas and New Years Day parkruns.
         """
 
@@ -64,4 +80,4 @@ class Runner:
         return f"{self.name} ({self.number})"
 
     def __repr__(self) -> str:
-        return f"Runner({self.format_identity()}, {len(self.results)} results)"
+        return f"Runner({self.format_identity()}, {len(self.results)} results {date_description(self.start_date, self.end_date)})"

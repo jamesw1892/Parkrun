@@ -27,9 +27,7 @@ def most_common_things_runner(runner_ids: list[int], runner_to_counter: Callable
     this: most_common_things_runner(runner_ids, lambda runner: runner.locations_counter)
     """
 
-    # TODO: Restrict to between the dates
-
-    runners: list[Runner] = list(map(fetch_runner_results, runner_ids))
+    runners: list[Runner] = [fetch_runner_results(runner_id, start_date, end_date) for runner_id in runner_ids]
     counters: list[Counter] = list(map(runner_to_counter, runners))
     most_common_things: list[list[tuple[Any, int]]] = [counter.most_common() for counter in counters]
 
