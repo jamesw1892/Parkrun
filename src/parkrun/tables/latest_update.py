@@ -8,7 +8,6 @@ from texttable import Texttable
 from parkrun.api.cache import most_recent_parkrun
 from parkrun import TABLE_MAX_WIDTH
 from parkrun.api.scraper import fetch_runner_results
-from parkrun.api.utils import date_description
 from parkrun.models.position import get_ordinal_suffix
 from parkrun.models.runner import Runner
 from parkrun.models.runner_result import RunnerResult
@@ -18,18 +17,17 @@ def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: da
     Print a table with a summary of the result for each given parkrunner that
     did the most recent parkrun between the given dates. Parkrunners that did
     not do this parkrun are not included in the table. The end date is made no
-    later than today.
+    later than today and the start date is ignored, otherwise the PB indicators
+    and parkrun numbers don't make sense.
     """
 
-    # We don't have results for parkruns in the future
+    # We don't have results for parkruns in the future and consider all parkruns
+    # before then - ignoring start_date
+    start_date: datetime.date = datetime.date.min
     end_date = min(end_date, datetime.date.today())
 
     # Get the most recent parkrun that occurred before the end date
     most_recent_parkrun_date: datetime.date = most_recent_parkrun(datetime.datetime.combine(end_date, datetime.time(23, 59, 59))).date()
-
-    if most_recent_parkrun_date < start_date:
-        print(f"No parkruns occurred {date_description(start_date, end_date)}")
-        return
 
     runners: list[Runner] = [fetch_runner_results(runner_id, start_date, end_date) for runner_id in runner_ids]
 
