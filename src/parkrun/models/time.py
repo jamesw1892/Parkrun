@@ -1,7 +1,7 @@
 from __future__ import annotations
 import datetime
 
-# TODO: Extend timedelta so inherit all its operations?
+# TODO: Extend timedelta to inherit all its operations?
 class Time:
     """
     timedelta is a datetime.timedelta.

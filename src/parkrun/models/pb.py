@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# TODO: Extend bool to inherit all its operations?
 class PB:
     def __init__(self, is_pb: bool):
         self.is_pb: bool = is_pb

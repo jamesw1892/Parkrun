@@ -1,5 +1,7 @@
 from parkrun.models.event import Event
 
+# TODO: Store all events here and similarly with runners so different parts of
+# the code can get from a method here without checking the cache multiple times
 class EventCollection:
     def __init__(self, events: dict):
         self.events_by_id: dict[int, Event] = dict()

@@ -1,3 +1,4 @@
+# TODO: Extend float to inherit all its operations?
 class AgeGrade:
     """
     Value is a float between 0 and 1 representing the percentage.

@@ -16,6 +16,7 @@ class RunnerResult:
         age_grade: AgeGrade,
         pb: PB,
     ):
+        # TODO: Link location Event to get lat/longs etc?
         self.location: str = location
         self.date: datetime.date = date
         self.run_number: int = run_number
@@ -23,8 +24,6 @@ class RunnerResult:
         self.time: Time = time
         self.age_grade: AgeGrade = age_grade
         self.pb: PB = pb
-        # TODO: Create separate objects for these?
-        # location could link to event data to get lat/longs
 
     @staticmethod
     def from_table(table_row: list[str]) -> RunnerResult:
