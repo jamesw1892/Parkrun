@@ -3,6 +3,8 @@ import unittest
 import datetime
 from parkrun.api.cache import most_recent_parkrun, HR_RESULT_START, HR_RESULT_END
 from parkrun.graphs.activity import _get_num_months
+from parkrun import _my_strtobool
+import os
 
 class TestMostRecentParkrun(unittest.TestCase):
 
@@ -167,6 +169,56 @@ class TestActivityGraph(unittest.TestCase):
     ])
     def test_num_months(self, start_year: int, start_month: int, end_year: int, end_month: int, expected: int):
         self.assertEqual(_get_num_months(datetime.date(start_year, start_month, 1), datetime.date(end_year, end_month, 1)), expected)
+
+class TestMyStrToBool(unittest.TestCase):
+    ENV_VAR_NAME: str = "CACHE_FORCE_VALID"
+
+    @parameterized.expand((
+        (None, False, False),
+        (None, True, True),
+        ("", False, False),
+        ("", True, True),
+        ("invalid", False, False),
+        ("invalid", True, True),
+        ("y", False, True),
+        ("y", True, True),
+        ("yes", False, True),
+        ("yes", True, True),
+        ("t", False, True),
+        ("t", True, True),
+        ("true", False, True),
+        ("true", True, True),
+        ("True", False, True),
+        ("True", True, True),
+        ("on", False, True),
+        ("on", True, True),
+        ("1", False, True),
+        ("1", True, True),
+        ("n", False, False),
+        ("n", True, False),
+        ("no", False, False),
+        ("no", True, False),
+        ("f", False, False),
+        ("f", True, False),
+        ("false", False, False),
+        ("false", True, False),
+        ("False", False, False),
+        ("False", True, False),
+        ("off", False, False),
+        ("off", True, False),
+        ("0", False, False),
+        ("0", True, False),
+    ))
+    def test_absent(self, value: str | None, default: bool, expected: bool):
+
+        # Set the value in the environment
+        if value is None:
+            if TestMyStrToBool.ENV_VAR_NAME in os.environ:
+                del os.environ[TestMyStrToBool.ENV_VAR_NAME]
+        else:
+            os.environ[TestMyStrToBool.ENV_VAR_NAME] = value
+
+        self.assertEqual(_my_strtobool(TestMyStrToBool.ENV_VAR_NAME, default), expected)
 
 if __name__ == "__main__":
     unittest.main()

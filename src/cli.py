@@ -5,6 +5,7 @@ parkrunners of choice.
 
 import argparse
 import datetime
+import parkrun
 from parkrun import ALL_PARKRUNNER_IDS
 from parkrun.graphs.activity import activity_graph
 from parkrun.graphs.times import time_graph
@@ -36,12 +37,19 @@ parser.add_argument("command", choices=command_funcs.keys(), help="The table or 
 parser.add_argument("runner", type=int, nargs="*", help="Parkrun IDs to analyse. If none are given, use all environment variables starting with PARKRUNNER_ (e.g. those in the .env file)")
 parser.add_argument("-s", "--start", type=datetime.date.fromisoformat, nargs="?", default=datetime.date.min, help="Date to start from, in any format accepted by datetime.date.fromisoformat, defaulting to forever")
 parser.add_argument("-e", "--end", type=datetime.date.fromisoformat, nargs="?", default=datetime.date.max, help="Date to end at, in any format accepted by datetime.date.fromisoformat, defaulting to forever")
+parser.add_argument("--cache-force-valid", action=argparse.BooleanOptionalAction, help="Force existing cache to be used even if out of date. This overrides the CACHE_FORCE_VALID environment variable, if it was set. This can be useful if you know it's up to date, but the current time is in the window where it's not certain results have come out yet so keeps refreshing.")
 
 args = parser.parse_args()
 
 # Default to all in environment variables
 if len(args.runner) == 0:
     args.runner = ALL_PARKRUNNER_IDS
+
+# Override environment variable if set
+if args.cache_force_valid:
+    parkrun._CACHE_FORCE_VALID = True
+elif args.cache_force_valid is not None:
+    parkrun._CACHE_FORCE_VALID = False
 
 # Call the function with the runner ids
 command_funcs[args.command](args.runner, start_date=args.start, end_date=args.end)

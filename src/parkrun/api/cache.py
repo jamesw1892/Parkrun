@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, time, date
 import logging
 from pathlib import Path
 from platformdirs import user_cache_dir
+from parkrun import get_cache_force_valid
 
 logger = logging.getLogger(__name__)
 
@@ -86,6 +87,17 @@ def most_recent_parkrun(reference: datetime = None) -> datetime:
     return datetime.combine(last_parkrun_date, time(HR_RESULT_END))
 
 def check_cache(type_name: str, file_name: str) -> None | str:
+    """
+    If the data of type `type_name` and name `file_name` is in the cache and
+    valid then return the file's contents as a string. Otherwise, return None.
+    The cache is invalidated if it is older than when results were probably all
+    out for the most recent parkrun. If the environment variable
+    `CACHE_FORCE_VALID` is set to true and the desired file is in the cache then
+    don't update it even if it's stale. This can be useful if you know it's up
+    to date, but the current time is in the window where it's not certain
+    results have come out yet so keeps refreshing.
+    """
+
     sub_cache_dir: Path = cache_dir / type_name
     if not sub_cache_dir.exists():
         logger.debug("miss: Type dir '%s' doesn't exist", type_name)
@@ -97,17 +109,26 @@ def check_cache(type_name: str, file_name: str) -> None | str:
         return None
 
     # If the file in the cache is older than the most recent parkrun then
-    # there might be updates so treat the cache as invalid
+    # there might be updates so treat the cache as invalid, unless the
+    # environment variable overrides it
     modified: datetime = datetime.fromtimestamp(file_path.stat().st_mtime)
     if modified < most_recent_parkrun():
-        logger.debug("miss: Existing file '%s' within type dir '%s' is out of date", file_name, type_name)
-        return None
+        if get_cache_force_valid():
+            logger.warning("force: Existing file '%s' within type dir '%s' is out of date but being used anyway", file_name, type_name)
+        else:
+            logger.debug("miss: Existing file '%s' within type dir '%s' is out of date", file_name, type_name)
+            return None
 
     logger.debug("hit: %s/%s", type_name, file_name)
     with open(file_path, encoding=ENCODING) as f:
         return f.read()
 
 def write_cache(type_name: str, file_name: str, contents: str) -> None:
+    """
+    Write the given contents to the given file name of the given type in the
+    cache.
+    """
+
     sub_cache_dir: Path = cache_dir / type_name
     if not sub_cache_dir.exists():
         sub_cache_dir.mkdir()
