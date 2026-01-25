@@ -33,10 +33,10 @@ def most_common_things_runner(runner_ids: list[int], runner_to_counter: Callable
 
     table = Texttable(TABLE_MAX_WIDTH)
     table.header(["#"] + [runner.format_identity() for runner in runners])
-    position: int = 1
+    rank: int = 1
     for runners_thing in zip_longest(*most_common_things):
-        table.add_row([position] + ["" if runner_thing is None else f"{runner_thing[0]} ({runner_thing[1]})" for runner_thing in runners_thing])
-        position += 1
+        table.add_row([rank] + ["" if runner_thing is None else f"{runner_thing[0]} ({runner_thing[1]})" for runner_thing in runners_thing])
+        rank += 1
     print(table.draw())
 
 def most_common_things_result(runner_ids: list[int], result_to_thing: Callable[[RunnerResult], Any], start_date: datetime.date, end_date: datetime.date) -> None:
