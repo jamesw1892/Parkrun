@@ -6,16 +6,6 @@ from parkrun import get_cache_force_valid
 
 logger = logging.getLogger(__name__)
 
-stderr_handler = logging.StreamHandler()
-stderr_handler.addFilter(lambda record: record.name == __name__)
-
-logging.basicConfig(
-    level=logging.DEBUG,
-    handlers=[
-        stderr_handler
-    ]
-)
-
 cache_dir: Path = Path(user_cache_dir("parkrun", False, ensure_exists=True))
 
 # The hour of the day that parkrun results could start coming through and

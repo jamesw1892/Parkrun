@@ -1,6 +1,18 @@
 import dotenv
 import os
 from distutils.util import strtobool
+import logging
+
+# Log to stderr, DEBUG and above, only from this package
+stderr_handler = logging.StreamHandler()
+stderr_handler.addFilter(lambda record: record.name.startswith(__name__))
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    handlers=[
+        stderr_handler
+    ]
+)
 
 dotenv.load_dotenv()
 
