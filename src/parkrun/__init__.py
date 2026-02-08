@@ -31,6 +31,10 @@ def _my_strtobool(env_var_name: str, default: bool) -> bool:
 ALL_PARKRUNNER_IDS: list[int] = [int(os.getenv(key)) for key in os.environ if key.startswith("PARKRUNNER_")]
 TABLE_MAX_WIDTH: int = int(os.getenv("TABLE_MAX_WIDTH", 180))
 _CACHE_FORCE_VALID: bool = _my_strtobool("CACHE_FORCE_VALID", False)
+_CACHE_FORCE_INVALID: bool = _my_strtobool("CACHE_FORCE_INVALID", False)
 
 def get_cache_force_valid() -> bool:
     return _CACHE_FORCE_VALID
+
+def get_cache_force_invalid() -> bool:
+    return _CACHE_FORCE_INVALID

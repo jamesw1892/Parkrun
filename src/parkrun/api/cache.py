@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, time, date
 import logging
 from pathlib import Path
 from platformdirs import user_cache_dir
-from parkrun import get_cache_force_valid
+from parkrun import get_cache_force_valid, get_cache_force_invalid
 
 logger = logging.getLogger(__name__)
 
@@ -108,6 +108,12 @@ def check_cache(type_name: str, file_name: str) -> None | str:
         else:
             logger.debug("miss: Existing file '%s' within type dir '%s' is out of date", file_name, type_name)
             return None
+
+    # Even if the cache is up to date, if the environment variable overrides
+    # it then treat as a cache miss
+    elif get_cache_force_invalid():
+        logger.warning("force: Existing file '%s' within type dir '%s' is in date but being ignored", file_name, type_name)
+        return None
 
     logger.debug("hit: %s/%s", type_name, file_name)
     with open(file_path, encoding=ENCODING) as f:
