@@ -6,6 +6,7 @@ from parkrun.api.parkrun_exception import ParkrunException
 from parkrun.api.cache import check_cache, write_cache
 import requests
 from bs4 import BeautifulSoup, Tag
+from functools import cache
 import logging
 import json
 import datetime
@@ -28,6 +29,7 @@ session.headers = {
     "Sec-Fetch-User": "?1"
 }
 
+@cache
 def fetch(url: str, type_name: str, file_name: str, err_msg_404: str | None = None) -> str:
     """
     Get the data of given type and file names from the given URL, checking and
@@ -73,6 +75,7 @@ def fetch(url: str, type_name: str, file_name: str, err_msg_404: str | None = No
 
     return response.text
 
+@cache
 def fetch_events() -> EventCollection:
     """
     Return an EventCollection with all events.
@@ -86,6 +89,7 @@ def fetch_events() -> EventCollection:
     json_data: dict = json.loads(json_str)
     return EventCollection(json_data)
 
+@cache
 def fetch_runner_results(
     number: int,
     start_date: datetime.date = datetime.date.min,
