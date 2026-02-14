@@ -1,5 +1,6 @@
 import datetime
 from collections import Counter
+from functools import cached_property
 from parkrun.models.runner_result import RunnerResult
 from parkrun.models.time import Time
 from parkrun.api.utils import minimals, maximals, most_common, date_description
@@ -57,7 +58,7 @@ class Runner:
         self.most_runs_per_location_locations: list[str] = most_common_location[0]
         self.most_runs_per_location_count: int = most_common_location[1]
 
-    @property
+    @cached_property
     def consistency(self) -> float:
         """
         A float between 0 and 1 representing the percentage of weeks between the
@@ -66,19 +67,14 @@ class Runner:
         NOTE: This does not consider the Christmas and New Years Day parkruns.
         """
 
-        if self.__consistency is None:
+        if len(self.results) == 0:
+            return 0.0
 
-            if len(self.results) == 0:
-                self.__consistency: float = 0.0
-            else:
+        start_date: datetime.date = self.results[-1].date
+        end_date  : datetime.date = self.results[ 0].date
+        weeks: int = (end_date - start_date).days // 7 + 1
 
-                start_date: datetime.date = self.results[-1].date
-                end_date  : datetime.date = self.results[0].date
-                weeks: int = (end_date - start_date).days // 7 + 1
-
-                self.__consistency: float = len(self.results) / weeks
-
-        return self.__consistency
+        return len(self.results) / weeks
 
     def format_identity(self) -> str:
         return f"{self.name} ({self.number})"
