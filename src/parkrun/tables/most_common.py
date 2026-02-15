@@ -79,7 +79,7 @@ def most_common_location_initial(runner_ids: list[int], start_date: datetime.dat
     Print a table of the most common first letters of parkrun locations that the
     given parkrunners have run at (including duplicate locations).
     """
-    most_common_things_result(runner_ids, lambda result: result.location[0], start_date, end_date)
+    most_common_things_result(runner_ids, lambda result: result.location.name[0], start_date, end_date)
 
 def most_common_time_seconds(runner_ids: list[int], start_date: datetime.date, end_date: datetime.date) -> None:
     """

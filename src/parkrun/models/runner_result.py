@@ -1,5 +1,7 @@
 from __future__ import annotations
 import datetime
+from parkrun.models.event import Event
+from parkrun.models.event_collection import EventCollection
 from parkrun.models.position import Position
 from parkrun.models.age_grade import AgeGrade
 from parkrun.models.time import Time
@@ -8,7 +10,7 @@ from parkrun.models.pb import PB
 class RunnerResult:
     def __init__(
         self,
-        location: str,
+        location: Event,
         date: datetime.date,
         run_number: int,
         position: Position,
@@ -16,8 +18,7 @@ class RunnerResult:
         age_grade: AgeGrade,
         pb: PB,
     ):
-        # TODO: Link location Event to get lat/longs etc?
-        self.location: str = location
+        self.location: Event = location
         self.date: datetime.date = date
         self.run_number: int = run_number
         self.position: Position = position
@@ -26,7 +27,7 @@ class RunnerResult:
         self.pb: PB = pb
 
     @staticmethod
-    def from_table(table_row: list[str]) -> RunnerResult:
+    def from_table(table_row: list[str], all_events: EventCollection) -> RunnerResult:
         """
         Return a new RunnerResult from a row of a table where the row has the
         following elements:
@@ -42,7 +43,7 @@ class RunnerResult:
         """
 
         return RunnerResult(
-            table_row[0],
+            all_events.get_event_by_name(table_row[0]),
             datetime.datetime.strptime(table_row[1], "%d/%m/%Y").date(),
             int(table_row[2]),
             Position(table_row[3]),

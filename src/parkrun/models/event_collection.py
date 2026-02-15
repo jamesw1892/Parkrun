@@ -9,12 +9,12 @@ class EventCollection:
             self.events_by_id[event.id_] = event
             self.event_ids_by_name[event.name] = event.id_
 
-    def get_event(self, name: str) -> Event | None:
+    def get_event_by_name(self, name: str) -> Event | None:
         if name not in self.event_ids_by_name:
             return None
         return self.events_by_id[self.event_ids_by_name[name]]
 
-    def get_event(self, id_: int) -> Event | None:
+    def get_event_by_id(self, id_: int) -> Event | None:
         return self.events_by_id.get(id_)
     
     def __iter__(self):

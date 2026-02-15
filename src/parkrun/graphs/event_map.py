@@ -23,7 +23,7 @@ def event_map(runner_id: int, only_adult: bool = True):
         m.scatter(
             event.lat,
             event.long,
-            color="green" if event.name in runner.unique_locations else "red"
+            color="green" if event in runner.unique_locations else "red"
         )
 
     plt.show()

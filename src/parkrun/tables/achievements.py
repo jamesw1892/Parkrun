@@ -23,7 +23,7 @@ def achievement_location_contains(name: str, ticklist: list[str]) -> tuple[str, 
 
     def result_func(result: RunnerResult) -> str:
         for substr in ticklist:
-            if substr.lower() in result.location.lower():
+            if substr.lower() in result.location.name.lower():
                 return substr
         return ""
 
@@ -40,7 +40,7 @@ def achievement_location_matches(name: str, pattern: str | re.Pattern) -> tuple[
 
     ticklist = sorted(location for location in fetch_events().event_ids_by_name if pattern.search(location))
 
-    return name, lambda result: result.location, ticklist
+    return name, lambda result: result.location.name, ticklist
 
 # Calculate all strings of the form MM-DD for all days in a (leap) year for use
 # in the Calendar Bingo achievement
@@ -51,7 +51,7 @@ while current.year == 2000:
     current += datetime.timedelta(days=1)
 
 ACHIEVEMENTS: tuple[tuple[str, Callable[[RunnerResult], Any], list[Any]]] = (
-    ("Alphabet", lambda result: result.location[0].upper(), list(string.ascii_uppercase.replace("X", ""))),
+    ("Alphabet", lambda result: result.location.name[0].upper(), list(string.ascii_uppercase.replace("X", ""))),
     achievement_location_matches("All Saints", r"\bSt\b"),
     achievement_location_matches("Bay Watch", r"\bBay\b"),
     ("Calendar Bingo", lambda result: result.date.strftime("%m-%d"), ALL_DAYS_OF_YEAR),

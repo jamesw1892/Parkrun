@@ -130,7 +130,8 @@ def fetch_runner_results(
         cols = row.find_all('td')
         results.append([col.text.strip() for col in cols])
 
-    runner_results: list[RunnerResult] = [RunnerResult.from_table(result) for result in results]
+    all_events: EventCollection = fetch_events()
+    runner_results: list[RunnerResult] = [RunnerResult.from_table(result, all_events) for result in results]
     runner_results: list[RunnerResult] = list(filter(lambda result: start_date <= result.date <= end_date, runner_results))
 
     return Runner(number, name, most_recent_age_category, runner_results, start_date, end_date)

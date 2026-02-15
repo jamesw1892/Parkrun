@@ -34,3 +34,14 @@ class Event:
 
     def is_adult(self) -> bool:
         return self.series == 1
+
+    def __str__(self) -> str:
+        return self.name
+
+    def __eq__(self, other) -> bool:
+        if isinstance(other, Event):
+            return self.id_ == other.id_
+        return False
+
+    def __hash__(self) -> int:
+        return hash(self.id_)

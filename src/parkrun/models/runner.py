@@ -1,6 +1,7 @@
 import datetime
 from collections import Counter
 from functools import cached_property
+from parkrun.models.event import Event
 from parkrun.models.runner_result import RunnerResult
 from parkrun.models.time import Time
 from parkrun.api.utils import minimals, maximals, most_common, date_description
@@ -42,7 +43,7 @@ class Runner:
         # mins, secs = divmod(total_seconds, 60)
         # return f"{mins:02d}:{secs:02d}"
 
-        self.unique_locations: set[str] = set(map(lambda result: result.location, results))
+        self.unique_locations: set[Event] = set(map(lambda result: result.location, results))
         self.num_unique_locations: int = len(self.unique_locations)
 
         self.tourism_percentage: float = self.num_unique_locations / max(len(results), 1)
@@ -53,8 +54,8 @@ class Runner:
         self.most_runs_per_year_count: int = most_common_year[1]
 
         self.locations_counter: Counter = Counter(result.location for result in results)
-        most_common_location: tuple[list[str], int] = most_common(self.locations_counter)
-        self.most_runs_per_location_locations: list[str] = most_common_location[0]
+        most_common_location: tuple[list[Event], int] = most_common(self.locations_counter)
+        self.most_runs_per_location_locations: list[Event] = most_common_location[0]
         self.most_runs_per_location_count: int = most_common_location[1]
 
     @cached_property
