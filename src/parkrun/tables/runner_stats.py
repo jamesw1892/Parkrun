@@ -32,7 +32,9 @@ STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
     ("Most Runs At A Location"   , lambda runner: f"{runner.most_runs_per_location_count} ({format_iterable(runner.most_runs_per_location_locations)})"),
     ("Number of Unique Locations", lambda runner: runner.num_unique_locations),
     ("Tourism Percentage"        , lambda runner: f"{runner.tourism_percentage * 100:.2f}%"),
-    ("Consistency"               , lambda runner: f"{runner.consistency * 100:.2f}%")
+    ("Consistency"               , lambda runner: f"{runner.consistency * 100:.2f}%"),
+    ("re-index"                  , lambda runner: f"{runner.re_index}"),
+    ("p-index"                   , lambda runner: f"{runner.p_index}"),
 )
 
 def runner_stats(runner_ids: list[int], start_date: datetime.date, end_date: datetime.date) -> None:

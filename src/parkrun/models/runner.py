@@ -46,7 +46,6 @@ class Runner:
         self.num_unique_locations: int = len(self.unique_locations)
 
         self.tourism_percentage: float = self.num_unique_locations / max(len(results), 1)
-        self.__consistency = None
 
         self.year_counter: Counter = Counter(result.date.year for result in results)
         most_common_year: tuple[list[int], int] = most_common(self.year_counter)
@@ -75,6 +74,28 @@ class Runner:
         weeks: int = (end_date - start_date).days // 7 + 1
 
         return len(self.results) / weeks
+
+    @cached_property
+    def re_index(self) -> int:
+        """
+        The number of events that the runner has done more than once.
+        """
+
+        return sum(1 for _, count in self.locations_counter.most_common() if count >= 2)
+
+    @cached_property
+    def p_index(self) -> int:
+        """
+        The highest integer p such that the runner has done at least p events,
+        at least p times each.
+        """
+
+        p_index: int = 0
+        for _, location_count in self.locations_counter.most_common():
+            if location_count > p_index:
+                p_index += 1
+
+        return p_index
 
     def format_identity(self) -> str:
         return f"{self.name} ({self.number})"
