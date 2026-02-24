@@ -32,6 +32,7 @@ ALL_PARKRUNNER_IDS: list[int] = [int(os.getenv(key)) for key in os.environ if ke
 TABLE_MAX_WIDTH: int = int(os.getenv("TABLE_MAX_WIDTH", 180))
 _CACHE_FORCE_VALID: bool = _my_strtobool("CACHE_FORCE_VALID", False)
 _CACHE_FORCE_INVALID: bool = _my_strtobool("CACHE_FORCE_INVALID", False)
+MIN_SECS_BETWEEN_QUERIES: int = int(os.getenv("MIN_SECS_BETWEEN_QUERIES", 2))
 
 def get_cache_force_valid() -> bool:
     return _CACHE_FORCE_VALID

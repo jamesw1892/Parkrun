@@ -10,6 +10,7 @@ from functools import cache
 import logging
 import json
 import datetime
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,8 @@ session.headers = {
     "Sec-Fetch-User": "?1"
 }
 
+last_query: datetime.datetime = datetime.datetime.min
+
 @cache
 def fetch(url: str, type_name: str, file_name: str, err_msg_404: str | None = None) -> str:
     """
@@ -43,6 +46,20 @@ def fetch(url: str, type_name: str, file_name: str, err_msg_404: str | None = No
     contents: str | None = check_cache(type_name, file_name)
     if contents is not None:
         return contents
+
+    # Sleep if hitting the website too frequently
+    global last_query
+    now: datetime.datetime = datetime.datetime.now()
+    wait_secs: float = (
+        datetime.timedelta(seconds=parkrun.MIN_SECS_BETWEEN_QUERIES) - \
+        (now - last_query)
+    ).total_seconds()
+
+    if wait_secs > 0:
+        logger.debug("Rate limiting for %f seconds...", wait_secs)
+        time.sleep(wait_secs)
+
+    last_query = now
 
     # Otherwise, try to fetch from the URL
     try:
