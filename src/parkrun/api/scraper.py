@@ -1,6 +1,8 @@
 import parkrun
 from parkrun.models.runner import Runner
 from parkrun.models.runner_result import RunnerResult
+from parkrun.models.country_collection import CountryCollection
+from parkrun.models.country import Country
 from parkrun.models.event_collection import EventCollection
 from parkrun.api.parkrun_exception import ParkrunException
 from parkrun.api.cache import check_cache, write_cache
@@ -93,18 +95,29 @@ def fetch(url: str, type_name: str, file_name: str, err_msg_404: str | None = No
     return response.text
 
 @cache
-def fetch_events() -> EventCollection:
-    """
-    Return an EventCollection with all events.
-    """
-
+def _fetch_events_json() -> dict:
     json_str: str = fetch(
         url="https://images.parkrun.com/events.json",
         type_name="events",
         file_name="events.json",
     )
-    json_data: dict = json.loads(json_str)
-    return EventCollection(json_data)
+    return json.loads(json_str)
+
+@cache
+def fetch_events() -> EventCollection:
+    """
+    Return an EventCollection with all events.
+    """
+
+    return EventCollection(_fetch_events_json())
+
+@cache
+def fetch_countries() -> CountryCollection:
+    """
+    Return a CountryCollection with all countries.
+    """
+
+    return CountryCollection(_fetch_events_json())
 
 @cache
 def fetch_runner_results(
