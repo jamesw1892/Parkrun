@@ -18,6 +18,15 @@ def format_events(results: list[RunnerResult]) -> str:
 def format_iterable(iterable) -> str:
     return ", ".join(sorted(map(str, iterable)))
 
+def format_streak(streak: int, start: datetime.date, end: datetime.date) -> str:
+    if streak == 0:
+        return "0"
+
+    if streak == 1:
+        return f"1 ({end})"
+
+    return f"{streak} ({start} - {end})"
+
 STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
     ("Most Recent Age Category"  , lambda runner: runner.most_recent_age_category),
     ("Num Runs"                  , lambda runner: len(runner.results)),
@@ -33,6 +42,8 @@ STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
     ("Number of Unique Locations", lambda runner: runner.num_unique_locations),
     ("Tourism Percentage"        , lambda runner: f"{runner.tourism_percentage * 100:.2f}%"),
     ("Consistency"               , lambda runner: f"{runner.consistency * 100:.2f}%"),
+    ("Streak"                    , lambda runner: format_streak(*runner.streak)),
+    ("Tourist Streak"            , lambda runner: format_streak(*runner.tourist_streak)),
     ("re-index"                  , lambda runner: f"{runner.re_index}"),
     ("p-index"                   , lambda runner: f"{runner.p_index}"),
 )

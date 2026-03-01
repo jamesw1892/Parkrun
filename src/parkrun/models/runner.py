@@ -2,6 +2,7 @@ import datetime
 from collections import Counter
 from functools import cached_property
 from parkrun.models.event import Event
+from parkrun.api.cache import most_recent_parkrun
 from parkrun.models.runner_result import RunnerResult
 from parkrun.models.time import Time
 from parkrun.api.utils import minimals, maximals, most_common, date_description
@@ -75,6 +76,72 @@ class Runner:
         weeks: int = (end_date - start_date).days // 7 + 1
 
         return len(self.results) / weeks
+
+    @cached_property
+    def streak(self) -> tuple[int, datetime.date, datetime.date]:
+        """
+        The number of consecutive parkruns that the runner has done, where the
+        most recent parkrun to date must be the last in this streak. Therefore,
+        if they did not do the most recent parkrun, this is 0. The Christmas day
+        and New Years Day parkruns must also be run for the streak to continue.
+        The first return is the number of parkruns in the streak, the second is
+        the date of the first parkrun in the streak and the third is the date of
+        the last parkrun in the streak (always the most recent parkrun). If the
+        streak is 0 then the start and end date will be the most recent parkrun
+        but these do not make sense when the streak is 0.
+        """
+
+        the_most_recent_parkrun: datetime.datetime = most_recent_parkrun()
+        end: datetime.date = the_most_recent_parkrun.date()
+        _streak: int = 0
+        index: int = 0
+
+        while len(self.results) > index and self.results[index].date == the_most_recent_parkrun.date():
+            the_most_recent_parkrun = most_recent_parkrun(the_most_recent_parkrun - datetime.timedelta(days=1))
+            _streak += 1
+            index += 1
+
+        start: datetime.date = self.results[index - 1].date if 0 <= index - 1 < len(self.results) else end
+
+        return _streak, start, end
+
+    @cached_property
+    def tourist_streak(self) -> tuple[int, datetime.date, datetime.date]:
+        """
+        The number of consecutive parkruns that the runner has done (can miss
+        weeks) that have been in unique locations. The most recent parkrun that
+        the runner has done is always the end of the streak so the minimum value
+        is 1 if they have done any parkruns at all and 0 if they haven't done
+        any. The first return is the number of parkruns in the streak, the
+        second is the date of the first parkrun in the streak and the third is
+        the date of the last parkrun in the streak (always the date of the most
+        recent parkrun the runner did).
+        """
+
+        # One interpretation of tourist streak where you can have repeated a
+        # location but as long as it's not repeated in the streak then it's ok
+        #locations: set[str] = set()
+        #for result in self.results:
+        #    if result.location.name in locations:
+        #        break
+        #    else:
+        #        locations.add(result.location.name)
+        #return len(locations)
+
+        # The more common interpretation where all those in the streak must be
+        # the first time you've done them
+        if len(self.results) == 0:
+            today: datetime.date = datetime.date.today()
+            return 0, today, today
+
+        _streak: int = 0
+        end: datetime.date = self.results[0].date
+        for index in range(len(self.results)):
+            if self.locations_counter[self.results[index].location] != 1:
+                start: datetime.date = self.results[index - 1].date if index > 0 else end
+                break
+            _streak += 1
+        return _streak, start, end
 
     @cached_property
     def re_index(self) -> int:
