@@ -18,6 +18,10 @@ HR_RESULT_END: int = 13
 
 ENCODING = "utf-8"
 
+TYPES_CACHE_VALID_FOREVER = (
+    "event_result"
+)
+
 def most_recent_parkrun(reference: datetime = None) -> datetime:
     """
     Return the datetime of the most recent parkrun (including Christmas and New
@@ -102,7 +106,7 @@ def check_cache(type_name: str, file_name: str) -> None | str:
     # there might be updates so treat the cache as invalid, unless the
     # environment variable overrides it
     modified: datetime = datetime.fromtimestamp(file_path.stat().st_mtime)
-    if modified < most_recent_parkrun():
+    if type_name not in TYPES_CACHE_VALID_FOREVER and modified < most_recent_parkrun():
         if get_cache_force_valid():
             logger.warning("force: Existing file '%s' within type dir '%s' is out of date but being used anyway", file_name, type_name)
         else:

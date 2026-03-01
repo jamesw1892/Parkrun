@@ -46,6 +46,8 @@ python src/cli.py runner_stats $PARKRUNNER_ME
             - `country_collection.py`: Models details of many countries with parkruns.
             - `country.py`: Models details of a country with parkruns.
             - `event_collection.py`: Models many parkrun events.
+            - `event_result.py`: Models the finishers and volunteers of a single event at a single location on a single date.
+            - `event_runner_result.py`: Models a single finisher's result at a single event at a single location on a single date.
             - `event.py`: Models a parkrun event.
             - `pb.py`: Models whether a run is a personal best.
             - `position.py`: Models the finish position of a run.

@@ -2,8 +2,10 @@ import parkrun
 from parkrun.models.runner import Runner
 from parkrun.models.runner_result import RunnerResult
 from parkrun.models.country_collection import CountryCollection
-from parkrun.models.country import Country
 from parkrun.models.event_collection import EventCollection
+from parkrun.models.event_result import EventResult
+from parkrun.models.event_runner_result import EventRunnerResult
+from parkrun.models.event import Event
 from parkrun.api.parkrun_exception import ParkrunException
 from parkrun.api.cache import check_cache, write_cache
 import requests
@@ -165,3 +167,56 @@ def fetch_runner_results(
     runner_results: list[RunnerResult] = list(filter(lambda result: start_date <= result.date <= end_date, runner_results))
 
     return Runner(number, name, most_recent_age_category, runner_results, start_date, end_date)
+
+@cache
+def fetch_event_result(
+    location_name: str,
+    event_number: int,
+) -> EventResult:
+    """
+    Return an EventResult object containing all results at the given location
+    for the given event number.
+    """
+
+    # The URL depends on which country the location is in
+    events: EventCollection = fetch_events()
+    event: Event = events.get_event_by_name(location_name)
+    country_url: str = fetch_countries().get_country_by_id(event.country_code).url
+
+    html: str = fetch(
+        url=f"https://{country_url}/{event.url_name}/results/{event_number}/",
+        type_name="event_result",
+        file_name=f"{event.url_name}-{event_number}.html",
+        err_msg_404=f"No event result exists at location '{location_name}' with event number {event_number}",
+    )
+
+    # Parse the HTML response
+    soup = BeautifulSoup(html, "html.parser")
+
+    # Extract date
+    date_text: str = soup.find("div", {"class": "Results-header"}).find("h3").find("span", {"class": "format-date"}).text.strip()
+    date: datetime.date = datetime.datetime.strptime(date_text, "%Y-%m-%d").date()
+
+    # Extract the tables with finishers and volunteers in
+    tables: list[Tag] = soup.find_all("table")
+    assert len(tables) == 2, f"Unexpectedly found {len(tables)} rather than 2 tables in event result page for location '{location_name}' with event number {event_number}"
+    finishers_table, volunteers_table = tables
+
+    # Extract rows from the table
+    finisher_rows: list[Tag] = finishers_table.find_all("tr")
+    event_runner_results: list[EventRunnerResult] = []
+    for finisher_row in finisher_rows[1:]: # Skip the header row
+        cols: list[Tag] = finisher_row.find_all("td")
+        parkrunner_col: Tag = cols[1].find("div", {"class", "compact"})
+        event_runner_results.append(EventRunnerResult(
+            position=int(cols[0].text.strip()),
+            name=parkrunner_col.text.strip(),
+            id_=int(parkrunner_col.find("a")["href"].split("/")[-1]),
+            #gender="", # TODO
+            #age_group="", # TODO
+            #time=0, # TODO
+        ))
+
+    # TODO: Volunteers table
+
+    return EventResult(event, event_number, date, event_runner_results)
