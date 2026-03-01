@@ -141,6 +141,8 @@ class Runner:
                 start: datetime.date = self.results[index - 1].date if index > 0 else end
                 break
             _streak += 1
+        else:
+            start: datetime.date = self.results[-1].date
         return _streak, start, end
 
     @cached_property
