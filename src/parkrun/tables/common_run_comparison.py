@@ -5,7 +5,7 @@ parkrunners did together.
 
 import datetime
 from parkrun.models.runner import Runner
-from parkrun import TABLE_MAX_WIDTH
+from parkrun import get_table_max_width
 from parkrun.api.scraper import fetch_runner_results
 from parkrun.api.utils import date_description
 from functools import reduce
@@ -36,7 +36,7 @@ def common_run_comparison(runner_ids: list[int], start_date: datetime.date, end_
             if event in rows:
                 rows[event].append(result.format_for_result())
 
-    table = Texttable(TABLE_MAX_WIDTH)
+    table = Texttable(get_table_max_width())
     table.header(["Parkrunner"] + identities)
     for event in sorted(rows):
         table.add_row([event] + rows[event])

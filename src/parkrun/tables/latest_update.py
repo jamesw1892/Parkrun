@@ -6,7 +6,7 @@ most recent parkrun between the given dates.
 import datetime
 from texttable import Texttable
 from parkrun.api.cache import most_recent_parkrun
-from parkrun import TABLE_MAX_WIDTH
+from parkrun import get_table_max_width
 from parkrun.api.scraper import fetch_runner_results
 from parkrun.models.position import get_ordinal_suffix
 from parkrun.models.runner import Runner
@@ -33,7 +33,7 @@ def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: da
 
     print(f"Parkrunners who did the parkrun on {most_recent_parkrun_date}")
 
-    table = Texttable(TABLE_MAX_WIDTH)
+    table = Texttable(get_table_max_width())
     table.header([
         "Parkrunner",
         "Parkrun",

@@ -41,6 +41,7 @@ parser.add_argument("-s", "--start", type=datetime.date.fromisoformat, nargs="?"
 parser.add_argument("-e", "--end", type=datetime.date.fromisoformat, nargs="?", default=datetime.date.max, help="Date to end at, in any format accepted by datetime.date.fromisoformat, defaulting to forever")
 parser.add_argument("--cache-force-valid", action=argparse.BooleanOptionalAction, help="Force existing cache to be used even if out of date. This overrides the CACHE_FORCE_VALID environment variable, if it was set. This can be useful if you know it's up to date, but the current time is in the window where it's not certain results have come out yet so keeps refreshing.")
 parser.add_argument("--cache-force-invalid", action=argparse.BooleanOptionalAction, help="Force cache to be updated even if existing up to date cache exists. This overrides the CACHE_FORCE_INVALID environment variable, if it was set. This can be useful if results came out outside the window where it thinks they should have.")
+parser.add_argument("--table-max-width", type=int, help="The maximum number of characters wide that tables to be printed should be so they fit in your terminal. This overrides the TABLE_MAX_WIDTH environment variable, if it was set.")
 
 args = parser.parse_args()
 
@@ -57,6 +58,8 @@ if args.cache_force_invalid:
     parkrun._CACHE_FORCE_INVALID = True
 elif args.cache_force_invalid is not None:
     parkrun._CACHE_FORCE_INVALID = False
+if args.table_max_width is not None:
+    parkrun._TABLE_MAX_WIDTH = args.table_max_width
 
 # Call the function with the runner ids
 command_funcs[args.command](args.runner, start_date=args.start, end_date=args.end)

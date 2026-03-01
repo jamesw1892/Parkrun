@@ -5,7 +5,7 @@ parkrunner.
 
 import datetime
 from collections.abc import Callable
-from parkrun import TABLE_MAX_WIDTH
+from parkrun import get_table_max_width
 from parkrun.api.scraper import fetch_runner_results, fetch_events
 from parkrun.api.utils import date_description
 from parkrun.models.runner import Runner
@@ -94,7 +94,7 @@ def achievements(runner_ids: list[int], start_date: datetime.date, end_date: dat
 
     print(f"Achievements {date_description(start_date, end_date)}")
 
-    table = Texttable(TABLE_MAX_WIDTH)
+    table = Texttable(get_table_max_width())
     table.header(["Achievement"] + [runner.format_identity() for runner in runners])
     for name, result_func, ticklist in ACHIEVEMENTS:
         table.add_row([name] + [runner_to_achievement_progress(runner, result_func, ticklist) for runner in runners])

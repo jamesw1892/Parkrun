@@ -1,5 +1,5 @@
 from parkrun.models.runner import Runner
-from parkrun import TABLE_MAX_WIDTH
+from parkrun import get_table_max_width
 from parkrun.api.scraper import fetch_runner_results
 from parkrun.api.utils import date_description
 from collections import Counter
@@ -63,7 +63,7 @@ def activity_graph(
             runner_counts[runner_index].append(frequencies[runner_index].get(month_year, 0))
 
     # Print the data too
-    table = Texttable(TABLE_MAX_WIDTH)
+    table = Texttable(get_table_max_width())
     table.header(["Parkrunner"] + [runner.format_identity() for runner in runners])
     for index, month in enumerate(months):
         table.add_row([month] + [count[index] for count in runner_counts])

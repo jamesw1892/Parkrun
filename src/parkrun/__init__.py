@@ -29,7 +29,7 @@ def _my_strtobool(env_var_name: str, default: bool) -> bool:
         return default
 
 ALL_PARKRUNNER_IDS: list[int] = [int(os.getenv(key)) for key in os.environ if key.startswith("PARKRUNNER_")]
-TABLE_MAX_WIDTH: int = int(os.getenv("TABLE_MAX_WIDTH", 180))
+_TABLE_MAX_WIDTH: int = int(os.getenv("TABLE_MAX_WIDTH", 180))
 _CACHE_FORCE_VALID: bool = _my_strtobool("CACHE_FORCE_VALID", False)
 _CACHE_FORCE_INVALID: bool = _my_strtobool("CACHE_FORCE_INVALID", False)
 MIN_SECS_BETWEEN_QUERIES: int = int(os.getenv("MIN_SECS_BETWEEN_QUERIES", 2))
@@ -39,3 +39,6 @@ def get_cache_force_valid() -> bool:
 
 def get_cache_force_invalid() -> bool:
     return _CACHE_FORCE_INVALID
+
+def get_table_max_width() -> int:
+    return _TABLE_MAX_WIDTH
