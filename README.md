@@ -43,6 +43,8 @@ python src/cli.py runner_stats $PARKRUNNER_ME
             - `times.py`: Graphs the finish times of parkrunners.
         - `models/`: Classes to model Parkrunners, locations, times, results, ...:
             - `age_grade.py`: Models the age grade of a run.
+            - `country_collection.py`: Models details of many countries with parkruns.
+            - `country.py`: Models details of a country with parkruns.
             - `event_collection.py`: Models many parkrun events.
             - `event.py`: Models a parkrun event.
             - `pb.py`: Models whether a run is a personal best.
