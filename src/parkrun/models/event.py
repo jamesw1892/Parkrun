@@ -5,6 +5,7 @@ class Event:
         self,
         id_: int,
         name: str,
+        url_name: str,
         lat: float,
         long: float,
         country_code: int,
@@ -12,6 +13,7 @@ class Event:
     ):
         self.id_: int = id_
         self.name: str = name
+        self.url_name: str = url_name
         self.lat: float = lat
         self.long: float = long
         self.country_code: int = country_code
@@ -23,6 +25,7 @@ class Event:
         return Event(
             event["id"],
             event["properties"]["EventShortName"],
+            event["properties"]["eventname"],
             event["geometry"]["coordinates"][0],
             event["geometry"]["coordinates"][1],
             event["properties"]["countrycode"],
