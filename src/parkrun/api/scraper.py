@@ -53,17 +53,16 @@ def fetch(url: str, type_name: str, file_name: str, err_msg_404: str | None = No
 
     # Sleep if hitting the website too frequently
     global last_query
-    now: datetime.datetime = datetime.datetime.now()
     wait_secs: float = (
         datetime.timedelta(seconds=parkrun.MIN_SECS_BETWEEN_QUERIES) - \
-        (now - last_query)
+        (datetime.datetime.now() - last_query)
     ).total_seconds()
 
     if wait_secs > 0:
         logger.debug("Rate limiting for %f seconds...", wait_secs)
         time.sleep(wait_secs)
 
-    last_query = now
+    last_query = datetime.datetime.now()
 
     # Otherwise, try to fetch from the URL
     try:
