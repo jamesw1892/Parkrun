@@ -1,4 +1,5 @@
 from parkrun.models.event import Event
+from parkrun.api.parkrun_exception import ParkrunException
 
 class EventCollection:
     def __init__(self, events: dict):
@@ -9,14 +10,18 @@ class EventCollection:
             self.events_by_id[event.id_] = event
             self.event_ids_by_name[event.name] = event.id_
 
-    def get_event_by_name(self, name: str) -> Event | None:
+    def get_event_by_name(self, name: str) -> Event:
+        """
+        Return the event with given name or raise ParkrunException if it's not
+        present.
+        """
         if name not in self.event_ids_by_name:
-            return None
+            raise ParkrunException(f"No parkrun event called '{name}'")
         return self.events_by_id[self.event_ids_by_name[name]]
 
     def get_event_by_id(self, id_: int) -> Event | None:
         return self.events_by_id.get(id_)
-    
+
     def __iter__(self):
         yield from self.events_by_id.values()
 
