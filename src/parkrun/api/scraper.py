@@ -6,6 +6,10 @@ from parkrun.models.event_collection import EventCollection
 from parkrun.models.event_result import EventResult
 from parkrun.models.event_runner_result import EventRunnerResult
 from parkrun.models.event import Event
+from parkrun.models.time import Time
+from parkrun.models.position import Position
+from parkrun.models.age_grade import AgeGrade
+from parkrun.models.age_category import AgeCategory
 from parkrun.api.parkrun_exception import ParkrunException
 from parkrun.api.cache import check_cache, write_cache
 import requests
@@ -194,7 +198,10 @@ def fetch_event_result(
 
     # Extract date
     date_text: str = soup.find("div", {"class": "Results-header"}).find("h3").find("span", {"class": "format-date"}).text.strip()
-    date: datetime.date = datetime.datetime.strptime(date_text, "%Y-%m-%d").date()
+    try:
+        date: datetime.date = datetime.datetime.strptime(date_text, "%Y-%m-%d").date()
+    except ValueError: # TODO: What if US format?
+        date: datetime.date = datetime.datetime.strptime(date_text, "%d/%m/%Y").date()
 
     # Extract the tables with finishers and volunteers in
     tables: list[Tag] = soup.find_all("table")
@@ -204,16 +211,28 @@ def fetch_event_result(
     # Extract rows from the table
     finisher_rows: list[Tag] = finishers_table.find_all("tr")
     event_runner_results: list[EventRunnerResult] = []
-    for finisher_row in finisher_rows[1:]: # Skip the header row
-        cols: list[Tag] = finisher_row.find_all("td")
+    for row in finisher_rows[1:]: # Skip the header row
+
+        # If this position hasn't been claimed then the position shows up, but
+        # nothing else and the ID is 2214 for some reason. In this case, we
+        # could add a special EventRunnerResult but instead we just skip it
+        if int(row.get("data-runs")) == 0:
+            continue
+
+        cols: list[Tag] = row.find_all("td")
         parkrunner_col: Tag = cols[1].find("div", {"class", "compact"})
+
         event_runner_results.append(EventRunnerResult(
-            position=int(cols[0].text.strip()),
-            name=parkrunner_col.text.strip(),
+            position=Position(row.get("data-position")),
+            name=row.get("data-name"),
             id_=int(parkrunner_col.find("a")["href"].split("/")[-1]),
-            #gender="", # TODO
-            #age_group="", # TODO
-            #time=0, # TODO
+            gender=row.get("data-gender"),
+            age_category=AgeCategory(row.get("data-agegroup")),
+            age_grade=AgeGrade(row.get("data-agegrade")),
+            club=row.get("data-club"),
+            groups=row.get("data-groups"),
+            achievement=row.get("data-achievement"),
+            time=Time.from_string(cols[5].find("div", {"class", "compact"}).text.strip()),
         ))
 
     # TODO: Volunteers table
