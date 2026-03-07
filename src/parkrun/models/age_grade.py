@@ -6,6 +6,11 @@ class AgeGrade:
     """
     def __init__(self, string: str):
         self.string: str = string
+
+        if string == "":
+            self.value: float = 0.0
+            return
+
         self.value: float = float(string.removesuffix("%")) / 100
 
     def __str__(self) -> str:
