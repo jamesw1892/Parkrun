@@ -1,5 +1,5 @@
 def get_ordinal_suffix(n: int) -> str:
-    return {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th") if n not in (11, 12, 13) else "th"
+    return {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th") if n % 100 not in (11, 12, 13) else "th"
 
 # TODO: Extend int to inherit all its operations?
 class Position:
