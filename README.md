@@ -42,6 +42,7 @@ python src/cli.py runner_stats $PARKRUNNER_ME
             - `event_map.py`: Maps all parkrun events in the world.
             - `times.py`: Graphs the finish times of parkrunners.
         - `models/`: Classes to model Parkrunners, locations, times, results, ...:
+            - `age_category.py`: Models the age category of a parkrunner at a fixed time.
             - `age_grade.py`: Models the age grade of a run.
             - `country_collection.py`: Models details of many countries with parkruns.
             - `country.py`: Models details of a country with parkruns.

@@ -3,6 +3,7 @@ from collections import Counter
 from functools import cached_property
 from parkrun.models.event import Event
 from parkrun.api.cache import most_recent_parkrun
+from parkrun.models.age_category import AgeCategory
 from parkrun.models.runner_result import RunnerResult
 from parkrun.models.time import Time
 from parkrun.api.utils import minimals, maximals, most_common, date_description
@@ -12,7 +13,7 @@ class Runner:
         self,
         number: int,
         name: str,
-        most_recent_age_category: str,
+        most_recent_age_category: AgeCategory,
         results: list[RunnerResult],
         start_date: datetime.date,
         end_date: datetime.date
@@ -25,7 +26,7 @@ class Runner:
 
         self.number: int = number
         self.name: str = name
-        self.most_recent_age_category: str = most_recent_age_category
+        self.most_recent_age_category: AgeCategory = most_recent_age_category
         self.results: list[RunnerResult] = results
         self.start_date: datetime.date = start_date
         self.end_date: datetime.date = end_date
