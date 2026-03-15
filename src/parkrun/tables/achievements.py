@@ -61,6 +61,7 @@ def _calc_achievements() -> tuple[tuple[str, Callable[[RunnerResult], Any], list
         ("Calendar Bingo", lambda result: result.date.strftime("%m-%d"), ALL_DAYS_OF_YEAR),
         achievement_location_contains("Compass Club", ["North", "South", "East", "West"]),
         achievement_location_matches("King Of The Castle", r"\bCastle\b"),
+        achievement_location_matches("Queen of the Palace", r"\bPalace\b|\bPally\b"),
         ("Stopwatch Bingo", lambda result: f"{result.time.timedelta.seconds % 60:02}", [f"{n:02}" for n in range(60)]),
     )
 
