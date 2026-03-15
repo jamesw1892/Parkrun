@@ -28,7 +28,15 @@ def _my_strtobool(env_var_name: str, default: bool) -> bool:
     except ValueError:
         return default
 
-ALL_PARKRUNNER_IDS: list[int] = [int(os.getenv(key)) for key in os.environ if key.startswith("PARKRUNNER_")]
+PARKRUNNERS_ENV_NAME_TO_ID: dict[str, int] = dict()
+for key, value in os.environ.items():
+    if key.startswith("PARKRUNNER_"):
+        try:
+            PARKRUNNERS_ENV_NAME_TO_ID[key[11:].upper()] = int(value)
+        except:
+            continue
+
+ALL_PARKRUNNER_IDS: list[int] = PARKRUNNERS_ENV_NAME_TO_ID.values()
 _TABLE_MAX_WIDTH: int = int(os.getenv("TABLE_MAX_WIDTH", 180))
 _CACHE_FORCE_VALID: bool = _my_strtobool("CACHE_FORCE_VALID", False)
 _CACHE_FORCE_INVALID: bool = _my_strtobool("CACHE_FORCE_INVALID", False)

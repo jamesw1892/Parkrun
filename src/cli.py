@@ -36,7 +36,7 @@ parser = argparse.ArgumentParser(
 )
 
 parser.add_argument("command", choices=command_funcs.keys(), help="The table or graph to run")
-parser.add_argument("runner", type=int, nargs="*", help="Parkrun IDs to analyse. If none are given, use all environment variables starting with PARKRUNNER_ (e.g. those in the .env file)")
+parser.add_argument("runner", type=lambda arg: int(arg) if arg.isnumeric() else arg, nargs="*", help="Parkrunners to analyse. If none are given, use all environment variables starting with PARKRUNNER_ (e.g. those in the .env file). For each integer, use that as the parkrunner's ID. For each string, use the environment variable PARKRUNNER_<argument>.")
 parser.add_argument("-s", "--start", type=datetime.date.fromisoformat, nargs="?", default=datetime.date.min, help="Date to start from, in any format accepted by datetime.date.fromisoformat, defaulting to forever")
 parser.add_argument("-e", "--end", type=datetime.date.fromisoformat, nargs="?", default=datetime.date.max, help="Date to end at, in any format accepted by datetime.date.fromisoformat, defaulting to forever")
 parser.add_argument("--cache-force-valid", action=argparse.BooleanOptionalAction, help="Force existing cache to be used even if out of date. This overrides the CACHE_FORCE_VALID environment variable, if it was set. This can be useful if you know it's up to date, but the current time is in the window where it's not certain results have come out yet so keeps refreshing.")
@@ -47,7 +47,17 @@ args = parser.parse_args()
 
 # Default to all in environment variables
 if len(args.runner) == 0:
-    args.runner = ALL_PARKRUNNER_IDS
+    runner_ids: list[int] = ALL_PARKRUNNER_IDS
+else:
+    runner_ids: list[int] = []
+    for arg in args.runner:
+        if isinstance(arg, int):
+            runner_ids.append(arg)
+        else:
+            number: int | None = parkrun.PARKRUNNERS_ENV_NAME_TO_ID.get(arg.upper())
+            if number is None:
+                raise ValueError(f"Unknown runner '{arg}': 'PARKRUNNER_{arg.upper()}' not in env")
+            runner_ids.append(number)
 
 # Override environment variable if set
 if args.cache_force_valid:
@@ -62,4 +72,4 @@ if args.table_max_width is not None:
     parkrun._TABLE_MAX_WIDTH = args.table_max_width
 
 # Call the function with the runner ids
-command_funcs[args.command](args.runner, start_date=args.start, end_date=args.end)
+command_funcs[args.command](runner_ids, start_date=args.start, end_date=args.end)

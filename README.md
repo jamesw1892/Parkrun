@@ -16,11 +16,10 @@ Objective: to scrape the Parkrun API (or website since the API has been deprecat
 
 Run `python src/cli.py`. It takes command-line arguments and has help text.
 
-If you'd like to make use of `.env` that you may have created as above, you can do e.g.:
+You can use the names (case in-sensitive) in the `.env` file that you may have created as above to use their numbers, e.g.:
 
 ```bash
-source .env
-python src/cli.py runner_stats $PARKRUNNER_ME
+python src/cli.py runner_stats me
 ```
 
 # Files
