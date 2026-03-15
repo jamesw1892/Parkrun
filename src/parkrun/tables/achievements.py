@@ -39,7 +39,7 @@ def achievement_location_matches(name: str, pattern: str | re.Pattern) -> tuple[
     if isinstance(pattern, str):
         pattern: re.Pattern = re.compile(pattern, flags=re.IGNORECASE)
 
-    ticklist = sorted(location for location in fetch_events().event_ids_by_name if pattern.search(location))
+    ticklist = sorted(event.name for event in fetch_events().events_by_id.values() if event.is_adult() and pattern.search(event.name))
 
     return name, lambda result: result.location.name, ticklist
 
