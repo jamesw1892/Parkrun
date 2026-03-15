@@ -5,6 +5,7 @@ parkrunner.
 
 import datetime
 from collections.abc import Callable
+from functools import cache
 from parkrun import get_table_max_width
 from parkrun.api.scraper import fetch_runner_results, fetch_events
 from parkrun.api.utils import date_description
@@ -42,23 +43,26 @@ def achievement_location_matches(name: str, pattern: str | re.Pattern) -> tuple[
 
     return name, lambda result: result.location.name, ticklist
 
-# Calculate all strings of the form MM-DD for all days in a (leap) year for use
-# in the Calendar Bingo achievement
-ALL_DAYS_OF_YEAR: list[str] = []
-current = datetime.date(2000, 1, 1)
-while current.year == 2000:
-    ALL_DAYS_OF_YEAR.append(current.strftime("%m-%d"))
-    current += datetime.timedelta(days=1)
+@cache
+def _calc_achievements() -> tuple[tuple[str, Callable[[RunnerResult], Any], list[Any]]]:
 
-ACHIEVEMENTS: tuple[tuple[str, Callable[[RunnerResult], Any], list[Any]]] = (
-    ("Alphabet", lambda result: result.location.name[0].upper(), list(string.ascii_uppercase.replace("X", ""))),
-    achievement_location_matches("All Saints", r"\bSt\b"),
-    achievement_location_matches("Bay Watch", r"\bBay\b"),
-    ("Calendar Bingo", lambda result: result.date.strftime("%m-%d"), ALL_DAYS_OF_YEAR),
-    achievement_location_contains("Compass Club", ["North", "South", "East", "West"]),
-    achievement_location_matches("King Of The Castle", r"\bCastle\b"),
-    ("Stopwatch Bingo", lambda result: f"{result.time.timedelta.seconds % 60:02}", [f"{n:02}" for n in range(60)]),
-)
+    # Calculate all strings of the form MM-DD for all days in a (leap) year for use
+    # in the Calendar Bingo achievement
+    ALL_DAYS_OF_YEAR: list[str] = []
+    current = datetime.date(2000, 1, 1)
+    while current.year == 2000:
+        ALL_DAYS_OF_YEAR.append(current.strftime("%m-%d"))
+        current += datetime.timedelta(days=1)
+
+    return (
+        ("Alphabet", lambda result: result.location.name[0].upper(), list(string.ascii_uppercase.replace("X", ""))),
+        achievement_location_matches("All Saints", r"\bSt\b"),
+        achievement_location_matches("Bay Watch", r"\bBay\b"),
+        ("Calendar Bingo", lambda result: result.date.strftime("%m-%d"), ALL_DAYS_OF_YEAR),
+        achievement_location_contains("Compass Club", ["North", "South", "East", "West"]),
+        achievement_location_matches("King Of The Castle", r"\bCastle\b"),
+        ("Stopwatch Bingo", lambda result: f"{result.time.timedelta.seconds % 60:02}", [f"{n:02}" for n in range(60)]),
+    )
 
 def runner_to_achievement_progress(runner: Runner, result_func: Callable[[RunnerResult], Any], ticklist: list[Any]) -> str:
     """
@@ -96,6 +100,6 @@ def achievements(runner_ids: list[int], start_date: datetime.date, end_date: dat
 
     table = Texttable(get_table_max_width())
     table.header(["Achievement"] + [runner.format_identity() for runner in runners])
-    for name, result_func, ticklist in ACHIEVEMENTS:
+    for name, result_func, ticklist in _calc_achievements():
         table.add_row([name] + [runner_to_achievement_progress(runner, result_func, ticklist) for runner in runners])
     print(table.draw())
