@@ -11,7 +11,7 @@ from parkrun.models.position import Position
 from parkrun.models.age_grade import AgeGrade
 from parkrun.models.age_category import AgeCategory
 from parkrun.api.parkrun_exception import ParkrunException
-from parkrun.api.cache import check_cache, write_cache
+from parkrun.api.cache import check_cache_str, write_cache_str
 import requests
 from bs4 import BeautifulSoup, Tag
 from functools import cache
@@ -51,7 +51,7 @@ def fetch(url: str, type_name: str, file_name: str, err_msg_404: str | None = No
     """
 
     # If it's in the cache, return that
-    contents: str | None = check_cache(type_name, file_name)
+    contents: str | None = check_cache_str(type_name, file_name)
     if contents is not None:
         return contents
 
@@ -76,7 +76,7 @@ def fetch(url: str, type_name: str, file_name: str, err_msg_404: str | None = No
     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
         original_cache_force_valid: bool = parkrun._CACHE_FORCE_VALID
         parkrun._CACHE_FORCE_VALID = True
-        contents: str | None = check_cache(type_name, file_name)
+        contents: str | None = check_cache_str(type_name, file_name)
         parkrun._CACHE_FORCE_VALID = original_cache_force_valid
 
         # If no cache at all then raise exception
@@ -95,7 +95,7 @@ def fetch(url: str, type_name: str, file_name: str, err_msg_404: str | None = No
     response.raise_for_status()
 
     # Update the cache
-    write_cache(type_name, file_name, response.text)
+    write_cache_str(type_name, file_name, response.text)
 
     return response.text
 

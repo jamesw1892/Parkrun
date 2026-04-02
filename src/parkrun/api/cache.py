@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, time, date
 import logging
 from pathlib import Path
+import pickle
 from platformdirs import user_cache_dir
 from parkrun import get_cache_force_valid, get_cache_force_invalid
 
@@ -80,10 +81,10 @@ def most_recent_parkrun(reference: datetime = None) -> datetime:
 
     return datetime.combine(last_parkrun_date, time(HR_RESULT_END))
 
-def check_cache(type_name: str, file_name: str) -> None | str:
+def check_cache(type_name: str, file_name: str) -> None | bytes:
     """
     If the data of type `type_name` and name `file_name` is in the cache and
-    valid then return the file's contents as a string. Otherwise, return None.
+    valid then return the file's contents as bytes. Otherwise, return None.
     The cache is invalidated if it is older than when results were probably all
     out for the most recent parkrun. If the environment variable
     `CACHE_FORCE_VALID` is set to true and the desired file is in the cache then
@@ -120,10 +121,45 @@ def check_cache(type_name: str, file_name: str) -> None | str:
         return None
 
     logger.debug("hit: %s/%s", type_name, file_name)
-    with open(file_path, encoding=ENCODING) as f:
+    with open(file_path, "rb") as f:
         return f.read()
 
-def write_cache(type_name: str, file_name: str, contents: str) -> None:
+def check_cache_str(type_name: str, file_name: str) -> None | str:
+    """
+    If the data of type `type_name` and name `file_name` is in the cache and
+    valid then return the file's contents as a string. Otherwise, return None.
+    The cache is invalidated if it is older than when results were probably all
+    out for the most recent parkrun. If the environment variable
+    `CACHE_FORCE_VALID` is set to true and the desired file is in the cache then
+    don't update it even if it's stale. This can be useful if you know it's up
+    to date, but the current time is in the window where it's not certain
+    results have come out yet so keeps refreshing.
+    """
+
+    cache: str | None = check_cache(type_name, file_name)
+    if cache is None:
+        return None
+    return cache.decode(ENCODING)
+
+def check_cache_obj(type_name: str, file_name: str) -> None | object:
+    """
+    If the data of type `type_name` and name `file_name` is in the cache and
+    valid then decode the file's contents with pickle and return as an object.
+    Otherwise, return None.
+    The cache is invalidated if it is older than when results were probably all
+    out for the most recent parkrun. If the environment variable
+    `CACHE_FORCE_VALID` is set to true and the desired file is in the cache then
+    don't update it even if it's stale. This can be useful if you know it's up
+    to date, but the current time is in the window where it's not certain
+    results have come out yet so keeps refreshing.
+    """
+
+    cache: str | None = check_cache(type_name, file_name)
+    if cache is None:
+        return None
+    return pickle.loads(cache)
+
+def write_cache(type_name: str, file_name: str, contents: bytes) -> None:
     """
     Write the given contents to the given file name of the given type in the
     cache.
@@ -134,7 +170,23 @@ def write_cache(type_name: str, file_name: str, contents: str) -> None:
         sub_cache_dir.mkdir()
 
     file_path: Path = sub_cache_dir / file_name
-    with open(file_path, "w", encoding=ENCODING) as f:
+    with open(file_path, "wb") as f:
         f.write(contents)
 
     logger.debug("update: %s/%s", type_name, file_name)
+
+def write_cache_str(type_name: str, file_name: str, contents: str) -> None:
+    """
+    Write the given contents to the given file name of the given type in the
+    cache.
+    """
+
+    write_cache(type_name, file_name, contents.encode(ENCODING))
+
+def write_cache_obj(type_name: str, file_name: str, contents: object) -> None:
+    """
+    Write the given contents to the given file name of the given type in the
+    cache.
+    """
+
+    write_cache(type_name, file_name, pickle.dumps(contents))
