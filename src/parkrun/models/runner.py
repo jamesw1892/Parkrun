@@ -161,15 +161,16 @@ class Runner:
     def tourist_streak(self) -> tuple[int, datetime.date, datetime.date]:
         """
         The number of consecutive parkruns that the runner has done (can miss
-        weeks) that have been in unique locations. The most recent parkrun that
-        the runner has done is always the end of the streak so the minimum value
-        is 1 if they have done any parkruns at all and 0 if they haven't done
-        any. The first return is the number of parkruns in the streak, the
+        weeks) at locations not ran before. The most recent parkrun that
+        the runner has done is always the end of the streak, but if they
+        repeated it then their streak will be 0.
+        The first return is the number of parkruns in the streak, the
         second is the date of the first parkrun in the streak and the third is
         the date of the last parkrun in the streak (always the date of the most
         recent parkrun the runner did).
         """
 
+        # TODO: Split out into tourist_streak2
         # One interpretation of tourist streak where you can have repeated a
         # location but as long as it's not repeated in the streak then it's ok
         #locations: set[str] = set()
@@ -196,6 +197,112 @@ class Runner:
         else:
             start: datetime.date = self.results[-1].date
         return _streak, start, end
+
+    @cached_property
+    def floating_tourist_streak(self) -> tuple[int, list[tuple[datetime.date, datetime.date]]]:
+        """
+        The number of consecutive parkruns that the runner has done (can miss
+        weeks) at locations not ran before. The streak can have occurred at any
+        time and doesn't have to end with the most recent parkrun that the
+        runner has done. The minimum value is 1 if they have done any parkruns
+        at all and 0 if they haven't done any. The first return is the number of
+        parkruns in the streak, the second is a list of time periods in which
+        the runner has achieved a streak of this length.
+        """
+
+        longest_streak: int = 0
+        stretches: list[tuple[datetime.date, datetime.date]] = []
+
+        locations_done_so_far: set[int] = set()
+        start: datetime.date | None = None
+        current_streak: int = 0
+
+        # Go through in reverse order (chronological order)
+        for index in range(len(self.results) - 1, -1, -1):
+            result = self.results[index]
+
+            if result.location.id_ in locations_done_so_far:
+                if start is not None:
+                    end: datetime.date = self.results[index + 1].date
+                    if current_streak > longest_streak:
+                        longest_streak = current_streak
+                        stretches = [(start, end)]
+                    elif current_streak == longest_streak:
+                        stretches.append((start, end))
+                    start = None
+
+            elif start is None:
+                start = result.date
+                current_streak = 1
+            else:
+                current_streak += 1
+
+            locations_done_so_far.add(result.location.id_)
+
+        if start is not None:
+            end: datetime.date = self.results[0].date
+            if current_streak > longest_streak:
+                longest_streak = current_streak
+                stretches = [(start, end)]
+            elif current_streak == longest_streak:
+                stretches.append((start, end))
+
+        return longest_streak, stretches
+
+    @cached_property
+    def floating_tourist_streak2(self) -> tuple[int, list[tuple[datetime.date, datetime.date]]]:
+        """
+        The number of consecutive parkruns that the runner has done (can miss
+        weeks) in unique locations to each other (but could have been ran before
+        outside of the streak). The streak can have occurred at any time and
+        doesn't have to end with the most recent parkrun that the runner has
+        done. The minimum value is 1 if they have done any parkruns at all and 0
+        if they haven't done any. The first return is the number of parkruns in
+        the streak, the second is a list of time periods in which the runner has
+        achieved a streak of this length.
+        """
+
+        longest_streak: int = 0
+        stretches: list[tuple[datetime.date, datetime.date]] = []
+
+        if len(self.results) == 0:
+            return longest_streak, stretches
+
+        current_locations: set[int] = set()
+        streak_end_index: int = 0
+
+        for index, result in enumerate(self.results):
+
+            if result.location.id_ in current_locations:
+
+                # Save the streak starting at the previous parkrun that the
+                # runner ran
+                start: datetime.date = self.results[index - 1].date
+                end: datetime.date = self.results[streak_end_index].date
+                if len(current_locations) > longest_streak:
+                    longest_streak = len(current_locations)
+                    stretches = [(start, end)]
+                elif len(current_locations) == longest_streak:
+                    stretches.append((start, end))
+
+                # Move the end of the streak backwards in time until it doesn't
+                # contain the current location
+                while result.location.id_ in current_locations:
+                    current_locations.remove(self.results[streak_end_index].location.id_)
+                    streak_end_index += 1
+
+            current_locations.add(result.location.id_)
+
+        # Save the streak starting at the last parkrun that the runner ran
+        start: datetime.date = self.results[-1].date
+        end: datetime.date = self.results[streak_end_index].date
+        if len(current_locations) > longest_streak:
+            longest_streak = len(current_locations)
+            stretches = [(start, end)]
+        elif len(current_locations) == longest_streak:
+            stretches.append((start, end))
+
+        return longest_streak, stretches
 
     @cached_property
     def re_index(self) -> int:
