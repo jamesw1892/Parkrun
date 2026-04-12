@@ -81,6 +81,18 @@ def most_recent_parkrun(reference: datetime = None) -> datetime:
 
     return datetime.combine(last_parkrun_date, time(HR_RESULT_END))
 
+def parkrun_before(reference: datetime.date) -> datetime.date:
+    """
+    Return the date of the parkrun before the given date. If a parkrun took
+    place on the given date then the result is not the given date.
+    """
+
+    # Since most_recent_parkrun expects a datetime not a date and only returns
+    # the reference if it is after HR_RESULT_START, setting the time to midnight
+    # means the reference is never returned
+    reference = datetime.combine(reference, time.min)
+    return most_recent_parkrun(reference).date()
+
 def check_cache(type_name: str, file_name: str) -> None | bytes:
     """
     If the data of type `type_name` and name `file_name` is in the cache and

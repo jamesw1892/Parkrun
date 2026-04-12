@@ -27,6 +27,13 @@ def format_streak(streak: int, start: datetime.date, end: datetime.date) -> str:
 
     return f"{streak} ({start} - {end})"
 
+def format_floating_streak(streak: int, stretches: list[tuple[datetime.date, datetime.date]]) -> str:
+    if streak == 0:
+        return "0"
+
+    ranges: str = ", ".join(f"{start} - {end}" if start != end else f"{end}" for start, end in stretches)
+    return f"{streak} ({ranges})"
+
 STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
     ("Most Recent Age Category"  , lambda runner: runner.most_recent_age_category),
     ("Num Runs"                  , lambda runner: len(runner.results)),
@@ -43,6 +50,7 @@ STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
     ("Tourism Percentage"        , lambda runner: f"{runner.tourism_percentage * 100:.2f}%"),
     ("Consistency"               , lambda runner: f"{runner.consistency * 100:.2f}%"),
     ("Streak"                    , lambda runner: format_streak(*runner.streak)),
+    ("Floating Streak"           , lambda runner: format_floating_streak(*runner.floating_streak)),
     ("Tourist Streak"            , lambda runner: format_streak(*runner.tourist_streak)),
     ("re-index"                  , lambda runner: f"{runner.re_index}"),
     ("p-index"                   , lambda runner: f"{runner.p_index}"),

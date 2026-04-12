@@ -2,7 +2,7 @@ import datetime
 from collections import Counter
 from functools import cached_property
 from parkrun.models.event import Event
-from parkrun.api.cache import most_recent_parkrun
+from parkrun.api.cache import most_recent_parkrun, parkrun_before
 from parkrun.models.age_category import AgeCategory
 from parkrun.models.runner_result import RunnerResult
 from parkrun.models.time import Time
@@ -92,19 +92,70 @@ class Runner:
         but these do not make sense when the streak is 0.
         """
 
-        the_most_recent_parkrun: datetime.datetime = most_recent_parkrun()
-        end: datetime.date = the_most_recent_parkrun.date()
+        target_parkrun_date: datetime.date = most_recent_parkrun().date()
+        end: datetime.date = target_parkrun_date
         _streak: int = 0
         index: int = 0
 
-        while len(self.results) > index and self.results[index].date == the_most_recent_parkrun.date():
-            the_most_recent_parkrun = most_recent_parkrun(the_most_recent_parkrun - datetime.timedelta(days=1))
+        while len(self.results) > index and self.results[index].date == target_parkrun_date:
+            target_parkrun_date = parkrun_before(target_parkrun_date)
             _streak += 1
             index += 1
 
         start: datetime.date = self.results[index - 1].date if 0 <= index - 1 < len(self.results) else end
 
         return _streak, start, end
+
+    @cached_property
+    def floating_streak(self) -> tuple[int, list[tuple[datetime.date, datetime.date]]]:
+        """
+        The number of consecutive parkruns that the runner has done, not
+        necessarily ending with the most recent parkrun to date. The first
+        return is the number, the second is a list of time periods in which the
+        runner has done this many consecutive parkruns.
+        """
+
+        longest_streak: int = 0
+        stretches: list[tuple[datetime.date, datetime.date]] = []
+
+        if len(self.results) == 0:
+            return longest_streak, stretches
+
+        # Go through parkruns from most recent to oldest and initialise the
+        # first streak as the most recent parkrun they did
+        current_streak: int = 1
+        target_parkrun_date: datetime.date = parkrun_before(self.results[0].date)
+        current_end: datetime.date = self.results[0].date
+
+        for index, result in enumerate(self.results[1:], 1):
+
+            if result.date == target_parkrun_date:
+                current_streak += 1
+                target_parkrun_date = parkrun_before(target_parkrun_date)
+            else:
+
+                # Save the streak starting at the previous parkrun that the
+                # runner ran
+                start: datetime.date = self.results[index - 1].date
+                if current_streak > longest_streak:
+                    longest_streak = current_streak
+                    stretches = [(start, current_end)]
+                elif current_streak == longest_streak:
+                    stretches.append((start, current_end))
+
+                current_streak = 1
+                target_parkrun_date = parkrun_before(result.date)
+                current_end = result.date
+
+        # Save the streak starting at the last parkrun that the runner ran
+        start: datetime.date = self.results[-1].date
+        if current_streak > longest_streak:
+            longest_streak = current_streak
+            stretches = [(start, current_end)]
+        elif current_streak == longest_streak:
+            stretches.append((start, current_end))
+
+        return longest_streak, stretches
 
     @cached_property
     def tourist_streak(self) -> tuple[int, datetime.date, datetime.date]:

@@ -1,10 +1,37 @@
 from parameterized import parameterized
 import unittest
 import datetime
+from parkrun.models.age_category import AgeCategory
+from parkrun.models.runner import Runner
+from parkrun.models.runner_result import RunnerResult
+from parkrun.models.event import Event
+from parkrun.models.position import Position
+from parkrun.models.time import Time
+from parkrun.models.age_grade import AgeGrade
+from parkrun.models.pb import PB
 from parkrun.api.cache import most_recent_parkrun, HR_RESULT_START, HR_RESULT_END
 from parkrun.graphs.activity import _get_num_months
 from parkrun import _my_strtobool
 import os
+
+DUMMY_EVENT: Event = Event(0, "Name", "name", 0.0, 0.0, 0, 0)
+DUMMY_POSITION: Position = Position("1")
+DUMMY_TIME: Time = Time("00:00", datetime.timedelta())
+DUMMY_AGE_GRADE: AgeGrade = AgeGrade("50.00%")
+DUMMY_PB: PB = PB(False)
+
+class TestFloatingStreak(unittest.TestCase):
+    @parameterized.expand([
+        ([], (0, [])),
+        ([datetime.date(2026, 4, 11)], (1, [(datetime.date(2026, 4, 11), datetime.date(2026, 4, 11))])),
+        ([datetime.date(2026, 4, 11), datetime.date(2026, 4, 4)], (2, [(datetime.date(2026, 4, 4), datetime.date(2026, 4, 11))])),
+        ([datetime.date(2026, 4, 11), datetime.date(2026, 3, 28)], (1, [(datetime.date(2026, 4, 11), datetime.date(2026, 4, 11)), (datetime.date(2026, 3, 28), datetime.date(2026, 3, 28))])),
+        ([datetime.date(2026, 4, 11), datetime.date(2026, 3, 28), datetime.date(2026, 3, 21)], (2, [(datetime.date(2026, 3, 21), datetime.date(2026, 3, 28))])),
+        ([datetime.date(2026, 4, 11), datetime.date(2026, 3, 28), datetime.date(2026, 3, 21), datetime.date(2026, 3, 7)], (2, [(datetime.date(2026, 3, 21), datetime.date(2026, 3, 28))])),
+    ])
+    def test_floating_streak(self, dates: list[datetime.date], expected: tuple[int, list[tuple[datetime.date, datetime.date]]]):
+        runner = Runner(1, "Name", AgeCategory("SM20-24"), [RunnerResult(DUMMY_EVENT, date, 0, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB) for date in dates], datetime.date.min, datetime.date.max)
+        self.assertEqual(runner.floating_streak, expected)
 
 class TestMostRecentParkrun(unittest.TestCase):
 
