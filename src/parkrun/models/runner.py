@@ -170,19 +170,6 @@ class Runner:
         recent parkrun the runner did).
         """
 
-        # TODO: Split out into tourist_streak2
-        # One interpretation of tourist streak where you can have repeated a
-        # location but as long as it's not repeated in the streak then it's ok
-        #locations: set[str] = set()
-        #for result in self.results:
-        #    if result.location.name in locations:
-        #        break
-        #    else:
-        #        locations.add(result.location.name)
-        #return len(locations)
-
-        # The more common interpretation where all those in the streak must be
-        # the first time you've done them
         if len(self.results) == 0:
             today: datetime.date = datetime.date.today()
             return 0, today, today
@@ -197,6 +184,42 @@ class Runner:
         else:
             start: datetime.date = self.results[-1].date
         return _streak, start, end
+
+    @cached_property
+    def tourist_streak2(self) -> tuple[int, datetime.date, datetime.date]:
+        """
+        The number of consecutive parkruns that the runner has done (can miss
+        weeks) in unique locations to each other (but could have been ran before
+        outside of the streak). The most recent parkrun that
+        the runner has done is always the end of the streak so the minimum value
+        is 1 if they have done any parkruns at all.
+
+        The first return is the number of parkruns in the streak, the
+        second is the date of the first parkrun in the streak and the third is
+        the date of the last parkrun in the streak (always the date of the most
+        recent parkrun the runner did).
+        """
+
+        if len(self.results) == 0:
+            today: datetime.date = datetime.date.today()
+            return 0, today, today
+
+        locations: set[str] = set()
+        end: datetime.date = self.results[0].date
+
+        for index, result in enumerate(self.results):
+            if result.location.name in locations:
+
+                # This is never out of range because the first element is never
+                # already in the set
+                start: datetime.date = self.results[index - 1].date
+                break
+            else:
+                locations.add(result.location.name)
+        else:
+            start: datetime.date = self.results[-1].date
+
+        return len(locations), start, end
 
     @cached_property
     def floating_tourist_streak(self) -> tuple[int, list[tuple[datetime.date, datetime.date]]]:

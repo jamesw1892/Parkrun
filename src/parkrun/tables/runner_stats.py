@@ -52,6 +52,7 @@ STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
     ("Streak"                    , lambda runner: format_streak(*runner.streak)),
     ("Floating Streak"           , lambda runner: format_floating_streak(*runner.floating_streak)),
     ("Tourist Streak"            , lambda runner: format_streak(*runner.tourist_streak)),
+    ("Tourist Streak 2"          , lambda runner: format_streak(*runner.tourist_streak2)),
     ("Floating Tourist Streak"   , lambda runner: format_floating_streak(*runner.floating_tourist_streak)),
     ("Floating Tourist Streak 2" , lambda runner: format_floating_streak(*runner.floating_tourist_streak2)),
     ("re-index"                  , lambda runner: f"{runner.re_index}"),
