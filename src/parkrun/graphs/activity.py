@@ -1,9 +1,11 @@
-from parkrun.models.runner import Runner
 from parkrun import get_table_max_width
+from parkrun.api.cache import parkrun_before
 from parkrun.api.scraper import fetch_runner_results
 from parkrun.api.utils import date_description
+from parkrun.models.runner import Runner
 from collections import Counter
 import datetime
+from dateutil.relativedelta import relativedelta
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from texttable import Texttable
@@ -50,6 +52,7 @@ def activity_graph(
     # that month
     months: list[str] = []
     runner_counts: list[list[int]] = [[] for _ in runner_ids]
+    max_parkruns: list[int] = []
     num_months: int = _get_num_months(first_run_date, last_run_date)
     for month_num in range(num_months):
         years_to_add, month = divmod(first_run_date.month + month_num, 12)
@@ -62,17 +65,29 @@ def activity_graph(
         for runner_index in range(len(frequencies)):
             runner_counts[runner_index].append(frequencies[runner_index].get(month_year, 0))
 
+        # Calculate the maximum number of parkruns that could have been run
+        # this month, staying within first_run_date and last_run_date
+        date: datetime.date = min(last_run_date + datetime.timedelta(days=1), datetime.date(year, month, 1) + relativedelta(months=1))
+        num_parkruns: int = 0
+        while True:
+            date = parkrun_before(date)
+            if date.month != month or date < first_run_date:
+                break
+            num_parkruns += 1
+        max_parkruns.append(num_parkruns)
+
     # Print the data too
     table = Texttable(get_table_max_width())
-    table.header(["Parkrunner"] + [runner.format_identity() for runner in runners])
+    table.header(["Parkrunner"] + [runner.format_identity() for runner in runners] + ["Max Possible"])
     for index, month in enumerate(months):
-        table.add_row([month] + [count[index] for count in runner_counts])
+        table.add_row([month] + [count[index] for count in runner_counts] + [max_parkruns[index]])
     print(table.draw())
 
     # Plot the data with legend labelled with the runner's identity string
     plt.clf()
     for runner, counts in zip(runners, runner_counts):
         plt.plot(months, counts, marker="o", label=runner.format_identity())
+    plt.plot(months, max_parkruns, marker="x", label="Max Possible")
     plt.title(f"Parkruns Per Month {date_desc}")
     plt.xlabel("Month")
     plt.ylabel("Number of Runs")
