@@ -16,6 +16,7 @@ import re
 import string
 from texttable import Texttable
 from typing import Any
+import unidecode
 
 def achievement_location_contains(name: str, ticklist: list[str]) -> tuple[str, Callable[[RunnerResult], str], list[str]]:
     """
@@ -155,7 +156,7 @@ def _calc_achievements() -> tuple[tuple[str, Callable[[RunnerResult], Any], list
         current += datetime.timedelta(days=1)
 
     return (
-        ("Alphabet", lambda result: result.location.name[0].upper(), list(string.ascii_uppercase.replace("X", ""))),
+        ("Alphabet", lambda result: unidecode.unidecode(result.location.name)[0].upper(), list(string.ascii_uppercase.replace("X", ""))),
         ("LonDone", lambda result: result.location.name, LON_DONE),
         ("LonDone+", lambda result: result.location.name, LON_DONE_PLUS),
         ("LonDone++", lambda result: result.location.name, LON_DONE_PLUS_PLUS),
