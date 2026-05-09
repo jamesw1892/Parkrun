@@ -1,5 +1,4 @@
 from parkrun.models.event import Event
-from parkrun.api.parkrun_exception import ParkrunException
 
 class EventCollection:
     def __init__(self, events: dict):
