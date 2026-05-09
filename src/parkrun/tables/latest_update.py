@@ -7,7 +7,7 @@ import datetime
 from texttable import Texttable
 from parkrun.api.cache import most_recent_parkrun
 from parkrun import get_table_max_width
-from parkrun.api.scraper import fetch_runner_results
+from parkrun.api.scraper_runner import fetch_runner_results
 from parkrun.models.position import get_ordinal_suffix
 from parkrun.models.runner import Runner
 from parkrun.models.runner_result import RunnerResult

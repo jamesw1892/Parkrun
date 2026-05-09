@@ -1,4 +1,5 @@
-from parkrun.api.scraper import fetch_events, fetch_runner_results
+from parkrun.api.scraper_runner import fetch_runner_results
+from parkrun.api.scraper import fetch_events
 from parkrun.models.runner import Runner
 from parkrun.models.event_collection import EventCollection
 from mpl_toolkits.basemap import Basemap

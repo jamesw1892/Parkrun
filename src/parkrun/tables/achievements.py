@@ -7,7 +7,8 @@ import datetime
 from collections.abc import Callable
 from functools import cache
 from parkrun import get_table_max_width
-from parkrun.api.scraper import fetch_runner_results, fetch_events
+from parkrun.api.scraper_runner import fetch_runner_results
+from parkrun.api.scraper import fetch_events
 from parkrun.api.utils import date_description
 from parkrun.models.runner import Runner
 from parkrun.models.runner_result import RunnerResult

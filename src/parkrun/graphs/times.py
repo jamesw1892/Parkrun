@@ -1,5 +1,5 @@
 from parkrun.models.runner import Runner
-from parkrun.api.scraper import fetch_runner_results
+from parkrun.api.scraper_runner import fetch_runner_results
 from parkrun.api.utils import date_description
 import datetime
 import matplotlib.pyplot as plt

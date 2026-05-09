@@ -9,7 +9,8 @@ from parkrun.models.country_collection import CountryCollection
 from parkrun.models.runner import Runner
 from parkrun.models.runner_result import RunnerResult
 from parkrun import get_table_max_width
-from parkrun.api.scraper import fetch_runner_results, fetch_countries
+from parkrun.api.scraper_runner import fetch_runner_results
+from parkrun.api.scraper import fetch_countries
 from collections.abc import Callable
 from collections import Counter
 from texttable import Texttable

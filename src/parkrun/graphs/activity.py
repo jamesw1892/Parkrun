@@ -1,6 +1,6 @@
 from parkrun import get_table_max_width
 from parkrun.api.cache import parkrun_before
-from parkrun.api.scraper import fetch_runner_results
+from parkrun.api.scraper_runner import fetch_runner_results
 from parkrun.api.utils import date_description
 from parkrun.models.runner import Runner
 from collections import Counter
