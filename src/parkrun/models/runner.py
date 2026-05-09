@@ -1,6 +1,7 @@
 import datetime
 from collections import Counter
 from functools import cached_property
+from parkrun.models.country import Country
 from parkrun.models.event import Event
 from parkrun.api.cache import most_recent_parkrun, parkrun_before
 from parkrun.models.age_category import AgeCategory
@@ -59,6 +60,13 @@ class Runner:
         most_common_location: tuple[list[Event], int] = most_common(self.locations_counter)
         self.most_runs_per_location_locations: list[Event] = most_common_location[0]
         self.most_runs_per_location_count: int = most_common_location[1]
+
+    @cached_property
+    def countries_visited(self) -> set[Country]:
+        """
+        A set of Country objects visited
+        """
+        return {result.location.country for result in self.results if result.location.country.id_ != 0}
 
     @cached_property
     def consistency(self) -> float:

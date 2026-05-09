@@ -46,6 +46,7 @@ STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
     ("Best Position"             , lambda runner: f"{runner.best_positions[0].position} ({format_events(runner.best_positions)})" if len(runner.best_positions) > 0 else "None"),
     ("Most Runs In A Year"       , lambda runner: f"{runner.most_runs_per_year_count} ({format_iterable(runner.most_runs_per_year_years)})"),
     ("Most Runs At A Location"   , lambda runner: f"{runner.most_runs_per_location_count} ({format_iterable(runner.most_runs_per_location_locations)})"),
+    ("Countries Visited"         , lambda runner: len(runner.countries_visited)),
     ("Number of Unique Locations", lambda runner: runner.num_unique_locations),
     ("Tourism Percentage"        , lambda runner: f"{runner.tourism_percentage * 100:.2f}%"),
     ("Consistency"               , lambda runner: f"{runner.consistency * 100:.2f}%"),
