@@ -12,7 +12,7 @@ from parkrun.graphs.times import time_graph
 from parkrun.tables.achievements import achievements
 from parkrun.tables.common_run_comparison import common_run_comparison
 from parkrun.tables.latest_update import latest_update
-from parkrun.tables.most_common import most_common_location, most_common_location_initial, most_common_month, most_common_time_seconds, most_common_year
+from parkrun.tables.most_common import most_common_location, most_common_location_initial, most_common_month, most_common_time_seconds, most_common_year, most_common_country
 from parkrun.tables.pb_progress import pb_progress
 from parkrun.tables.runner_stats import runner_stats
 
@@ -27,6 +27,7 @@ command_funcs: dict[str, callable] = {
     "most_common_month": most_common_month,
     "most_common_time_seconds": most_common_time_seconds,
     "most_common_year": most_common_year,
+    "most_common_country": most_common_country,
     "pb_progress": pb_progress,
     "runner_stats": runner_stats,
 }

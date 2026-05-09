@@ -5,10 +5,11 @@ thing occurred, side-by-side for each given parkrunner.
 
 import datetime
 from typing import Any
+from parkrun.models.country_collection import CountryCollection
 from parkrun.models.runner import Runner
 from parkrun.models.runner_result import RunnerResult
 from parkrun import get_table_max_width
-from parkrun.api.scraper import fetch_runner_results
+from parkrun.api.scraper import fetch_runner_results, fetch_countries
 from collections.abc import Callable
 from collections import Counter
 from texttable import Texttable
@@ -87,3 +88,16 @@ def most_common_time_seconds(runner_ids: list[int], start_date: datetime.date, e
     the given parkrunners' results.
     """
     most_common_things_result(runner_ids, lambda result: result.time.timedelta.seconds % 60, start_date, end_date)
+
+def most_common_country(runner_ids: list[int], start_date: datetime.date, end_date: datetime.date) -> None:
+    """
+    Print a table of the most common countries that the given parkrunners have
+    run parkrun(s) in.
+    """
+
+    countries: CountryCollection = fetch_countries()
+
+    def result_to_country(result: RunnerResult) -> str:
+        return countries.get_country_by_id(result.location.country_code).name
+
+    most_common_things_result(runner_ids, result_to_country, start_date, end_date)
