@@ -1,4 +1,6 @@
 from __future__ import annotations
+from parkrun.models.country import Country
+from parkrun.models.country_collection import CountryCollection
 
 class Event:
     def __init__(
@@ -8,7 +10,7 @@ class Event:
         url_name: str,
         lat: float,
         long: float,
-        country_code: int,
+        country: Country,
         series: int
     ):
         self.id_: int = id_
@@ -16,19 +18,22 @@ class Event:
         self.url_name: str = url_name
         self.lat: float = lat
         self.long: float = long
-        self.country_code: int = country_code
+        self.country: Country = country
         self.series: int = series
         # series 1 is adults, 2 is juniors
 
     @staticmethod
-    def from_dict(event: dict) -> Event:
+    def from_dict(event: dict, countries: CountryCollection) -> Event:
+        country: Country | None = countries.get_country_by_id(event["properties"]["countrycode"])
+        if country is None:
+            country = countries.get_country_by_id(0)
         return Event(
             event["id"],
             event["properties"]["EventShortName"],
             event["properties"]["eventname"],
             event["geometry"]["coordinates"][0],
             event["geometry"]["coordinates"][1],
-            event["properties"]["countrycode"],
+            country,
             event["properties"]["seriesid"],
         )
 

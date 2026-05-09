@@ -135,10 +135,11 @@ def fetch_event_result(
     # The URL depends on which country the location is in
     events: EventCollection = fetch_events()
     event: Event = events.get_event_by_name(location_name)
-    country_url: str = fetch_countries().get_country_by_id(event.country_code).url
+    if event.country.id_ == 0:
+        raise ValueError("Event discontinued so can't fetch its results")
 
     html: str = fetch(
-        url=f"https://{country_url}/{event.url_name}/results/{event_number}/",
+        url=f"https://{event.country.url}/{event.url_name}/results/{event_number}/",
         type_name="event_result",
         file_name=f"{event.url_name}-{event_number}.html",
         err_msg_404=f"No event result exists at location '{location_name}' with event number {event_number}",

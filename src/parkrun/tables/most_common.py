@@ -96,9 +96,4 @@ def most_common_country(runner_ids: list[int], start_date: datetime.date, end_da
     run parkrun(s) in.
     """
 
-    countries: CountryCollection = fetch_countries()
-
-    def result_to_country(result: RunnerResult) -> str:
-        return countries.get_country_by_id(result.location.country_code).name
-
-    most_common_things_result(runner_ids, result_to_country, start_date, end_date)
+    most_common_things_result(runner_ids, lambda result: result.location.country.name, start_date, end_date)
