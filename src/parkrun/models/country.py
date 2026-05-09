@@ -13,7 +13,7 @@ class Country:
         self.id_: int = id_
         self.url: str | None = url
         self.bounds: list[int] = bounds
-        self.tld: str = url.split(".")[-1].upper() if url is not None else ""
+        self.tld: str = url.split(".")[-1].upper() if url is not None else "Unknown (discontinued event)"
         self.name: str = tld_to_name.get(self.tld, self.tld)
 
     def __eq__(self, other) -> bool:

@@ -16,7 +16,7 @@ class EventCollection:
         present.
         """
         if name not in self.event_ids_by_name:
-            raise ParkrunException(f"No parkrun event called '{name}'")
+            return Event(0, f"{name} (discontinued)", name, 0.0, 0.0, 0, 0)
         return self.events_by_id[self.event_ids_by_name[name]]
 
     def get_event_by_id(self, id_: int) -> Event | None:
