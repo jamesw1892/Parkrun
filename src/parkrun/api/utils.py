@@ -80,7 +80,7 @@ def most_common(counter: Counter) -> tuple[list[Any], int]:
 
     return (values, max_frequency)
 
-def date_description(start_date: datetime.date, end_date: datetime.date) -> set:
+def date_description(start_date: datetime.date, end_date: datetime.date) -> str:
     """
     Return a human-readable message describing the date range.
     """
