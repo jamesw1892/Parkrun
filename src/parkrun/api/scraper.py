@@ -71,7 +71,7 @@ def fetch(url: str, type_name: str, file_name: str, err_msg_404: str | None = No
         response: requests.Response = session.get(url)
 
     # If can't connect then check the cache again, using any cached results
-    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.HTTPError) as e:
         original_cache_force_valid: bool = parkrun._CACHE_FORCE_VALID
         parkrun._CACHE_FORCE_VALID = True
         contents: str | None = check_cache_str(type_name, file_name)
