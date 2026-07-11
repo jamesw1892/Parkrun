@@ -107,12 +107,12 @@ def check_cache(type_name: str, file_name: str) -> None | bytes:
 
     sub_cache_dir: Path = cache_dir / type_name
     if not sub_cache_dir.exists():
-        logger.debug("miss: Type dir '%s' doesn't exist", type_name)
+        logger.debug("miss: %s doesn't exist", type_name)
         return None
 
     file_path: Path = sub_cache_dir / file_name
     if not file_path.exists():
-        logger.debug("miss: File '%s' doesn't exist within existing type dir '%s'", file_name, type_name)
+        logger.debug("miss: %s/%s doesn't exist", type_name, file_name)
         return None
 
     # If the file in the cache is older than the most recent parkrun then
@@ -121,15 +121,15 @@ def check_cache(type_name: str, file_name: str) -> None | bytes:
     modified: datetime = datetime.fromtimestamp(file_path.stat().st_mtime)
     if type_name not in TYPES_CACHE_VALID_FOREVER and modified < most_recent_parkrun():
         if get_cache_force_valid():
-            logger.warning("force: Existing file '%s' within type dir '%s' is out of date but being used anyway", file_name, type_name)
+            logger.warning("force: %s/%s is out of date but being used anyway", type_name, file_name)
         else:
-            logger.debug("miss: Existing file '%s' within type dir '%s' is out of date", file_name, type_name)
+            logger.debug("miss: %s/%s is out of date", type_name, file_name)
             return None
 
     # Even if the cache is up to date, if the environment variable overrides
     # it then treat as a cache miss
     elif get_cache_force_invalid():
-        logger.warning("force: Existing file '%s' within type dir '%s' is in date but being ignored", file_name, type_name)
+        logger.warning("force: %s/%s is in date but being ignored", type_name, file_name)
         return None
 
     logger.debug("hit: %s/%s", type_name, file_name)
