@@ -115,7 +115,7 @@ def check_cache(type_name: str, file_name: str, is_cache_valid_forever: bool) ->
     # there might be updates so treat the cache as invalid, unless the
     # environment variable overrides it
     modified: datetime = datetime.fromtimestamp(file_path.stat().st_mtime)
-    if is_cache_valid_forever and modified < most_recent_parkrun():
+    if not is_cache_valid_forever and modified < most_recent_parkrun():
         if get_cache_force_valid():
             logger.warning("force: %s/%s is out of date but being used anyway", type_name, file_name)
         else:
