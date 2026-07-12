@@ -145,7 +145,7 @@ LON_DONE_PLUS_PLUS: list[str] = [
 ]
 
 @cache
-def _calc_achievements() -> tuple[tuple[str, Callable[[RunnerResult], Any], list[Any]]]:
+def _calc_achievements() -> tuple[tuple[str, Callable[[RunnerResult], Any], list[Any]], ...]:
 
     # Calculate all strings of the form MM-DD for all days in a (leap) year for use
     # in the Calendar Bingo achievement
