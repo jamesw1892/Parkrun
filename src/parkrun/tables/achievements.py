@@ -35,16 +35,15 @@ def achievement_location_contains(name: str, ticklist: list[str]) -> tuple[str, 
 
     return name, result_func, ticklist, RESULT_TO_EVENT
 
-def achievement_location_matches(name: str, pattern: str | re.Pattern) -> tuple[str, Callable[[RunnerResult], str], list[str], Callable[[RunnerResult], str]]:
+def achievement_location_matches(name: str, pattern: str | re.Pattern[str]) -> tuple[str, Callable[[RunnerResult], str], list[str], Callable[[RunnerResult], str]]:
     """
     Return a tuple as required for each achievement with the given name for all
     locations matching the given regular expression pattern.
     """
 
-    if isinstance(pattern, str):
-        pattern: re.Pattern = re.compile(pattern, flags=re.IGNORECASE)
+    compiled_pattern: re.Pattern[str] = re.compile(pattern, flags=re.IGNORECASE) if isinstance(pattern, str) else pattern
 
-    ticklist = sorted(event.name for event in fetch_events().events_by_id.values() if event.is_adult() and pattern.search(event.name))
+    ticklist: list[str] = sorted(event.name for event in fetch_events().events_by_id.values() if event.is_adult() and compiled_pattern.search(event.name))
 
     return name, lambda result: result.location.name, ticklist, RESULT_TO_DATE
 
