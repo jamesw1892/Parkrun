@@ -18,7 +18,10 @@ from texttable import Texttable
 from typing import Any
 import unidecode
 
-def achievement_location_contains(name: str, ticklist: list[str]) -> tuple[str, Callable[[RunnerResult], str], list[str]]:
+RESULT_TO_EVENT: Callable[[RunnerResult], str] = lambda result: result.format_for_event()
+RESULT_TO_DATE : Callable[[RunnerResult], str] = lambda result: f"{result.date}"
+
+def achievement_location_contains(name: str, ticklist: list[str]) -> tuple[str, Callable[[RunnerResult], str], list[str], Callable[[RunnerResult], str]]:
     """
     Return a tuple as required for each achievement with the given name for all
     locations that contain one of the given substrings in the ticklist.
@@ -30,9 +33,9 @@ def achievement_location_contains(name: str, ticklist: list[str]) -> tuple[str, 
                 return substr
         return ""
 
-    return name, result_func, ticklist
+    return name, result_func, ticklist, RESULT_TO_EVENT
 
-def achievement_location_matches(name: str, pattern: str | re.Pattern) -> tuple[str, Callable[[RunnerResult], str], list[str]]:
+def achievement_location_matches(name: str, pattern: str | re.Pattern) -> tuple[str, Callable[[RunnerResult], str], list[str], Callable[[RunnerResult], str]]:
     """
     Return a tuple as required for each achievement with the given name for all
     locations matching the given regular expression pattern.
@@ -43,7 +46,7 @@ def achievement_location_matches(name: str, pattern: str | re.Pattern) -> tuple[
 
     ticklist = sorted(event.name for event in fetch_events().events_by_id.values() if event.is_adult() and pattern.search(event.name))
 
-    return name, lambda result: result.location.name, ticklist
+    return name, lambda result: result.location.name, ticklist, RESULT_TO_DATE
 
 LON_DONE: list[str] = [
     "Oak Hill",
@@ -145,7 +148,7 @@ LON_DONE_PLUS_PLUS: list[str] = [
 ]
 
 @cache
-def _calc_achievements() -> tuple[tuple[str, Callable[[RunnerResult], Any], list[Any]], ...]:
+def _calc_achievements() -> tuple[tuple[str, Callable[[RunnerResult], Any], list[Any], Callable[[RunnerResult], str]], ...]:
 
     # Calculate all strings of the form MM-DD for all days in a (leap) year for use
     # in the Calendar Bingo achievement
@@ -156,20 +159,20 @@ def _calc_achievements() -> tuple[tuple[str, Callable[[RunnerResult], Any], list
         current += datetime.timedelta(days=1)
 
     return (
-        ("Alphabet", lambda result: unidecode.unidecode(result.location.name)[0].upper(), list(string.ascii_uppercase.replace("X", ""))),
-        ("LonDone", lambda result: result.location.name, LON_DONE),
-        ("LonDone+", lambda result: result.location.name, LON_DONE_PLUS),
-        ("LonDone++", lambda result: result.location.name, LON_DONE_PLUS_PLUS),
+        ("Alphabet", lambda result: unidecode.unidecode(result.location.name)[0].upper(), list(string.ascii_uppercase.replace("X", "")), RESULT_TO_EVENT),
+        ("LonDone", lambda result: result.location.name, LON_DONE, RESULT_TO_DATE),
+        ("LonDone+", lambda result: result.location.name, LON_DONE_PLUS, RESULT_TO_DATE),
+        ("LonDone++", lambda result: result.location.name, LON_DONE_PLUS_PLUS, RESULT_TO_DATE),
         achievement_location_matches("All Saints", r"\bSt\b"),
         achievement_location_matches("Bay Watch", r"\bBay\b"),
-        ("Calendar Bingo", lambda result: result.date.strftime("%m-%d"), ALL_DAYS_OF_YEAR),
+        ("Calendar Bingo", lambda result: result.date.strftime("%m-%d"), ALL_DAYS_OF_YEAR, lambda result: f"{result.date.year} {result.location}"),
         achievement_location_contains("Compass Club", ["North", "South", "East", "West"]),
         achievement_location_matches("King Of The Castle", r"\bCastle\b"),
         achievement_location_matches("Queen of the Palace", r"\bPalace\b|\bPally\b"),
-        ("Stopwatch Bingo", lambda result: f"{result.time.timedelta.seconds % 60:02}", [f"{n:02}" for n in range(60)]),
+        ("Stopwatch Bingo", lambda result: f"{result.time.timedelta.seconds % 60:02}", [f"{n:02}" for n in range(60)], RESULT_TO_EVENT),
     )
 
-def runner_to_achievement_progress(runner: Runner, result_func: Callable[[RunnerResult], Any], ticklist: list[Any]) -> str:
+def runner_to_achievement_progress(runner: Runner, result_func: Callable[[RunnerResult], Any], ticklist: list[Any], format_result: Callable[[RunnerResult], str]) -> str:
     """
     Helper function for achievements. Takes a runner and the result function 
     and ticklist of an achievement and returns a string detailing the runner's
@@ -189,7 +192,7 @@ def runner_to_achievement_progress(runner: Runner, result_func: Callable[[Runner
     # Give headline progress and then list all parts and the event they were
     # first achieved at or blank if not yet achieved
     return f"{num_achieved}/{total} = {percentage}%\n" + "\n".join(
-        f"{part}: {achieved_where[part].format_for_event() if part in achieved_where else ''}"
+        f"{part}: {format_result(achieved_where[part]) if part in achieved_where else ''}"
         for part in ticklist
     )
 
@@ -205,6 +208,6 @@ def achievements(runner_ids: list[int], start_date: datetime.date, end_date: dat
 
     table = Texttable(get_table_max_width())
     table.header(["Achievement"] + [runner.format_identity() for runner in runners])
-    for name, result_func, ticklist in _calc_achievements():
-        table.add_row([name] + [runner_to_achievement_progress(runner, result_func, ticklist) for runner in runners])
+    for name, result_func, ticklist, format_result in _calc_achievements():
+        table.add_row([name] + [runner_to_achievement_progress(runner, result_func, ticklist, format_result) for runner in runners])
     print(table.draw())
