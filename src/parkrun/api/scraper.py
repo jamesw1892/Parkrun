@@ -39,7 +39,7 @@ session.headers = {
 last_query: datetime.datetime = datetime.datetime.min
 
 @cache
-def fetch(url: str, type_name: str, file_name: str, err_msg_404: str | None = None) -> str:
+def fetch(url: str, type_name: str, file_name: str, is_cache_valid_forever: bool, err_msg_404: str | None = None) -> str:
     """
     Get the data of given type and file names from the given URL, checking and
     updating the cache and handling errors. If given, raise a ParkrunException
@@ -49,7 +49,7 @@ def fetch(url: str, type_name: str, file_name: str, err_msg_404: str | None = No
     """
 
     # If it's in the cache, return that
-    contents: str | None = check_cache_str(type_name, file_name)
+    contents: str | None = check_cache_str(type_name, file_name, is_cache_valid_forever)
     if contents is not None:
         return contents
 
@@ -74,7 +74,7 @@ def fetch(url: str, type_name: str, file_name: str, err_msg_404: str | None = No
     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.HTTPError) as e:
         original_cache_force_valid: bool = parkrun._CACHE_FORCE_VALID
         parkrun._CACHE_FORCE_VALID = True
-        contents: str | None = check_cache_str(type_name, file_name)
+        contents: str | None = check_cache_str(type_name, file_name, is_cache_valid_forever)
         parkrun._CACHE_FORCE_VALID = original_cache_force_valid
 
         # If no cache at all then raise exception
@@ -103,6 +103,7 @@ def _fetch_events_json() -> dict:
         url="https://images.parkrun.com/events.json",
         type_name="events",
         file_name="events.json",
+        is_cache_valid_forever=False,
     )
     return json.loads(json_str)
 
@@ -142,6 +143,7 @@ def fetch_event_result(
         url=f"https://{event.country.url}/{event.url_name}/results/{event_number}/",
         type_name="event_result",
         file_name=f"{event.url_name}-{event_number}.html",
+        is_cache_valid_forever=True,
         err_msg_404=f"No event result exists at location '{location_name}' with event number {event_number}",
     )
 

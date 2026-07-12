@@ -22,6 +22,7 @@ def fetch_runner_results(
         url=f"https://www.parkrun.org.uk/parkrunner/{number}/all/",
         type_name="runner_results",
         file_name=f"{number}.html",
+        is_cache_valid_forever=False,
         err_msg_404=f"No parkrunner exists with number '{number}'",
     )
 

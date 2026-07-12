@@ -19,10 +19,6 @@ HR_RESULT_END: int = 13
 
 ENCODING = "utf-8"
 
-TYPES_CACHE_VALID_FOREVER = (
-    "event_result"
-)
-
 def most_recent_parkrun(reference: datetime = None) -> datetime:
     """
     Return the datetime of the most recent parkrun (including Christmas and New
@@ -93,7 +89,7 @@ def parkrun_before(reference: datetime.date) -> datetime.date:
     reference = datetime.combine(reference, time.min)
     return most_recent_parkrun(reference).date()
 
-def check_cache(type_name: str, file_name: str) -> None | bytes:
+def check_cache(type_name: str, file_name: str, is_cache_valid_forever: bool) -> None | bytes:
     """
     If the data of type `type_name` and name `file_name` is in the cache and
     valid then return the file's contents as bytes. Otherwise, return None.
@@ -119,7 +115,7 @@ def check_cache(type_name: str, file_name: str) -> None | bytes:
     # there might be updates so treat the cache as invalid, unless the
     # environment variable overrides it
     modified: datetime = datetime.fromtimestamp(file_path.stat().st_mtime)
-    if type_name not in TYPES_CACHE_VALID_FOREVER and modified < most_recent_parkrun():
+    if is_cache_valid_forever and modified < most_recent_parkrun():
         if get_cache_force_valid():
             logger.warning("force: %s/%s is out of date but being used anyway", type_name, file_name)
         else:
@@ -136,7 +132,7 @@ def check_cache(type_name: str, file_name: str) -> None | bytes:
     with open(file_path, "rb") as f:
         return f.read()
 
-def check_cache_str(type_name: str, file_name: str) -> None | str:
+def check_cache_str(type_name: str, file_name: str, is_cache_valid_forever: bool) -> None | str:
     """
     If the data of type `type_name` and name `file_name` is in the cache and
     valid then return the file's contents as a string. Otherwise, return None.
@@ -148,12 +144,12 @@ def check_cache_str(type_name: str, file_name: str) -> None | str:
     results have come out yet so keeps refreshing.
     """
 
-    cache: str | None = check_cache(type_name, file_name)
+    cache: bytes | None = check_cache(type_name, file_name, is_cache_valid_forever)
     if cache is None:
         return None
     return cache.decode(ENCODING)
 
-def check_cache_obj(type_name: str, file_name: str) -> None | object:
+def check_cache_obj(type_name: str, file_name: str, is_cache_valid_forever: bool) -> None | object:
     """
     If the data of type `type_name` and name `file_name` is in the cache and
     valid then decode the file's contents with pickle and return as an object.
@@ -166,7 +162,7 @@ def check_cache_obj(type_name: str, file_name: str) -> None | object:
     results have come out yet so keeps refreshing.
     """
 
-    cache: str | None = check_cache(type_name, file_name)
+    cache: bytes | None = check_cache(type_name, file_name, is_cache_valid_forever)
     if cache is None:
         return None
     return pickle.loads(cache)
