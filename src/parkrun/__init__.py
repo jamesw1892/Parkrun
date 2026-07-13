@@ -1,6 +1,5 @@
 import dotenv
 import os
-from distutils.util import strtobool
 import logging
 
 # Log to stderr, DEBUG and above, only from this package
@@ -16,15 +15,28 @@ logging.basicConfig(
 
 dotenv.load_dotenv()
 
-def _my_strtobool(env_var_name: str, default: bool) -> bool:
+def _strtobool(val: str) -> bool:
     """
-    Given the name of an environment variable to search for, use strtobool from
-    distutils to read it as a boolean and return the default if it's not present
-    or invalid according to strtobool.
+    If the given string is a truthy or falsey value then convert it to the bool
+    that it represents. Otherwise, raise ValueError. Truthy values are y, yes,
+    t, true, on, 1. Falsey values are n, no, f, false, off, 0.
+    """
+    v: str = val.strip().lower()
+    if v in ("y", "yes", "t", "true", "on", "1"):
+        return True
+    if v in ("n", "no", "f", "false", "off", "0"):
+        return False
+    raise ValueError(f"invalid truth value: {val!r}")
+
+def _env_strtobool(env_var_name: str, default: bool) -> bool:
+    """
+    Given the name of an environment variable, fetch it, convert it to a boolean
+    and return it. If it's not present or not truthy/falsey then return the
+    given default.
     """
 
     try:
-        return bool(strtobool(os.getenv(env_var_name, "invalid")))
+        return _strtobool(os.getenv(env_var_name, "invalid"))
     except ValueError:
         return default
 
@@ -36,10 +48,10 @@ for key, value in os.environ.items():
         except:
             continue
 
-ALL_PARKRUNNER_IDS: list[int] = PARKRUNNERS_ENV_NAME_TO_ID.values()
+ALL_PARKRUNNER_IDS: list[int] = list(PARKRUNNERS_ENV_NAME_TO_ID.values())
 _TABLE_MAX_WIDTH: int = int(os.getenv("TABLE_MAX_WIDTH", 180))
-_CACHE_FORCE_VALID: bool = _my_strtobool("CACHE_FORCE_VALID", False)
-_CACHE_FORCE_INVALID: bool = _my_strtobool("CACHE_FORCE_INVALID", False)
+_CACHE_FORCE_VALID: bool = _env_strtobool("CACHE_FORCE_VALID", False)
+_CACHE_FORCE_INVALID: bool = _env_strtobool("CACHE_FORCE_INVALID", False)
 MIN_SECS_BETWEEN_QUERIES: int = int(os.getenv("MIN_SECS_BETWEEN_QUERIES", 2))
 
 def get_cache_force_valid() -> bool:
