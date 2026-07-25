@@ -21,13 +21,15 @@ HEADERS: list[str] = [
     "Age Grade",
 ]
 
-def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: datetime.date) -> None:
+def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: datetime.date, incremental: bool = True) -> None:
     """
     Print a table with a summary of the result for each given parkrunner that
     did the most recent parkrun between the given dates. Parkrunners that did
     not do this parkrun are not included in the table. The end date is made no
     later than today and the start date is ignored, otherwise the PB indicators
-    and parkrun numbers don't make sense.
+    and parkrun numbers don't make sense. If incremental then rather than
+    fetching all results and printing the table at the end, it prints a row at
+    a time.
     """
 
     # We don't have results for parkruns in the future and consider all parkruns
@@ -41,6 +43,29 @@ def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: da
     print(f"Parkrunners who did the parkrun on {most_recent_parkrun_date}")
 
     rows: list[list[str]] = [HEADERS]
+
+    if incremental:
+
+        # Set reasonable column widths as proportions of the maximum width
+        # This must be pre-calculated so it's reasonable and stays consistent
+        # Remaining width after the fixed column's width must also subtract the
+        # padding and vertical separator to the right of each column as well as
+        # the vertical separator on the far left
+        PARKRUN_COL_WIDTH: int = 7
+        REMAINING_WIDTH: int = get_table_max_width() - PARKRUN_COL_WIDTH - 3 * len(HEADERS) - 1
+        DENOMINATOR: int = 100
+        table = Texttable().set_cols_width([
+            REMAINING_WIDTH * 22 // DENOMINATOR,
+            PARKRUN_COL_WIDTH,
+            REMAINING_WIDTH * 35 // DENOMINATOR,
+            REMAINING_WIDTH * 14 // DENOMINATOR,
+            REMAINING_WIDTH * 14 // DENOMINATOR,
+            REMAINING_WIDTH * 14 // DENOMINATOR,
+        ])
+
+        # Print the header row without the bottom line (it adds a bottom border
+        # in addition to the header border despite there being no non-header rows)
+        print(table.header(HEADERS).draw()[::-1].split("\n", 1)[1][::-1])
 
     for runner_id in runner_ids:
         runner: Runner = fetch_runner_results(runner_id, start_date, end_date)
@@ -80,6 +105,9 @@ def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: da
             f"{result.age_grade}{age_grade_extra}",
         ])
 
-        table = Texttable(get_table_max_width())
-        table.add_rows(rows)
-        print(table.draw())
+        # Print the latest row (only) without the top border
+        if incremental:
+            print(table.reset().add_row(rows[-1]).draw().split("\n", 1)[1])
+
+    if not incremental:
+        print(Texttable(get_table_max_width()).add_rows(rows).draw())

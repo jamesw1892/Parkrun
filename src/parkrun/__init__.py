@@ -7,7 +7,7 @@ stderr_handler = logging.StreamHandler()
 stderr_handler.addFilter(lambda record: record.name.startswith(__name__))
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.WARNING,
     handlers=[
         stderr_handler
     ]
