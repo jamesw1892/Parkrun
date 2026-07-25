@@ -12,6 +12,15 @@ from parkrun.models.position import get_ordinal_suffix
 from parkrun.models.runner import Runner
 from parkrun.models.runner_result import RunnerResult
 
+HEADERS: list[str] = [
+    "Parkrunner",
+    "Parkrun",
+    "Location",
+    "Time",
+    "Position",
+    "Age Grade",
+]
+
 def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: datetime.date) -> None:
     """
     Print a table with a summary of the result for each given parkrunner that
@@ -23,27 +32,18 @@ def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: da
 
     # We don't have results for parkruns in the future and consider all parkruns
     # before then - ignoring start_date
-    start_date: datetime.date = datetime.date.min
+    start_date = datetime.date.min
     end_date = min(end_date, datetime.date.today())
 
     # Get the most recent parkrun that occurred before the end date
     most_recent_parkrun_date: datetime.date = most_recent_parkrun(datetime.datetime.combine(end_date, datetime.time(23, 59, 59))).date()
 
-    runners: list[Runner] = [fetch_runner_results(runner_id, start_date, end_date) for runner_id in runner_ids]
-
     print(f"Parkrunners who did the parkrun on {most_recent_parkrun_date}")
 
-    table = Texttable(get_table_max_width())
-    table.header([
-        "Parkrunner",
-        "Parkrun",
-        "Location",
-        "Time",
-        "Position",
-        "Age Grade",
-    ])
+    rows: list[list[str]] = [HEADERS]
 
-    for runner in runners:
+    for runner_id in runner_ids:
+        runner: Runner = fetch_runner_results(runner_id, start_date, end_date)
         result: RunnerResult = runner.latest_result
 
         # Skip parkrunners who didn't do the most recent parkrun
@@ -71,7 +71,7 @@ def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: da
         elif times_at_location > 1 and all(result.age_grade.value >= r.age_grade.value for r in results_at_location):
             age_grade_extra = " (event PB)"
 
-        table.add_row([
+        rows.append([
             runner.format_identity(),
             f"{len(runner.results)}{get_ordinal_suffix(len(runner.results))}",
             f"{times_at_location}{get_ordinal_suffix(times_at_location)} at {result.location} (event number {result.run_number})",
@@ -80,4 +80,6 @@ def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: da
             f"{result.age_grade}{age_grade_extra}",
         ])
 
-    print(table.draw())
+        table = Texttable(get_table_max_width())
+        table.add_rows(rows)
+        print(table.draw())
