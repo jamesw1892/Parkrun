@@ -2,17 +2,6 @@ import dotenv
 import os
 import logging
 
-# Log to stderr, DEBUG and above, only from this package
-stderr_handler = logging.StreamHandler()
-stderr_handler.addFilter(lambda record: record.name.startswith(__name__))
-
-logging.basicConfig(
-    level=logging.WARNING,
-    handlers=[
-        stderr_handler
-    ]
-)
-
 dotenv.load_dotenv()
 
 def _strtobool(val: str) -> bool:
@@ -52,7 +41,7 @@ ALL_PARKRUNNER_IDS: list[int] = list(PARKRUNNERS_ENV_NAME_TO_ID.values())
 _TABLE_MAX_WIDTH: int = int(os.getenv("TABLE_MAX_WIDTH", 180))
 _CACHE_FORCE_VALID: bool = _env_strtobool("CACHE_FORCE_VALID", False)
 _CACHE_FORCE_INVALID: bool = _env_strtobool("CACHE_FORCE_INVALID", False)
-MIN_SECS_BETWEEN_QUERIES: int = int(os.getenv("MIN_SECS_BETWEEN_QUERIES", 2))
+_MIN_SECS_BETWEEN_QUERIES: int = int(os.getenv("MIN_SECS_BETWEEN_QUERIES", 5))
 
 def get_cache_force_valid() -> bool:
     return _CACHE_FORCE_VALID
@@ -62,3 +51,17 @@ def get_cache_force_invalid() -> bool:
 
 def get_table_max_width() -> int:
     return _TABLE_MAX_WIDTH
+
+def get_min_secs_between_queries() -> int:
+    return _MIN_SECS_BETWEEN_QUERIES
+
+# Log to stderr, only from this package
+stderr_handler = logging.StreamHandler()
+stderr_handler.addFilter(lambda record: record.name.startswith(__name__))
+
+logging.basicConfig(
+    level=os.getenv("MIN_LOG_LEVEL", "WARNING").upper(),
+    handlers=[
+        stderr_handler
+    ]
+)

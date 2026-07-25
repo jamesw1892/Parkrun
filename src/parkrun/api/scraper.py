@@ -56,7 +56,7 @@ def fetch(url: str, type_name: str, file_name: str, is_cache_valid_forever: bool
     # Sleep if hitting the website too frequently
     global last_query
     wait_secs: float = (
-        datetime.timedelta(seconds=parkrun.MIN_SECS_BETWEEN_QUERIES) - \
+        datetime.timedelta(seconds=parkrun.get_min_secs_between_queries()) - \
         (datetime.datetime.now() - last_query)
     ).total_seconds()
 
