@@ -61,6 +61,11 @@ class Runner:
         self.most_runs_per_location_locations: list[Event] = most_common_location[0]
         self.most_runs_per_location_count: int = most_common_location[1]
 
+        self.countries_counter: Counter = Counter(result.location.country for result in results)
+        most_common_country: tuple[list[Country], int] = most_common(self.countries_counter)
+        self.most_runs_per_country_countries: list[Country] = most_common_country[0]
+        self.most_runs_per_country_count: int = most_common_country[1]
+
     @cached_property
     def countries_visited(self) -> set[Country]:
         """
@@ -85,6 +90,19 @@ class Runner:
         weeks: int = (end_date - start_date).days // 7 + 1
 
         return len(self.results) / weeks
+
+    @cached_property
+    def international_percentage(self) -> float:
+        """
+        A float between 0 and 1 representing the proportion of the parkrunner's
+        runs that are in a country other than their home (judged as the country
+        they have done the most runs in).
+        """
+
+        if len(self.results) == 0:
+            return 0.0
+
+        return (len(self.results) - self.most_runs_per_country_count) / len(self.results)
 
     @cached_property
     def streak(self) -> tuple[int, datetime.date, datetime.date]:
