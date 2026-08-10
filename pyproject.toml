@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "parkrun"
+version = "0.1.0"
+description = "Calculate and graph interesting stats about parkrun results"
+requires-python = ">=3.9"
+authors = [
+    { name = "jamesw1892" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "bs4",
+    "matplotlib",
+    "platformdirs",
+    "pycountry",
+    "python-dateutil",
+    "python-dotenv",
+    "requests",
+    "texttable",
+    "unidecode",
+]
+
+[project.optional-dependencies]
+test = [
+    "parameterized",
+]
+
+[project.urls]
+Homepage = "https://github.com/jamesw1892/Parkrun"
+Issues = "https://github.com/jamesw1892/Parkrun/issues"
