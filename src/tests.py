@@ -11,7 +11,7 @@ from parkrun.models.age_grade import AgeGrade
 from parkrun.models.pb import PB
 from parkrun.api.cache import most_recent_parkrun, HR_RESULT_START, HR_RESULT_END
 from parkrun.graphs.activity import _get_num_months
-from parkrun import _my_strtobool
+from parkrun import _env_strtobool
 import os
 
 DUMMY_EVENT: Event = Event(0, "Name", "name", 0.0, 0.0, 0, 0)
@@ -272,7 +272,7 @@ class TestMyStrToBool(unittest.TestCase):
         else:
             os.environ[TestMyStrToBool.ENV_VAR_NAME] = value
 
-        self.assertEqual(_my_strtobool(TestMyStrToBool.ENV_VAR_NAME, default), expected)
+        self.assertEqual(_env_strtobool(TestMyStrToBool.ENV_VAR_NAME, default), expected)
 
 if __name__ == "__main__":
     unittest.main()
