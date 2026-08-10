@@ -1,7 +1,5 @@
 bs4
-geopy
 matplotlib
-pandas
 parameterized
 platformdirs
 pycountry
