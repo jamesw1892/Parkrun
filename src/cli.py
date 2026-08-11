@@ -4,10 +4,11 @@ parkrunners of choice.
 """
 
 import argparse
+from collections.abc import Callable
 import datetime
 import logging
+
 import parkrun
-from parkrun import ALL_PARKRUNNER_IDS
 from parkrun.graphs.activity import activity_graph
 from parkrun.graphs.times import time_graph
 from parkrun.tables.achievements import achievements
@@ -17,7 +18,7 @@ from parkrun.tables.most_common import most_common_location, most_common_locatio
 from parkrun.tables.pb_progress import pb_progress
 from parkrun.tables.runner_stats import runner_stats
 
-command_funcs: dict[str, callable] = {
+command_funcs: dict[str, Callable[[list[int], datetime.date, datetime.date], None]] = {
     "activity": activity_graph,
     "times": time_graph,
     "achievements": achievements,
@@ -51,7 +52,7 @@ args = parser.parse_args()
 
 # Default to all in environment variables
 if len(args.runner) == 0:
-    runner_ids: list[int] = ALL_PARKRUNNER_IDS
+    runner_ids: list[int] = parkrun.ALL_PARKRUNNER_IDS
 else:
     runner_ids: list[int] = []
     for arg in args.runner:
@@ -80,4 +81,4 @@ if args.min_log_level is not None:
     logging.getLogger().setLevel(args.min_log_level)
 
 # Call the function with the runner ids
-command_funcs[args.command](runner_ids, start_date=args.start, end_date=args.end)
+command_funcs[args.command](runner_ids, args.start, args.end)
