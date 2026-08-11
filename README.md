@@ -101,10 +101,10 @@ prcli runner_stats me
 - `.env`: Stores the configuration, particularly the Parkrun numbers of Parkrunners of interest.
 - `.env.example`: Template for `.env`.
 - `src/`: Stores source code:
-    - `cli.py`: Uses command-line arguments to use the `parkrun` package.
     - `main.py`: An example program that uses the `parkrun` package and Parkrunners of interest in `.env` that can be edited as desired.
     - `tests.py`: Unit tests for tricky functions in the `parkrun` package.
     - `parkrun/`: `parkrun` package source code:
+        - `cli.py`: Uses command-line arguments to use the `parkrun` package.
         - `api/`:
             - `cache.py`: Implements `check_cache` and `write_cache` to cache data to not repeatedly hit the website. It intelligently invalidates the cache at the time that results normally come out on Saturdays or Christmas or New Years Day.
             - `parkrun_exception.py`: Custom exception.
