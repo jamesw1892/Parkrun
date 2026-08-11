@@ -1,0 +1,89 @@
+"""
+Parse command-line arguments to display the table or graph of choice with the
+parkrunners of choice.
+"""
+
+import argparse
+from collections.abc import Callable
+import datetime
+import logging
+
+import parkrun
+from parkrun.graphs.activity import activity_graph
+from parkrun.graphs.times import time_graph
+from parkrun.tables.achievements import achievements
+from parkrun.tables.common_run_comparison import common_run_comparison
+from parkrun.tables.latest_update import latest_update
+from parkrun.tables.most_common import most_common_location, most_common_location_initial, most_common_month, most_common_time_seconds, most_common_year, most_common_country
+from parkrun.tables.pb_progress import pb_progress
+from parkrun.tables.runner_stats import runner_stats
+
+command_funcs: dict[str, Callable[[list[int], datetime.date, datetime.date], None]] = {
+    "activity": activity_graph,
+    "times": time_graph,
+    "achievements": achievements,
+    "common_run_comparison": common_run_comparison,
+    "latest_update": latest_update,
+    "most_common_location": most_common_location,
+    "most_common_location_initial": most_common_location_initial,
+    "most_common_month": most_common_month,
+    "most_common_time_seconds": most_common_time_seconds,
+    "most_common_year": most_common_year,
+    "most_common_country": most_common_country,
+    "pb_progress": pb_progress,
+    "runner_stats": runner_stats,
+}
+
+def cli():
+
+    parser = argparse.ArgumentParser(
+        description="Print statistic tables or show graphs about parkrun results. The first positional argument must be the table or graph to show and all subsequent positional arguments must be integer parkrunner IDs of those to show. If no parkrunner IDs are given, use all environment variables starting with PARKRUNNER_ (e.g. those in the .env file)."
+    )
+
+    parser.add_argument("command", choices=command_funcs.keys(), help="The table or graph to run")
+    parser.add_argument("runner", type=lambda arg: int(arg) if arg.isnumeric() else arg, nargs="*", help="Parkrunners to analyse. If none are given, use all environment variables starting with PARKRUNNER_ (e.g. those in the .env file). For each integer, use that as the parkrunner's ID. For each string, use the environment variable PARKRUNNER_<argument>.")
+    parser.add_argument("-s", "--start", type=datetime.date.fromisoformat, nargs="?", default=datetime.date.min, help="Date to start from, in any format accepted by datetime.date.fromisoformat, defaulting to forever")
+    parser.add_argument("-e", "--end", type=datetime.date.fromisoformat, nargs="?", default=datetime.date.max, help="Date to end at, in any format accepted by datetime.date.fromisoformat, defaulting to forever")
+    parser.add_argument("--cache-force-valid", action=argparse.BooleanOptionalAction, help="Force existing cache to be used even if out of date. This overrides the CACHE_FORCE_VALID environment variable, if it was set. This can be useful if you know it's up to date, but the current time is in the window where it's not certain results have come out yet so keeps refreshing.")
+    parser.add_argument("--cache-force-invalid", action=argparse.BooleanOptionalAction, help="Force cache to be updated even if existing up to date cache exists. This overrides the CACHE_FORCE_INVALID environment variable, if it was set. This can be useful if results came out outside the window where it thinks they should have.")
+    parser.add_argument("--table-max-width", type=int, help="The maximum number of characters wide that tables to be printed should be so they fit in your terminal. This overrides the TABLE_MAX_WIDTH environment variable, if it was set.")
+    parser.add_argument("--min-secs-between-queries", type=int, help="The minimum number of seconds between queries to the parkrun website to not overwealm the website. Defaults to 5.")
+    parser.add_argument("--min-log-level", choices=logging.getLevelNamesMapping().keys(), help="Override the logger and set the minimum level to log to this. Defaults to WARNING.")
+
+    args = parser.parse_args()
+
+    # Default to all in environment variables
+    if len(args.runner) == 0:
+        runner_ids: list[int] = parkrun.ALL_PARKRUNNER_IDS
+    else:
+        runner_ids: list[int] = []
+        for arg in args.runner:
+            if isinstance(arg, int):
+                runner_ids.append(arg)
+            else:
+                number: int | None = parkrun.PARKRUNNERS_ENV_NAME_TO_ID.get(arg.upper())
+                if number is None:
+                    raise ValueError(f"Unknown runner '{arg}': 'PARKRUNNER_{arg.upper()}' not in env")
+                runner_ids.append(number)
+
+    # Override environment variable if set
+    if args.cache_force_valid:
+        parkrun._CACHE_FORCE_VALID = True
+    elif args.cache_force_valid is not None:
+        parkrun._CACHE_FORCE_VALID = False
+    if args.cache_force_invalid:
+        parkrun._CACHE_FORCE_INVALID = True
+    elif args.cache_force_invalid is not None:
+        parkrun._CACHE_FORCE_INVALID = False
+    if args.table_max_width is not None:
+        parkrun._TABLE_MAX_WIDTH = args.table_max_width
+    if args.min_secs_between_queries is not None:
+        parkrun._MIN_SECS_BETWEEN_QUERIES = args.min_secs_between_queries
+    if args.min_log_level is not None:
+        logging.getLogger().setLevel(args.min_log_level)
+
+    # Call the function with the runner ids
+    command_funcs[args.command](runner_ids, args.start, args.end)
+
+if __name__ == "__main__":
+    cli()

@@ -7,7 +7,7 @@ This mainly uses Darren WOOD (parkrunner number 490) because he was the first pa
 ## Runner Stats
 
 ```text
-$ python src/cli.py runner_stats 490
+$ prcli runner_stats 490
 Runner stats from all time
 +----------------------------+--------------------------------------------------------------------------------------+
 |         Parkrunner         |                                  Darren WOOD (490)                                   |
@@ -64,16 +64,28 @@ Runner stats from all time
 
 ![](img/World%20Map%20Parkruns%20Multicoloured%20Dots.png)
 
+# Installation
+
+From the root directory of the repo:
+
+```bash
+python3 -m venv pyvenv  # Create a virtual environment in the pyvenv directory
+source pyvenv/bin/activate  # Activate the virtual environment
+pip install .  # Install the package and its dependencies into the virtual environment
+```
+
+Now the `prcli` script is on PATH.
+
 # Usage
 
 ## Command-Line Interface
 
-Run `python src/cli.py`. It takes command-line arguments and has help text.
+Run `prcli` (same as running `python src/parkrun/cli.py`). It takes command-line arguments and has help text.
 
 You can use the names (case in-sensitive) in the `.env` file that you may have created as below to use their numbers, e.g.:
 
 ```bash
-python src/cli.py runner_stats me
+prcli runner_stats me
 ```
 
 ## Editing Main.py to call library

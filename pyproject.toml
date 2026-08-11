@@ -26,6 +26,9 @@ dependencies = [
     "unidecode",
 ]
 
+[project.scripts]
+prcli = "parkrun.cli:cli"
+
 [project.optional-dependencies]
 test = [
     "parameterized",
