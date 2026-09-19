@@ -1,3 +1,5 @@
+import datetime
+from dateutil.relativedelta import relativedelta
 import dotenv
 import os
 import logging
@@ -28,6 +30,23 @@ def _env_strtobool(env_var_name: str, default: bool) -> bool:
         return _strtobool(os.getenv(env_var_name, "invalid"))
     except ValueError:
         return default
+
+def projected_age_range(
+    min_age: int,
+    max_age: int,
+    date_of_age: datetime.date,
+    today: datetime.date,
+) -> tuple[int, int]:
+    """
+    Given an age range and a date on which it was correct, return the age range
+    adjusted for what it could be 'today' (provided).
+    """
+
+    almost_a_year_future: datetime.date = today + relativedelta(years=1, days=-1)
+    min_age += relativedelta(dt1=today, dt2=date_of_age).years
+    max_age += relativedelta(dt1=almost_a_year_future, dt2=date_of_age).years
+
+    return min_age, max_age
 
 PARKRUNNERS_ENV_NAME_TO_ID: dict[str, int] = dict()
 for key, value in os.environ.items():

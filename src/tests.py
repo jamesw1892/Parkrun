@@ -12,7 +12,7 @@ from parkrun.models.country import Country
 from parkrun.models.pb import PB
 from parkrun.api.cache import most_recent_parkrun, HR_RESULT_START, HR_RESULT_END
 from parkrun.graphs.activity import _get_num_months
-from parkrun import _env_strtobool
+from parkrun import _env_strtobool, projected_age_range
 import os
 
 DUMMY_COUNTRY: Country = Country(0, "url", [0, 0, 0, 0])
@@ -275,6 +275,45 @@ class TestMyStrToBool(unittest.TestCase):
             os.environ[TestMyStrToBool.ENV_VAR_NAME] = value
 
         self.assertEqual(_env_strtobool(TestMyStrToBool.ENV_VAR_NAME, default), expected)
+
+
+class TestProjectedAgeRange(unittest.TestCase):
+    @parameterized.expand([
+        (25, 29, datetime.date(2026, 9, 19), datetime.date(2026, 9, 19), 25, 29, "Same day"),
+        (25, 29, datetime.date(2026, 9, 19), datetime.date(2026, 9, 20), 25, 30, "Day after"),
+        (25, 29, datetime.date(2026, 9, 19), datetime.date(2027, 9, 18), 25, 30, "A year minus a day after"),
+        (25, 29, datetime.date(2026, 9, 19), datetime.date(2027, 9, 19), 26, 30, "A year after"),
+        (25, 29, datetime.date(2026, 9, 19), datetime.date(2027, 9, 20), 26, 31, "A year and a day after"),
+        (25, 29, datetime.date(2026, 9, 19), datetime.date(2028, 9, 18), 26, 31, "Two years minus a day after leap year"),
+        (25, 29, datetime.date(2026, 9, 19), datetime.date(2028, 9, 19), 27, 31, "Two years after leap year"),
+        (25, 29, datetime.date(2026, 9, 19), datetime.date(2028, 9, 20), 27, 32, "Two years and a day after leap year"),
+        (25, 29, datetime.date(2028, 9, 19), datetime.date(2028, 9, 19), 25, 29, "Same day leap year"),
+        (25, 29, datetime.date(2028, 9, 19), datetime.date(2028, 9, 20), 25, 30, "Day after leap year"),
+        (25, 29, datetime.date(2028, 9, 19), datetime.date(2029, 9, 18), 25, 30, "A year minus a day after leap year"),
+        (25, 29, datetime.date(2028, 9, 19), datetime.date(2029, 9, 19), 26, 30, "A year after leap year"),
+        (25, 29, datetime.date(2028, 9, 19), datetime.date(2029, 9, 20), 26, 31, "A year and a day after leap year"),
+        (25, 29, datetime.date(2028, 9, 19), datetime.date(2030, 9, 18), 26, 31, "Two years minus a day after"),
+        (25, 29, datetime.date(2028, 9, 19), datetime.date(2030, 9, 19), 27, 31, "Two years after"),
+        (25, 29, datetime.date(2028, 9, 19), datetime.date(2030, 9, 20), 27, 32, "Two years and a day after"),
+    ])
+    def test_projected_age_range(
+        self,
+        start_min_age: int,
+        start_max_age: int,
+        date_of_age_category: datetime.date,
+        today: datetime.date,
+        expected_min_age: int,
+        expected_max_age: int,
+        description: str,
+    ):
+        got_min_age, got_max_age = projected_age_range(
+            start_min_age,
+            start_max_age,
+            date_of_age_category,
+            today,
+        )
+        self.assertEqual(got_min_age, expected_min_age, f"Min age: {description}: expected {expected_min_age} but got {got_min_age}")
+        self.assertEqual(got_max_age, expected_max_age, f"Max age: {description}: expected {expected_max_age} but got {got_max_age}")
 
 if __name__ == "__main__":
     unittest.main()
