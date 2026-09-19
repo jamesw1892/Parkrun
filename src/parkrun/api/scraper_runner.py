@@ -36,10 +36,9 @@ def fetch_runner_results(
 
     # Extract most recent age category
     try:
-        most_recent_age_cat_str = h2s[0].findNext('p').contents[-1].split()[-1]
+        most_recent_age_category = AgeCategory(h2s[0].findNext('p').contents[-1].split()[-1])
     except:
-        most_recent_age_cat_str = ""
-    most_recent_age_category: AgeCategory = AgeCategory(most_recent_age_cat_str)
+        most_recent_age_category = None
 
     # Ignore other tables as can be worked out from main table
     results_tables: list[Tag] = soup.findAll('table', {'id': 'results'})

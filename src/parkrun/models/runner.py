@@ -15,7 +15,7 @@ class Runner:
         self,
         number: int,
         name: str,
-        most_recent_age_category: AgeCategory,
+        most_recent_age_category: AgeCategory | None,
         results: list[RunnerResult],
         start_date: datetime.date,
         end_date: datetime.date
@@ -28,7 +28,7 @@ class Runner:
 
         self.number: int = number
         self.name: str = name
-        self.most_recent_age_category: AgeCategory = most_recent_age_category
+        self.most_recent_age_category: AgeCategory | None = most_recent_age_category
         self.results: list[RunnerResult] = results
         self.start_date: datetime.date = start_date
         self.end_date: datetime.date = end_date
