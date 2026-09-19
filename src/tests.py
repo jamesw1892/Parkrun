@@ -8,13 +8,15 @@ from parkrun.models.event import Event
 from parkrun.models.position import Position
 from parkrun.models.time import Time
 from parkrun.models.age_grade import AgeGrade
+from parkrun.models.country import Country
 from parkrun.models.pb import PB
 from parkrun.api.cache import most_recent_parkrun, HR_RESULT_START, HR_RESULT_END
 from parkrun.graphs.activity import _get_num_months
 from parkrun import _env_strtobool
 import os
 
-DUMMY_EVENT: Event = Event(0, "Name", "name", 0.0, 0.0, 0, 0)
+DUMMY_COUNTRY: Country = Country(0, "url", [0, 0, 0, 0])
+DUMMY_EVENT: Event = Event(0, "Name", "name", 0.0, 0.0, DUMMY_COUNTRY, 0)
 DUMMY_POSITION: Position = Position("1")
 DUMMY_TIME: Time = Time("00:00", datetime.timedelta())
 DUMMY_AGE_GRADE: AgeGrade = AgeGrade("50.00%")
@@ -43,7 +45,7 @@ class TestStreaks(unittest.TestCase):
         ([(1, datetime.date(2026, 4, 11)), (2, datetime.date(2026, 4, 4)), (1, datetime.date(2026, 3, 28)), (2, datetime.date(2026, 3, 21))], (2, [(datetime.date(2026, 4, 4), datetime.date(2026, 4, 11)), (datetime.date(2026, 3, 28), datetime.date(2026, 4, 4)), (datetime.date(2026, 3, 21), datetime.date(2026, 3, 28))])),
     ])
     def test_floating_tourist_streak2(self, results: list[tuple[int, datetime.date]], expected: tuple[int, list[tuple[datetime.date, datetime.date]]]):
-        runner = Runner(1, "Name", AgeCategory("SM20-24"), [RunnerResult(Event(loc_id, "Name", "name", 0.0, 0.0, 0, 0), date, 0, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB) for loc_id, date in results], datetime.date.min, datetime.date.max)
+        runner = Runner(1, "Name", AgeCategory("SM20-24"), [RunnerResult(Event(loc_id, "Name", "name", 0.0, 0.0, DUMMY_COUNTRY, 0), date, 0, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB) for loc_id, date in results], datetime.date.min, datetime.date.max)
         self.assertEqual(runner.floating_tourist_streak2, expected)
 
     @parameterized.expand([
@@ -57,7 +59,7 @@ class TestStreaks(unittest.TestCase):
         ([(4, datetime.date(2026, 4, 25)), (3, datetime.date(2026, 4, 18)), (1, datetime.date(2026, 4, 11)), (5, datetime.date(2026, 4, 4)), (1, datetime.date(2026, 3, 28)), (2, datetime.date(2026, 3, 21)), (1, datetime.date(2026, 3, 14))], (2, [(datetime.date(2026, 3, 14), datetime.date(2026, 3, 21)), (datetime.date(2026, 4, 18), datetime.date(2026, 4, 25))])),
     ])
     def test_floating_tourist_streak(self, results: list[tuple[int, datetime.date]], expected: tuple[int, list[tuple[datetime.date, datetime.date]]]):
-        runner = Runner(1, "Name", AgeCategory("SM20-24"), [RunnerResult(Event(loc_id, "Name", "name", 0.0, 0.0, 0, 0), date, 0, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB) for loc_id, date in results], datetime.date.min, datetime.date.max)
+        runner = Runner(1, "Name", AgeCategory("SM20-24"), [RunnerResult(Event(loc_id, "Name", "name", 0.0, 0.0, DUMMY_COUNTRY, 0), date, 0, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB) for loc_id, date in results], datetime.date.min, datetime.date.max)
         self.assertEqual(runner.floating_tourist_streak, expected)
 
 class TestMostRecentParkrun(unittest.TestCase):
