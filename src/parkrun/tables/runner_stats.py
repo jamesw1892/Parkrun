@@ -34,7 +34,7 @@ def format_floating_streak(streak: int, stretches: list[tuple[datetime.date, dat
     ranges: str = ", ".join(f"{start} - {end}" if start != end else f"{end}" for start, end in stretches)
     return f"{streak} ({ranges})"
 
-STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
+STATS: tuple[tuple[str, Callable[[Runner], Any]], ...] = (
     ("Num Runs"                  , lambda runner: len(runner.results)),
     ("Total Run Time"            , lambda runner: runner.total_run_time),
     ("Average Run Time"          , lambda runner: runner.average_run_time),
