@@ -9,7 +9,7 @@ from typing import Any
 from parkrun import get_table_max_width
 from parkrun.api.scraper_runner import fetch_runner_results
 from parkrun.api.utils import date_description
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from texttable import Texttable
 
 def format_events(results: list[RunnerResult]) -> str:
@@ -62,7 +62,7 @@ STATS: tuple[tuple[str, Callable[[Runner], Any]]] = (
     ("p-index"                   , lambda runner: f"{runner.p_index}"),
 )
 
-def runner_stats(runner_ids: list[int], start_date: datetime.date, end_date: datetime.date) -> None:
+def runner_stats(runner_ids: Iterable[int], start_date: datetime.date, end_date: datetime.date) -> None:
     """
     Print a table with statistics about each given parkrunner side-by-side.
     """
