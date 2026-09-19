@@ -8,6 +8,7 @@ from parkrun.models.age_category import AgeCategory
 from parkrun.models.runner_result import RunnerResult
 from parkrun.models.time import Time
 from parkrun.api.utils import minimals, maximals, most_common, date_description
+from parkrun import projected_age_range
 
 class Runner:
     def __init__(
@@ -375,8 +376,28 @@ class Runner:
 
         return p_index
 
+    @cached_property
+    def projected_age_category(self) -> AgeCategory | None:
+        """
+        Return a (non-standard) age category of the same format as normal but
+        numbers adjusted to the current time
+        """
+
+        if self.latest_result is None or self.most_recent_age_category is None:
+            return None
+
+        min_age, max_age = projected_age_range(
+            self.most_recent_age_category.min_age,
+            self.most_recent_age_category.max_age,
+            self.latest_result.date,
+            datetime.date.today()
+        )
+
+        return AgeCategory(f"{self.most_recent_age_category.age_group}{self.most_recent_age_category.gender}{min_age}-{max_age}")
+
     def format_identity(self) -> str:
-        return f"{self.name} ({self.number})"
+        estimated_age_cat: str = "" if self.projected_age_category is None else f" {self.projected_age_category}"
+        return f"{self.name} ({self.number}){estimated_age_cat}"
 
     def __repr__(self) -> str:
         return f"Runner({self.format_identity()}, {len(self.results)} results {date_description(self.start_date, self.end_date)})"

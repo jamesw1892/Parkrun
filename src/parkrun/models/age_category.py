@@ -7,6 +7,7 @@ bounding this age category separated with a dash.
 
 from enum import Enum
 
+# TODO: Properly handle age categories
 # class Gender(Enum):
 #     MALE = "M"
 #     FEMALE = "W"
@@ -25,6 +26,8 @@ MAX_AGE: int = 100
 class AgeCategory:
     def __init__(self, string: str):
         self.string: str = string
+        self.age_group: str = string[0]
+        self.gender: str = string[1]
 
         # Try to extract age ranges, otherwise default
         try:
@@ -80,3 +83,8 @@ class AgeCategory:
 
     def __str__(self) -> str:
         return self.string
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, AgeCategory):
+            return False
+        return self.string == other.string
