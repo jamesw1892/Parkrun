@@ -12,6 +12,8 @@ from parkrun.api.utils import date_description
 from collections.abc import Callable, Iterable
 from texttable import Texttable
 
+today: datetime.date = datetime.date.today()
+
 def format_events(results: list[RunnerResult]) -> str:
     return "; ".join(sorted(map(lambda x: x.format_for_event(), results)))
 
@@ -51,6 +53,7 @@ STATS: tuple[tuple[str, Callable[[Runner], Any]], ...] = (
     ("Tourism Percentage"        , lambda runner: f"{runner.tourism_percentage * 100:.2f}%"),
     ("Consistency"               , lambda runner: f"{runner.consistency * 100:.2f}%"),
     ("International Percentage"  , lambda runner: f"{runner.international_percentage * 100:.2f}%"),
+    (f"Runs so far in {today.year}", lambda runner: sum(result.date.year == today.year for result in runner.results)),
     ("Streak"                    , lambda runner: format_streak(*runner.streak)),
     ("Floating Streak"           , lambda runner: format_floating_streak(*runner.floating_streak)),
     ("Tourist Streak"            , lambda runner: format_streak(*runner.tourist_streak)),
