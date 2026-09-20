@@ -226,6 +226,24 @@ class TestMaxParkrunsInYear(unittest.TestCase):
         got: int = max_parkruns_in_year(year)
         self.assertEqual(got, expected, f"{description}: expected {expected} but got {got}")
 
+    @parameterized.expand([
+        (datetime.date(2026, 1, 1), 1, "New Year's Day only"),
+        (datetime.date(2026, 9, 20), 39, "Through 20 September"),
+        (datetime.date(2026, 12, 24), 52, "Before Christmas Day"),
+        (datetime.date(2026, 12, 25), 53, "Including Christmas Day"),
+    ])
+    def test_max_parkruns_in_year_to_date(self, end_date: datetime.date, expected: int, description: str):
+        got: int = max_parkruns_in_year(end_date.year, end_date)
+        self.assertEqual(got, expected, f"{description}: expected {expected} but got {got}")
+
+    @parameterized.expand([
+        (datetime.date(2025, 1, 1), 0, "Before the requested year"),
+        (datetime.date(2028, 1, 1), 54, "After the requested year"),
+    ])
+    def test_end_date_outside_requested_year(self, end_date: datetime.date, expected: int, description: str):
+        got: int = max_parkruns_in_year(2026, end_date)
+        self.assertEqual(got, expected, f"{description}: expected {expected} but got {got}")
+
 class TestActivityGraph(unittest.TestCase):
     @parameterized.expand([
         (2025, 12, 2025, 12, 1),
