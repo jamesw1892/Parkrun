@@ -64,7 +64,7 @@ def minimals(*args, key=None) -> list:
 
     return values
 
-def most_common(counter: Counter) -> tuple[list[Any], int]:
+def most_common(counter: Counter[Any]) -> tuple[list[Any], int]:
     """
     Given a counter, return the maximum number of any one thing and the list of
     all of those things with the maximum value.

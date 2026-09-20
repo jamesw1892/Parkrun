@@ -40,7 +40,7 @@ def activity_graph(
     last_run_date : datetime.date = max(runner.results[ 0].date for runner in runners_with_results)
 
     # Count up the number of times each runner has ran in each month
-    frequencies: list[Counter] = [
+    frequencies: list[Counter[str]] = [
         Counter(result.date.strftime("%Y-%m") for result in runner.results)
         for runner in runners
     ]

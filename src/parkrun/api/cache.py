@@ -4,6 +4,7 @@ from pathlib import Path
 import pickle
 from platformdirs import user_cache_dir
 from parkrun import get_cache_force_valid, get_cache_force_invalid
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ HR_RESULT_END: int = 13
 
 ENCODING = "utf-8"
 
-def most_recent_parkrun(reference: datetime = None) -> datetime:
+def most_recent_parkrun(reference: Optional[datetime] = None) -> datetime:
     """
     Return the datetime of the most recent parkrun (including Christmas and New
     Years Day). We use the constants HR_RESULT_START and HR_RESULT_END. If the

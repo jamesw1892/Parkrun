@@ -52,17 +52,17 @@ class Runner:
 
         self.tourism_percentage: float = self.num_unique_locations / max(len(results), 1)
 
-        self.year_counter: Counter = Counter(result.date.year for result in results)
+        self.year_counter: Counter[int] = Counter(result.date.year for result in results)
         most_common_year: tuple[list[int], int] = most_common(self.year_counter)
         self.most_runs_per_year_years: list[int] = most_common_year[0]
         self.most_runs_per_year_count: int = most_common_year[1]
 
-        self.locations_counter: Counter = Counter(result.location for result in results)
+        self.locations_counter: Counter[Event] = Counter(result.location for result in results)
         most_common_location: tuple[list[Event], int] = most_common(self.locations_counter)
         self.most_runs_per_location_locations: list[Event] = most_common_location[0]
         self.most_runs_per_location_count: int = most_common_location[1]
 
-        self.countries_counter: Counter = Counter(result.location.country for result in results)
+        self.countries_counter: Counter[Country] = Counter(result.location.country for result in results)
         most_common_country: tuple[list[Country], int] = most_common(self.countries_counter)
         self.most_runs_per_country_countries: list[Country] = most_common_country[0]
         self.most_runs_per_country_count: int = most_common_country[1]
