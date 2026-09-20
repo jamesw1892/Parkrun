@@ -4,24 +4,32 @@ thing occurred, side-by-side for each given parkrunner.
 """
 
 import datetime
-from typing import Any
-from parkrun.models.country_collection import CountryCollection
+from typing import Any, Optional
 from parkrun.models.runner import Runner
 from parkrun.models.runner_result import RunnerResult
 from parkrun import get_table_max_width
+from parkrun.api.cache import max_parkruns_in_year
 from parkrun.api.scraper_runner import fetch_runner_results
-from parkrun.api.scraper import fetch_countries
 from collections.abc import Callable
 from collections import Counter
 from texttable import Texttable
 from itertools import zip_longest
 
-def most_common_things_runner(runner_ids: list[int], runner_to_counter: Callable[[Runner], Counter], start_date: datetime.date, end_date: datetime.date) -> None:
+def most_common_things_runner(
+    runner_ids: list[int],
+    runner_to_counter: Callable[[Runner], Counter[Any]],
+    start_date: datetime.date,
+    end_date: datetime.date,
+    format_thing: Optional[Callable[[Any, int], str]] = None,
+) -> None:
     """
     Print a table with a column for each parkrunner where the column is the
     list of the things in order from most common to least common. The thing is
     calculated by passing the Runner object of the parkrunner to the given
-    function to return a Counter object of the things.
+    function to return a Counter object of the things. format_thing is a
+    function that given the thing and the number of them there are for each
+    runner, return a string to display in the cell of the table. By default this
+    is just '<thing> (<count>)'
     
     For example, since Runner has an attribute locations_counter, to print a
     table of all unique locations the runner has run at with how many times each
@@ -29,15 +37,18 @@ def most_common_things_runner(runner_ids: list[int], runner_to_counter: Callable
     this: most_common_things_runner(runner_ids, lambda runner: runner.locations_counter)
     """
 
+    if format_thing is None:
+        format_thing = lambda thing, count: f"{thing} ({count})"
+
     runners: list[Runner] = [fetch_runner_results(runner_id, start_date, end_date) for runner_id in runner_ids]
-    counters: list[Counter] = list(map(runner_to_counter, runners))
+    counters: list[Counter[Any]] = list(map(runner_to_counter, runners))
     most_common_things: list[list[tuple[Any, int]]] = [counter.most_common() for counter in counters]
 
     table = Texttable(get_table_max_width())
     table.header(["#"] + [runner.format_identity() for runner in runners])
     rank: int = 1
     for runners_thing in zip_longest(*most_common_things):
-        table.add_row([rank] + ["" if runner_thing is None else f"{runner_thing[0]} ({runner_thing[1]})" for runner_thing in runners_thing])
+        table.add_row([rank] + ["" if runner_thing is None else format_thing(runner_thing[0], runner_thing[1]) for runner_thing in runners_thing])
         rank += 1
     print(table.draw())
 
@@ -67,7 +78,12 @@ def most_common_year(runner_ids: list[int], start_date: datetime.date, end_date:
     Print a table of the most common years during which the given parkrunners
     have run.
     """
-    most_common_things_runner(runner_ids, lambda runner: runner.year_counter, start_date, end_date)
+
+    def format_year_count(year: int, count: int) -> str:
+        max_count: int = max_parkruns_in_year(year)
+        return f"{year} ({count}/{max_count})"
+
+    most_common_things_runner(runner_ids, lambda runner: runner.year_counter, start_date, end_date, format_year_count)
 
 def most_common_location(runner_ids: list[int], start_date: datetime.date, end_date: datetime.date) -> None:
     """

@@ -10,7 +10,7 @@ from parkrun.models.time import Time
 from parkrun.models.age_grade import AgeGrade
 from parkrun.models.country import Country
 from parkrun.models.pb import PB
-from parkrun.api.cache import most_recent_parkrun, HR_RESULT_START, HR_RESULT_END
+from parkrun.api.cache import max_parkruns_in_year, most_recent_parkrun, HR_RESULT_START, HR_RESULT_END
 from parkrun.graphs.activity import _get_num_months
 from parkrun import _env_strtobool, projected_age_range
 import os
@@ -213,6 +213,18 @@ class TestMostRecentParkrun(unittest.TestCase):
         result = most_recent_parkrun(reference)
         expected = datetime.datetime(2026, 1, 3, HR_RESULT_END)
         self.assertEqual(result, expected)
+
+class TestMaxParkrunsInYear(unittest.TestCase):
+    @parameterized.expand([
+        (2016, 55, "53 Saturdays and both special dates on weekdays"),
+        (2021, 53, "52 Saturdays and Christmas Day on Saturday"),
+        (2022, 54, "53 Saturdays and New Year's Day on Saturday"),
+        (2023, 54, "52 Saturdays and both special dates on weekdays"),
+        (2024, 54, "Leap year with 52 Saturdays and both special dates on weekdays"),
+    ])
+    def test_max_parkruns_in_year(self, year: int, expected: int, description: str):
+        got: int = max_parkruns_in_year(year)
+        self.assertEqual(got, expected, f"{description}: expected {expected} but got {got}")
 
 class TestActivityGraph(unittest.TestCase):
     @parameterized.expand([

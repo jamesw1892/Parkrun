@@ -90,6 +90,28 @@ def parkrun_before(reference: datetime.date) -> datetime.date:
     reference = datetime.combine(reference, time.min)
     return most_recent_parkrun(reference).date()
 
+def max_parkruns_in_year(year: int) -> int:
+    """
+    Given a year, return the maximum number of parkruns that could have been
+    run in that year.
+    """
+
+    first_day = date(year, 1, 1)
+    days_in_year = (date(year + 1, 1, 1) - first_day).days
+    days_from_nyd_to_first_sat = (5 - first_day.weekday()) % 7
+
+    # Starting from the day after the first saturday of the year, count the
+    # number of whole 7-day chunks left in the year (equivalently saturdays) and
+    # add on the first
+    saturday_count = (days_in_year - days_from_nyd_to_first_sat - 1) // 7 + 1
+
+    special_event_count = sum(
+        special_date.weekday() != 5
+        for special_date in (date(year, 1, 1), date(year, 12, 25))
+    )
+
+    return saturday_count + special_event_count
+
 def check_cache(type_name: str, file_name: str, is_cache_valid_forever: bool) -> None | bytes:
     """
     If the data of type `type_name` and name `file_name` is in the cache and
