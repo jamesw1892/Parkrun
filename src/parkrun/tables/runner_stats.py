@@ -9,6 +9,7 @@ from typing import Any
 from parkrun import get_table_max_width
 from parkrun.api.scraper_runner import fetch_runner_results
 from parkrun.api.utils import date_description
+from parkrun.api.cache import max_parkruns_in_year
 from collections.abc import Callable, Iterable
 from texttable import Texttable
 
@@ -53,7 +54,7 @@ STATS: tuple[tuple[str, Callable[[Runner], Any]], ...] = (
     ("Tourism Percentage"        , lambda runner: f"{runner.tourism_percentage * 100:.2f}%"),
     ("Consistency"               , lambda runner: f"{runner.consistency * 100:.2f}%"),
     ("International Percentage"  , lambda runner: f"{runner.international_percentage * 100:.2f}%"),
-    (f"Runs so far in {today.year}", lambda runner: sum(result.date.year == today.year for result in runner.results)),
+    (f"Runs so far in {today.year} (/{max_parkruns_in_year(today.year, today)})", lambda runner: sum(result.date.year == today.year for result in runner.results)),
     ("Streak"                    , lambda runner: format_streak(*runner.streak)),
     ("Floating Streak"           , lambda runner: format_floating_streak(*runner.floating_streak)),
     ("Tourist Streak"            , lambda runner: format_streak(*runner.tourist_streak)),

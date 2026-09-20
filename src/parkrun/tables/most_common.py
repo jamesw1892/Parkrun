@@ -80,7 +80,7 @@ def most_common_year(runner_ids: list[int], start_date: datetime.date, end_date:
     """
 
     def format_year_count(year: int, count: int) -> str:
-        max_count: int = max_parkruns_in_year(year)
+        max_count: int = max_parkruns_in_year(year, datetime.date.today())
         return f"{year} ({count}/{max_count})"
 
     most_common_things_runner(runner_ids, lambda runner: runner.year_counter, start_date, end_date, format_year_count)
