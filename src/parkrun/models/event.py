@@ -53,3 +53,6 @@ class Event:
 
     def __hash__(self) -> int:
         return hash(self.id_)
+
+    def __repr__(self) -> str:
+        return f"Event({self})"
