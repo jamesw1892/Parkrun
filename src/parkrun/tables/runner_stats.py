@@ -13,8 +13,6 @@ from parkrun.api.cache import max_parkruns_in_year
 from collections.abc import Callable, Iterable
 from texttable import Texttable
 
-today: datetime.date = datetime.date.today()
-
 def format_events(results: list[RunnerResult]) -> str:
     return "; ".join(sorted(map(lambda x: x.format_for_event(), results)))
 
@@ -37,33 +35,46 @@ def format_floating_streak(streak: int, stretches: list[tuple[datetime.date, dat
     ranges: str = ", ".join(f"{start} - {end}" if start != end else f"{end}" for start, end in stretches)
     return f"{streak} ({ranges})"
 
-STATS: tuple[tuple[str, Callable[[Runner], Any]], ...] = (
-    ("Num Runs"                  , lambda runner: len(runner.results)),
-    ("Total Run Time"            , lambda runner: runner.total_run_time),
-    ("Average Run Time"          , lambda runner: runner.average_run_time),
-    ("First Run"                 , lambda runner: runner.first_result),
-    ("Latest Run"               , lambda runner: runner.latest_result),
-    ("Best Time"                 , lambda runner: f"{runner.best_times[0].time} ({format_events(runner.best_times)})" if len(runner.best_times) > 0 else "None"),
-    ("Best Age Grade"            , lambda runner: f"{runner.best_age_grades[0].age_grade} ({format_events(runner.best_age_grades)})" if len(runner.best_age_grades) > 0 else "None"),
-    ("Best Position"             , lambda runner: f"{runner.best_positions[0].position} ({format_events(runner.best_positions)})" if len(runner.best_positions) > 0 else "None"),
-    ("Most Runs In A Year"       , lambda runner: f"{runner.most_runs_per_year_count} ({format_iterable(runner.most_runs_per_year_years)})"),
-    ("Most Runs At A Location"   , lambda runner: f"{runner.most_runs_per_location_count} ({format_iterable(runner.most_runs_per_location_locations)})"),
-    ("Most Runs In A Country"    , lambda runner: f"{runner.most_runs_per_country_count} ({format_iterable(runner.most_runs_per_country_countries)})"),
-    ("Countries Visited"         , lambda runner: len(runner.countries_visited)),
-    ("Number of Unique Locations", lambda runner: runner.num_unique_locations),
-    ("Tourism Percentage"        , lambda runner: f"{runner.tourism_percentage * 100:.2f}%"),
-    ("Consistency"               , lambda runner: f"{runner.consistency * 100:.2f}%"),
-    ("International Percentage"  , lambda runner: f"{runner.international_percentage * 100:.2f}%"),
-    (f"Runs so far in {today.year} (/{max_parkruns_in_year(today.year, today)})", lambda runner: sum(result.date.year == today.year for result in runner.results)),
-    ("Streak"                    , lambda runner: format_streak(*runner.streak)),
-    ("Floating Streak"           , lambda runner: format_floating_streak(*runner.floating_streak)),
-    ("Tourist Streak"            , lambda runner: format_streak(*runner.tourist_streak)),
-    ("Tourist Streak 2"          , lambda runner: format_streak(*runner.tourist_streak2)),
-    ("Floating Tourist Streak"   , lambda runner: format_floating_streak(*runner.floating_tourist_streak)),
-    ("Floating Tourist Streak 2" , lambda runner: format_floating_streak(*runner.floating_tourist_streak2)),
-    ("re-index"                  , lambda runner: f"{runner.re_index}"),
-    ("p-index"                   , lambda runner: f"{runner.p_index}"),
-)
+def get_stats(start_date: datetime.date, end_date: datetime.date) -> tuple[tuple[str, Callable[[Runner], Any]], ...]:
+    """
+    Return the statistics to display as pairs of the name of the statistic and a
+    function to calculate it from a runner, whose results are only those between
+    the given start and end dates.
+    """
+
+    # The end date defaults to forever so limit it to today since there can't be
+    # any results after then anyway
+    last_date: datetime.date = min(end_date, datetime.date.today())
+    max_parkruns: int = max_parkruns_in_year(last_date.year, start_date, last_date)
+    when: str = f"{last_date.year} (/{max_parkruns})"
+
+    return (
+        ("Num Runs"                  , lambda runner: len(runner.results)),
+        ("Total Run Time"            , lambda runner: runner.total_run_time),
+        ("Average Run Time"          , lambda runner: runner.average_run_time),
+        ("First Run"                 , lambda runner: runner.first_result),
+        ("Latest Run"                , lambda runner: runner.latest_result),
+        ("Best Time"                 , lambda runner: f"{runner.best_times[0].time} ({format_events(runner.best_times)})" if len(runner.best_times) > 0 else "None"),
+        ("Best Age Grade"            , lambda runner: f"{runner.best_age_grades[0].age_grade} ({format_events(runner.best_age_grades)})" if len(runner.best_age_grades) > 0 else "None"),
+        ("Best Position"             , lambda runner: f"{runner.best_positions[0].position} ({format_events(runner.best_positions)})" if len(runner.best_positions) > 0 else "None"),
+        ("Most Runs In A Year"       , lambda runner: f"{runner.most_runs_per_year_count} ({format_iterable(runner.most_runs_per_year_years)})"),
+        ("Most Runs At A Location"   , lambda runner: f"{runner.most_runs_per_location_count} ({format_iterable(runner.most_runs_per_location_locations)})"),
+        ("Most Runs In A Country"    , lambda runner: f"{runner.most_runs_per_country_count} ({format_iterable(runner.most_runs_per_country_countries)})"),
+        ("Countries Visited"         , lambda runner: len(runner.countries_visited)),
+        ("Number of Unique Locations", lambda runner: runner.num_unique_locations),
+        ("Tourism Percentage"        , lambda runner: f"{runner.tourism_percentage * 100:.2f}%"),
+        ("Consistency"               , lambda runner: f"{runner.consistency * 100:.2f}%"),
+        ("International Percentage"  , lambda runner: f"{runner.international_percentage * 100:.2f}%"),
+        (f"Runs so far in {when}"    , lambda runner: sum(result.date.year == last_date.year for result in runner.results)),
+        ("Streak"                    , lambda runner: format_streak(*runner.streak)),
+        ("Floating Streak"           , lambda runner: format_floating_streak(*runner.floating_streak)),
+        ("Tourist Streak"            , lambda runner: format_streak(*runner.tourist_streak)),
+        ("Tourist Streak 2"          , lambda runner: format_streak(*runner.tourist_streak2)),
+        ("Floating Tourist Streak"   , lambda runner: format_floating_streak(*runner.floating_tourist_streak)),
+        ("Floating Tourist Streak 2" , lambda runner: format_floating_streak(*runner.floating_tourist_streak2)),
+        ("re-index"                  , lambda runner: f"{runner.re_index}"),
+        ("p-index"                   , lambda runner: f"{runner.p_index}"),
+    )
 
 def runner_stats(runner_ids: Iterable[int], start_date: datetime.date, end_date: datetime.date) -> None:
     """
@@ -76,6 +87,6 @@ def runner_stats(runner_ids: Iterable[int], start_date: datetime.date, end_date:
 
     table = Texttable(get_table_max_width())
     table.header(["Parkrunner"] + [runner.format_identity() for runner in runners])
-    for stat_name, stat_func in STATS:
+    for stat_name, stat_func in get_stats(start_date, end_date):
         table.add_row([stat_name] + [stat_func(runner) for runner in runners])
     print(table.draw())

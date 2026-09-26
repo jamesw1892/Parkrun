@@ -90,23 +90,22 @@ def parkrun_before(reference: date) -> date:
     reference = datetime.combine(reference, time.min)
     return most_recent_parkrun(reference).date()
 
-def max_parkruns_in_year(year: int, end_date: Optional[date] = None) -> int:
+def max_parkruns_in_year(year: int, start_date: Optional[date] = None, end_date: Optional[date] = None) -> int:
     """
     Given a year, return the maximum number of parkruns that could have taken
-    place in that year, optionally up to and including `end_date`.
+    place in that year, optionally only counting those between `start_date` and
+    `end_date` (inclusive).
     """
 
-    first_day: date = date(year, 1, 1)
+    start_of_year: date = date(year, 1, 1)
     end_of_year: date = date(year, 12, 31)
+    first_day: date = start_of_year if start_date is None else max(start_date, start_of_year)
     last_day: date = end_of_year if end_date is None else min(end_date, end_of_year)
 
-    days_in_period: int = (last_day - first_day).days + 1
-    days_from_nyd_to_first_sat: int = (5 - first_day.weekday()) % 7
-
-    # Starting from the day after the first saturday of the year, count the
-    # number of whole 7-day chunks left in the period (equivalently Saturdays)
-    # and add on the first.
-    saturday_count: int = max(0, (days_in_period - days_from_nyd_to_first_sat - 1) // 7 + 1)
+    # Count the first Saturday in the period and add on the number of whole
+    # 7-day chunks after it that are within the period (equivalently Saturdays).
+    first_saturday: date = first_day + timedelta(days=(5 - first_day.weekday()) % 7)
+    saturday_count: int = 0 if first_saturday > last_day else (last_day - first_saturday).days // 7 + 1
 
     special_event_count: int = sum(
         first_day <= special_date <= last_day and special_date.weekday() != 5

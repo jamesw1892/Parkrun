@@ -89,14 +89,16 @@ def most_common_year(runner_ids: list[int], start_date: datetime.date, end_date:
 
     print(f"Most parkruns run in each year as a percentage of the maximum possible number (so the current year may be higher than its raw number) {date_description(start_date, end_date)}")
 
-    today = datetime.date.today()
+    # The end date defaults to forever so limit it to today since parkruns in the
+    # future can't have been run yet
+    last_date: datetime.date = min(end_date, datetime.date.today())
 
     def percentage(year: int, count: int) -> float:
-        max_count: int = max_parkruns_in_year(year, today)
+        max_count: int = max_parkruns_in_year(year, start_date, last_date)
         return count / max_count if max_count else 0
 
     def format_year_percentage(year: int, count: int) -> str:
-        max_count: int = max_parkruns_in_year(year, today)
+        max_count: int = max_parkruns_in_year(year, start_date, last_date)
         return f"{year} ({count}/{max_count} = {percentage(year, count) * 100:.0f}%)"
 
     most_common_things_runner(

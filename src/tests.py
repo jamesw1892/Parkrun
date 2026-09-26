@@ -233,7 +233,7 @@ class TestMaxParkrunsInYear(unittest.TestCase):
         (datetime.date(2026, 12, 25), 53, "Including Christmas Day"),
     ])
     def test_max_parkruns_in_year_to_date(self, end_date: datetime.date, expected: int, description: str):
-        got: int = max_parkruns_in_year(end_date.year, end_date)
+        got: int = max_parkruns_in_year(end_date.year, end_date=end_date)
         self.assertEqual(got, expected, f"{description}: expected {expected} but got {got}")
 
     @parameterized.expand([
@@ -241,7 +241,33 @@ class TestMaxParkrunsInYear(unittest.TestCase):
         (datetime.date(2028, 1, 1), 54, "After the requested year"),
     ])
     def test_end_date_outside_requested_year(self, end_date: datetime.date, expected: int, description: str):
-        got: int = max_parkruns_in_year(2026, end_date)
+        got: int = max_parkruns_in_year(2026, end_date=end_date)
+        self.assertEqual(got, expected, f"{description}: expected {expected} but got {got}")
+
+    @parameterized.expand([
+        (datetime.date(2026, 1, 1), 54, "From New Year's Day"),
+        (datetime.date(2026, 1, 2), 53, "After New Year's Day, from Friday"),
+        (datetime.date(2026, 1, 3), 53, "From first Saturday"),
+        (datetime.date(2026, 1, 4), 52, "After first Saturday"),
+        (datetime.date(2026, 12, 25), 2, "From Christmas Day"),
+        (datetime.date(2026, 12, 26), 1, "From last Saturday"),
+        (datetime.date(2026, 12, 27), 0, "After last Saturday"),
+    ])
+    def test_max_parkruns_in_year_from_date(self, start_date: datetime.date, expected: int, description: str):
+        got: int = max_parkruns_in_year(start_date.year, start_date=start_date)
+        self.assertEqual(got, expected, f"{description}: expected {expected} but got {got}")
+
+    @parameterized.expand([
+        (datetime.date(2026, 3, 1), datetime.date(2026, 3, 31), 4, "March"),
+        (datetime.date(2026, 3, 7), datetime.date(2026, 3, 7), 1, "Single Saturday"),
+        (datetime.date(2026, 3, 8), datetime.date(2026, 3, 13), 0, "Sunday to Friday"),
+        (datetime.date(2026, 12, 20), datetime.date(2026, 12, 31), 2, "Christmas Day and the Saturday after"),
+        (datetime.date(2025, 6, 1), datetime.date(2027, 6, 1), 54, "Period spanning the whole year"),
+        (datetime.date(2026, 6, 1), datetime.date(2026, 5, 1), 0, "Start after end"),
+        (datetime.date(2027, 1, 1), None, 0, "Start after the requested year"),
+    ])
+    def test_max_parkruns_in_year_between_dates(self, start_date: datetime.date, end_date: datetime.date | None, expected: int, description: str):
+        got: int = max_parkruns_in_year(2026, start_date, end_date)
         self.assertEqual(got, expected, f"{description}: expected {expected} but got {got}")
 
 class TestActivityGraph(unittest.TestCase):
