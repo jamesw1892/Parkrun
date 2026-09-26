@@ -1,10 +1,12 @@
+# Parkrun
+
 Objective: to scrape the Parkrun API (or website since the API has been deprecated for years) to get info and use to show stats and graphs.
 
-# Demo
+## Demo
 
 This mainly uses Darren WOOD (parkrunner number 490) because he was the first parkrunner to run 1000 parkruns. These outputs were created 2026-07-25.
 
-## Runner Stats
+### Runner Stats
 
 ```text
 $ prcli runner_stats 490
@@ -60,11 +62,11 @@ Runner stats from all time
 +----------------------------+--------------------------------------------------------------------------------------+
 ```
 
-## World map of parkruns as multi-coloured dots
+### World map of parkruns as multi-coloured dots
 
 ![](img/World%20Map%20Parkruns%20Multicoloured%20Dots.png)
 
-# Installation
+## Installation
 
 From the root directory of the repo:
 
@@ -76,9 +78,9 @@ pip install .  # Install the package and its dependencies into the virtual envir
 
 Now the `prcli` script is on PATH.
 
-# Usage
+## Usage
 
-## Command-Line Interface
+### Command-Line Interface
 
 Run `prcli` (same as running `python src/parkrun/cli.py`). It takes command-line arguments and has help text.
 
@@ -88,7 +90,7 @@ You can use the names (case in-sensitive) in the `.env` file that you may have c
 prcli runner_stats me
 ```
 
-## Editing Main.py to call library
+### Editing Main.py to call library
 
 1. Copy the file `.env.example` and name the copy `.env`.
 2. Edit it to include the parkrun numbers you're interested in (numbers can be found on barcodes, results emails and online at https://www.parkrun.org.uk/). It is often displayed following an 'A' but don't include the 'A' in the `.env` file. Also adjust other settings stored in `.env` as desired.
@@ -96,43 +98,19 @@ prcli runner_stats me
 4. Uncomment the graph or stat function you want to run and comment the rest out.
 5. Run `python src/main.py`.
 
-# Files
+## Configuration
 
-- `.env`: Stores the configuration, particularly the Parkrun numbers of Parkrunners of interest.
-- `.env.example`: Template for `.env`.
-- `src/`: Stores source code:
-    - `main.py`: An example program that uses the `parkrun` package and Parkrunners of interest in `.env` that can be edited as desired.
-    - `tests.py`: Unit tests for tricky functions in the `parkrun` package.
-    - `parkrun/`: `parkrun` package source code:
-        - `cli.py`: Uses command-line arguments to use the `parkrun` package.
-        - `api/`:
-            - `cache.py`: Implements `check_cache` and `write_cache` to cache data to not repeatedly hit the website. It intelligently invalidates the cache at the time that results normally come out on Saturdays or Christmas or New Years Day.
-            - `parkrun_exception.py`: Custom exception.
-            - `scraper.py`: Fetches and parses pages on the parkrun website, caching results.
-            - `scraper_runner.py`: Fetches and parses the runner pages on the parkrun website, caching results.
-            - `utils.py`: Utility functions used by the rest of the package.
-        - `graphs/`:
-            - `activity.py`: Graphs the number of parkruns that parkrunners did each month.
-            - `event_map.py`: Maps all parkrun events in the world.
-            - `times.py`: Graphs the finish times of parkrunners.
-        - `models/`: Classes to model Parkrunners, locations, times, results, ...:
-            - `age_category.py`: Models the age category of a parkrunner at a fixed time.
-            - `age_grade.py`: Models the age grade of a run.
-            - `country_collection.py`: Models details of many countries with parkruns.
-            - `country.py`: Models details of a country with parkruns.
-            - `event_collection.py`: Models many parkrun events.
-            - `event_result.py`: Models the finishers and volunteers of a single event at a single location on a single date.
-            - `event_runner_result.py`: Models a single finisher's result at a single event at a single location on a single date.
-            - `event.py`: Models a parkrun event.
-            - `pb.py`: Models whether a run is a personal best.
-            - `position.py`: Models the finish position of a run.
-            - `runner_result.py`: Models a run.
-            - `runner.py`: Models a runner with their number, name and all their runs.
-            - `time.py`: Models the finish time of a run or any other parkrun-related time, e.g. total/average finish time.
-        - `tables/`:
-            - `achievements.py`: Print a table with a side-by-side comparison of achievement progress by each parkrunner.
-            - `common_run_comparison.py`: Print a table with a side-by-side comparison of runs that parkrunners did together.
-            - `latest_update.py`: Print a table with a summary of the result of each given parkrunner that did the most recent parkrun between the given dates.
-            - `most_common.py`: Print a table with a thing about the parkrunner sorted by how many times that thing occurred, side-by-side for each given parkrunner.
-            - `pb_progress.py`: Print a table with information about each time each parkrunner improved their PB side-by-side.
-            - `runner_stats.py`: Print a table with statistics about parkrunners side-by-side.
+Settings are read from `.env` (copy `.env.example`) and most can be overridden with `prcli` flags:
+
+| Setting | Default | Meaning |
+|---|---|---|
+| `PARKRUNNER_<NAME>` | | Parkrun number of a parkrunner of interest, usable as `<name>` on the command line |
+| `TABLE_MAX_WIDTH` | 180 | Maximum width of printed tables in characters |
+| `CACHE_FORCE_VALID` | false | Use cached pages even if they may be out of date |
+| `CACHE_FORCE_INVALID` | false | Re-fetch pages even if the cache is up to date |
+| `MIN_SECS_BETWEEN_QUERIES` | 5 | Minimum seconds between requests to the parkrun website |
+| `MIN_LOG_LEVEL` | WARNING | Minimum level of log messages to show |
+
+## How it works
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how the code is structured, how caching works and how to run the tests.

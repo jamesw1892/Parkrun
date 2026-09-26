@@ -1,3 +1,5 @@
 __pycache__/
 *.egg-info/
 .env
+TODO.md
+CLAUDE.local.md
