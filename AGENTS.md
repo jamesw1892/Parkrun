@@ -1,4 +1,4 @@
-# CLAUDE.md
+# AGENTS.md
 
 Scrapes the parkrun website and prints stat tables / shows graphs about parkrunners' results. Read `docs/ARCHITECTURE.md` before making structural changes.
 
