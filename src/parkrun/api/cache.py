@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, time, date
+import datetime
 import logging
 from pathlib import Path
 import pickle
@@ -20,7 +20,7 @@ HR_RESULT_END: int = 13
 
 ENCODING = "utf-8"
 
-def most_recent_parkrun(reference: Optional[datetime] = None) -> datetime:
+def most_recent_parkrun(reference: Optional[datetime.datetime] = None) -> datetime.datetime:
     """
     Return the datetime of the most recent parkrun (including Christmas and New
     Years Day). We use the constants HR_RESULT_START and HR_RESULT_END. If the
@@ -32,19 +32,19 @@ def most_recent_parkrun(reference: Optional[datetime] = None) -> datetime:
     """
 
     if reference is None:
-        reference = datetime.now()
+        reference = datetime.datetime.now()
 
-    reference_date: date = reference.date()
+    reference_date: datetime.date = reference.date()
     reference_weekday: int = reference.weekday() # Monday=0, Saturday=5
 
     # Calculate how many days to subtract to get to last Saturday
     days_since_saturday: int = (reference_weekday - 5) % 7
-    last_saturday_date: date = reference.date() - timedelta(days=days_since_saturday)
+    last_saturday_date: datetime.date = reference.date() - datetime.timedelta(days=days_since_saturday)
 
     # If between Christmas or New Years Day and saturday then this should be the
     # most recent Saturday
-    christmas_day: date = date(reference.year, 12, 25)
-    new_years_day: date = date(reference.year, 1, 1)
+    christmas_day: datetime.date = datetime.date(reference.year, 12, 25)
+    new_years_day: datetime.date = datetime.date(reference.year, 1, 1)
     if last_saturday_date < christmas_day <= reference_date:
         last_parkrun_date = christmas_day
     elif last_saturday_date < new_years_day <= reference_date:
@@ -57,7 +57,7 @@ def most_recent_parkrun(reference: Optional[datetime] = None) -> datetime:
     # parkrun because results can't have come in yet
     if reference_weekday == last_parkrun_date.weekday() and reference.hour < HR_RESULT_START:
 
-        week_before_last_parkrun_date: date = last_parkrun_date - timedelta(days=7)
+        week_before_last_parkrun_date: datetime.date = last_parkrun_date - datetime.timedelta(days=7)
 
         # If the parkrun before the last parkrun was Christmas or New Years Day
         # then we want Christmas or New Years Day
@@ -69,16 +69,16 @@ def most_recent_parkrun(reference: Optional[datetime] = None) -> datetime:
         # If not, and the last parkrun also wasn't Christmas or New Years Day
         # then both are Saturdays so just subtract 7 days
         elif reference_weekday == 5:
-            last_parkrun_date -= timedelta(days=7)
+            last_parkrun_date -= datetime.timedelta(days=7)
 
         # Otherwise, the last parkrun was Christmas or New Years Day but we want
         # to go back to the Saturday before
         else:
             last_parkrun_date = last_saturday_date
 
-    return datetime.combine(last_parkrun_date, time(HR_RESULT_END))
+    return datetime.datetime.combine(last_parkrun_date, datetime.time(HR_RESULT_END))
 
-def parkrun_before(reference: date) -> date:
+def parkrun_before(reference: datetime.date) -> datetime.date:
     """
     Return the date of the parkrun before the given date. If a parkrun took
     place on the given date then the result is not the given date.
@@ -87,29 +87,29 @@ def parkrun_before(reference: date) -> date:
     # Since most_recent_parkrun expects a datetime not a date and only returns
     # the reference if it is after HR_RESULT_START, setting the time to midnight
     # means the reference is never returned
-    reference = datetime.combine(reference, time.min)
+    reference = datetime.datetime.combine(reference, datetime.time.min)
     return most_recent_parkrun(reference).date()
 
-def max_parkruns_in_year(year: int, start_date: Optional[date] = None, end_date: Optional[date] = None) -> int:
+def max_parkruns_in_year(year: int, start_date: Optional[datetime.date] = None, end_date: Optional[datetime.date] = None) -> int:
     """
     Given a year, return the maximum number of parkruns that could have taken
     place in that year, optionally only counting those between `start_date` and
     `end_date` (inclusive).
     """
 
-    start_of_year: date = date(year, 1, 1)
-    end_of_year: date = date(year, 12, 31)
-    first_day: date = start_of_year if start_date is None else max(start_date, start_of_year)
-    last_day: date = end_of_year if end_date is None else min(end_date, end_of_year)
+    start_of_year: datetime.date = datetime.date(year, 1, 1)
+    end_of_year: datetime.date = datetime.date(year, 12, 31)
+    first_day: datetime.date = start_of_year if start_date is None else max(start_date, start_of_year)
+    last_day: datetime.date = end_of_year if end_date is None else min(end_date, end_of_year)
 
     # Count the first Saturday in the period and add on the number of whole
     # 7-day chunks after it that are within the period (equivalently Saturdays).
-    first_saturday: date = first_day + timedelta(days=(5 - first_day.weekday()) % 7)
+    first_saturday: datetime.date = first_day + datetime.timedelta(days=(5 - first_day.weekday()) % 7)
     saturday_count: int = 0 if first_saturday > last_day else (last_day - first_saturday).days // 7 + 1
 
     special_event_count: int = sum(
         first_day <= special_date <= last_day and special_date.weekday() != 5
-        for special_date in (date(year, 1, 1), date(year, 12, 25))
+        for special_date in (datetime.date(year, 1, 1), datetime.date(year, 12, 25))
     )
 
     return saturday_count + special_event_count
@@ -139,7 +139,7 @@ def check_cache(type_name: str, file_name: str, is_cache_valid_forever: bool) ->
     # If the file in the cache is older than the most recent parkrun then
     # there might be updates so treat the cache as invalid, unless the
     # environment variable overrides it
-    modified: datetime = datetime.fromtimestamp(file_path.stat().st_mtime)
+    modified: datetime.datetime = datetime.datetime.fromtimestamp(file_path.stat().st_mtime)
     if not is_cache_valid_forever and modified < most_recent_parkrun():
         if get_cache_force_valid():
             logger.warning("force: %s/%s is out of date but being used anyway", type_name, file_name)
