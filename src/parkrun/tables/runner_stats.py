@@ -42,7 +42,7 @@ STATS: tuple[tuple[str, Callable[[Runner], Any]], ...] = (
     ("Total Run Time"            , lambda runner: runner.total_run_time),
     ("Average Run Time"          , lambda runner: runner.average_run_time),
     ("First Run"                 , lambda runner: runner.first_result),
-    ("Lastest Run"               , lambda runner: runner.latest_result),
+    ("Latest Run"               , lambda runner: runner.latest_result),
     ("Best Time"                 , lambda runner: f"{runner.best_times[0].time} ({format_events(runner.best_times)})" if len(runner.best_times) > 0 else "None"),
     ("Best Age Grade"            , lambda runner: f"{runner.best_age_grades[0].age_grade} ({format_events(runner.best_age_grades)})" if len(runner.best_age_grades) > 0 else "None"),
     ("Best Position"             , lambda runner: f"{runner.best_positions[0].position} ({format_events(runner.best_positions)})" if len(runner.best_positions) > 0 else "None"),
