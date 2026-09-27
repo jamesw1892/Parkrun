@@ -22,8 +22,8 @@ def event_map(runner_id: int, only_adult: bool = True):
         if only_adult and not event.is_adult():
             continue
         m.scatter(
-            event.lat,
             event.long,
+            event.lat,
             color="green" if event in runner.unique_locations else "red"
         )
 

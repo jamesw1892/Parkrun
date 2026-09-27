@@ -28,13 +28,13 @@ class Event:
         if country is None:
             country = countries.get_country_by_id(0)
         return Event(
-            event["id"],
-            event["properties"]["EventShortName"],
-            event["properties"]["eventname"],
-            event["geometry"]["coordinates"][0],
-            event["geometry"]["coordinates"][1],
-            country,
-            event["properties"]["seriesid"],
+            id_=event["id"],
+            name=event["properties"]["EventShortName"],
+            url_name=event["properties"]["eventname"],
+            lat=event["geometry"]["coordinates"][1],
+            long=event["geometry"]["coordinates"][0],
+            country=country,
+            series=event["properties"]["seriesid"],
         )
 
     def is_junior(self) -> bool:
