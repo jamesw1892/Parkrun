@@ -5,6 +5,7 @@ import unidecode
 from typing import Sequence
 
 import parkrun
+from parkrun.api.scraper import fetch_events
 from parkrun.api.scraper_runner import fetch_runner_results
 from parkrun.models.runner import Runner
 
@@ -39,6 +40,28 @@ def can_spell(element: str, location_name: str) -> bool:
     return location_name.startswith(element[0]) and all(letter in location_name[1:] for letter in element[1:])
 
 
+def elements_by_rarity(elements: Sequence[str]) -> list[str]:
+    """
+    Return the elements sorted by how many current adult parkrun events
+    worldwide can spell them, fewest first. Elements with the same number stay
+    in their given order.
+
+    When a location can spell multiple free elements, taking the rarest one
+    makes it least likely that a future location will need that element, and
+    so least likely that the location will have to be moved later.
+    """
+
+    event_names: list[str] = [event.name for event in fetch_events() if event.is_adult()]
+    num_events: dict[str, int] = {
+        element: sum(1 for event_name in event_names if can_spell(element, event_name))
+        for element in elements
+    }
+    logger.debug("Number of events that can spell each element: %s", num_events)
+
+    # Sort is stable so ties keep their given order
+    return sorted(elements, key=lambda element: num_events[element])
+
+
 def best_assignment(elements: Sequence[str], location_names: Sequence[str]) -> dict[str, str]:
     """
     Return an assignment of elements to locations with as many elements
@@ -46,6 +69,8 @@ def best_assignment(elements: Sequence[str], location_names: Sequence[str]) -> d
     element is only assigned a location it can spell. Where there is a choice
     of which locations to use, locations earlier in location_names are
     preferred, so pass them in order of priority (e.g. first visited first).
+    Similarly, where a location has a choice of elements, elements earlier in
+    elements are preferred (e.g. rarest first).
 
     This is maximum bipartite matching: locations on one side, elements on the
     other, and an edge wherever the location can spell the element. It is
@@ -143,7 +168,7 @@ def periodic_table(runner_id: int, start_date: datetime.date, end_date: datetime
     runner: Runner = fetch_runner_results(runner_id, start_date, end_date)
     # Results are most recent first so reverse to get locations in order of first visit
     location_names: list[str] = list(dict.fromkeys(result.location.name for result in reversed(runner.results)))
-    assignment: dict[str, str] = best_assignment(ELEMENTS, location_names)
+    assignment: dict[str, str] = best_assignment(elements_by_rarity(ELEMENTS), location_names)
     assigned_location_names: set[str] = set(assignment.values())
     unassigned_location_names: list[str] = [location_name for location_name in location_names if location_name not in assigned_location_names]
 
