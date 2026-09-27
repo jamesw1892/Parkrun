@@ -71,9 +71,11 @@ def map_events(
     """
 
     # Draw on a canvas rather than as separate SVG elements so thousands of
-    # markers stay responsive
+    # markers stay responsive. Put it in our own Figure (the page) to set the
+    # title, replacing the one folium.Map creates.
+    figure = folium.Figure(title=title)
     event_map = folium.Map(tiles="OpenStreetMap", prefer_canvas=True)
-    event_map.get_root().title = title
+    event_map.add_to(figure)
 
     events = list(events)
     for event in events:
@@ -93,7 +95,7 @@ def map_events(
             [max(event.lat for event in events), max(event.long for event in events)],
         ])
 
-    _show_in_browser(event_map.get_root().render())
+    _show_in_browser(figure.render())
 
 
 def _show_in_browser(html: str) -> None:
