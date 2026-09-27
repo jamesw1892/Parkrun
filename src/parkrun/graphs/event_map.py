@@ -1,4 +1,6 @@
+from collections import defaultdict
 from collections.abc import Callable, Iterable
+import html
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import logging
 import time
@@ -9,6 +11,7 @@ from parkrun.api.scraper import fetch_events
 from parkrun.api.scraper_runner import fetch_runner_results
 from parkrun.models.event import Event
 from parkrun.models.runner import Runner
+from parkrun.models.runner_result import RunnerResult
 
 logger = logging.getLogger(__name__)
 
@@ -27,10 +30,31 @@ def event_map(runner_id: int, only_adult: bool = True) -> None:
     if only_adult:
         events = filter(lambda event: event.is_adult(), events)
 
+    results_by_event: defaultdict[Event, list[RunnerResult]] = defaultdict(list)
+    for result in runner.results:
+        results_by_event[result.location].append(result)
+
+    def popup_html(event: Event) -> str:
+        # Results are in descending order of date
+        results: list[RunnerResult] = results_by_event[event]
+        lines: list[tuple[str, str]] = [("Times done", str(len(results)))]
+        if results:
+            best: RunnerResult = min(results, key=lambda result: result.time.timedelta)
+            lines += [
+                ("First", str(results[-1].date)),
+                ("Latest", str(results[0].date)),
+                ("Best time", f"{best.time} ({best.date})"),
+            ]
+        return "<br>".join([
+            f"<b>{html.escape(event.name)}</b>",
+            *(f"<b>{title}:</b> {html.escape(value)}" for title, value in lines),
+        ])
+
     map_events(
         events,
         runner.format_identity(),
         lambda event: "green" if event in runner.unique_locations else "red",
+        popup_html,
     )
 
 
@@ -38,10 +62,12 @@ def map_events(
     events: Iterable[Event],
     title: str,
     colour: Callable[[Event], str] = lambda event: "blue",
+    popup_html: Callable[[Event], str] = lambda event: html.escape(event.name),
 ) -> None:
     """
     Display a map of the given events in the browser, each as a dot coloured by
-    the given function.
+    the given function. Clicking a dot shows a popup with the HTML given by the
+    other function, so it must escape any data it includes.
     """
 
     # Draw on a canvas rather than as separate SVG elements so thousands of
@@ -57,7 +83,7 @@ def map_events(
             color=colour(event),
             fill=True,
             fill_opacity=0.8,
-            popup=event.name,
+            popup=folium.Popup(popup_html(event), max_width=300),
             tooltip=event.name,
         ).add_to(event_map)
 
