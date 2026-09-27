@@ -1,18 +1,19 @@
+"""
+The Periodic Table achievement: assign each chemical element symbol a different
+location that can spell it, getting as many elements as possible.
+"""
+
 from collections import deque
-import datetime
+from functools import cache
 import logging
 import unidecode
 from typing import Sequence
 
-import parkrun
 from parkrun.api.scraper import fetch_events
-from parkrun.api.scraper_runner import fetch_runner_results
 from parkrun.models.runner import Runner
+from parkrun.models.runner_result import RunnerResult
 
 logger = logging.getLogger(__name__)
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG, force=True)
 
 ELEMENTS: Sequence[str] = "H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr Rb Sr Y Zr Nb Mo Tc Ru Rh Pd Ag Cd In Sn Sb Te I Xe Cs Ba La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu Hf Ta W Re Os Ir Pt Au Hg Tl Pb Bi Po At Rn Fr Ra Ac Th Pa U Np Pu Am Cm Bk Cf Es Fm Md No Lr Rf Db Sg Bh Hs Mt Ds Rg Cn Nh Fl Mc Lv Ts Og".split()
 
@@ -50,9 +51,10 @@ def can_spell(element: str, location_name: str) -> bool:
     return location_name.startswith(element[0]) and all(letter in location_name[1:] for letter in element[1:])
 
 
-def elements_by_rarity(elements: Sequence[str]) -> list[str]:
+@cache
+def elements_by_rarity() -> list[str]:
     """
-    Return the elements sorted by how many current adult parkrun events
+    Return ELEMENTS sorted by how many current adult parkrun events
     worldwide can spell them, fewest first. Elements with the same number stay
     in their given order.
 
@@ -64,12 +66,12 @@ def elements_by_rarity(elements: Sequence[str]) -> list[str]:
     event_names: list[str] = [event.name for event in fetch_events() if event.is_adult()]
     num_events: dict[str, int] = {
         element: sum(1 for event_name in event_names if can_spell(element, event_name))
-        for element in elements
+        for element in ELEMENTS
     }
     logger.debug("Number of events that can spell each element: %s", num_events)
 
     # Sort is stable so ties keep their given order
-    return sorted(elements, key=lambda element: num_events[element])
+    return sorted(ELEMENTS, key=lambda element: num_events[element])
 
 
 def best_assignment(elements: Sequence[str], location_names: Sequence[str]) -> dict[str, str]:
@@ -174,18 +176,19 @@ def best_assignment(elements: Sequence[str], location_names: Sequence[str]) -> d
     return element_to_location
 
 
-def periodic_table(runner_id: int, start_date: datetime.date, end_date: datetime.date) -> None:
-    runner: Runner = fetch_runner_results(runner_id, start_date, end_date)
-    # Results are most recent first so reverse to get locations in order of first visit
-    location_names: list[str] = list(dict.fromkeys(result.location.name for result in reversed(runner.results)))
-    assignment: dict[str, str] = best_assignment(elements_by_rarity(ELEMENTS), location_names)
-    assigned_location_names: set[str] = set(assignment.values())
-    unassigned_location_names: list[str] = [location_name for location_name in location_names if location_name not in assigned_location_names]
+def periodic_table_achieved(runner: Runner) -> dict[str, RunnerResult]:
+    """
+    Return the best assignment of elements to the locations the runner has
+    visited, with each element mapped to the runner's first result at its
+    location. Locations are prioritised in order of first visit so that
+    assignments stay as stable as possible as the runner visits new locations.
+    """
 
-    assignment_str: str = "\n".join(f"\t{element}: {assignment.get(element, '')}" for element in ELEMENTS)
-    unassigned_str: str = "\n".join(f"- {location_name}" for location_name in unassigned_location_names)
-    print(f"Overall {len(assignment)}/{len(ELEMENTS)}:\nAssignment:\n{assignment_str}\nUnassigned locations:\n{unassigned_str}")
+    # Results are most recent first so reverse to get the first result at each
+    # location, in order of first visit
+    first_results: dict[str, RunnerResult] = dict()
+    for result in reversed(runner.results):
+        first_results.setdefault(result.location.name, result)
 
-
-if __name__ == "__main__":
-    periodic_table(parkrun.PARKRUNNERS_ENV_NAME_TO_ID["ME"], datetime.date.min, datetime.date.max)
+    assignment: dict[str, str] = best_assignment(elements_by_rarity(), list(first_results))
+    return {element: first_results[location_name] for element, location_name in assignment.items()}
