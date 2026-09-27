@@ -11,7 +11,7 @@ import datetime
 def fetch_runner_results(
     number: int,
     start_date: datetime.date = datetime.date.min,
-    end_date: datetime.date = datetime.date.max
+    end_date: datetime.date = datetime.date.max,
 ) -> Runner:
     """
     Return a Runner object containing each parkrun the parkrunner has completed
