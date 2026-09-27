@@ -13,11 +13,14 @@ from parkrun.models.country_collection import CountryCollection
 from parkrun.models.pb import PB
 from parkrun.api.cache import max_parkruns_in_year, most_recent_parkrun, HR_RESULT_START, HR_RESULT_END
 from parkrun.graphs.activity import _get_num_months
+from parkrun.maps.voronoi import voronoi_cells, voronoi_layer
 from parkrun import _env_strtobool, projected_age_range
 from parkrun.tables.achievements.periodic_table import ELEMENTS, normalise, can_spell, elements_by_rarity, best_assignment, periodic_table_achieved
 import os
 import random
 from unittest.mock import patch
+from matplotlib.path import Path
+import numpy as np
 
 DUMMY_COUNTRY: Country = Country(0, "url", [0, 0, 0, 0])
 DUMMY_EVENT: Event = Event(0, "Name", "name", 0.0, 0.0, DUMMY_COUNTRY, 0)
@@ -534,6 +537,64 @@ class TestEvent(unittest.TestCase):
     def test_from_dict_unknown_country(self):
         event = Event.from_dict(self.make_event_dict(12345), self.COUNTRIES)
         self.assertEqual(event.country.id_, 0)
+
+class TestVoronoi(unittest.TestCase):
+    @staticmethod
+    def unit_vectors(lat_long: np.ndarray) -> np.ndarray:
+        lat_long = np.radians(lat_long)
+        return np.column_stack([
+            np.cos(lat_long[:, 0]) * np.cos(lat_long[:, 1]),
+            np.cos(lat_long[:, 0]) * np.sin(lat_long[:, 1]),
+            np.sin(lat_long[:, 0]),
+        ])
+
+    @parameterized.expand([
+        ("few_southern", 5, -45, -10),
+        ("few_anywhere", 6, -80, 80),
+        ("near_poles", 5, -89, 89),
+        ("near_equator", 10, -10, 10),
+        ("northern", 40, 20, 60),
+        ("many", 100, -60, 70),
+    ])
+    def test_each_point_in_nearest_locations_cell(self, _, num_locations: int, min_lat: float, max_lat: float):
+        rng = np.random.default_rng(0)
+        locations = np.column_stack([
+            rng.uniform(min_lat, max_lat, num_locations),
+            rng.uniform(-180, 180, num_locations),
+        ])
+        cells = voronoi_cells([(lat, long) for lat, long in locations])
+        paths = [[Path(np.array(ring)) for ring in rings] for rings in cells]
+
+        # Random points spread evenly over the sphere, avoiding the very edges
+        # of the map
+        num_points = 500
+        points = np.column_stack([
+            np.degrees(np.arcsin(rng.uniform(-0.995, 0.995, num_points))),
+            rng.uniform(-179.99, 179.99, num_points),
+        ])
+        similarities = self.unit_vectors(points) @ self.unit_vectors(locations).T
+        for (lat, long), similarity in zip(points, similarities):
+            nearest, second_nearest = np.argsort(similarity)[::-1][:2]
+            # Cell edges are approximated by short straight lines, so skip
+            # points almost equally close to two locations
+            if similarity[nearest] - similarity[second_nearest] < 1e-5:
+                continue
+            containing = [i for i, cell in enumerate(paths) if any(path.contains_point((long, lat)) for path in cell)]
+            self.assertEqual(containing, [nearest], f"({lat}, {long})")
+
+    def test_layer_shares_cell_between_events_at_same_location(self):
+        events = [
+            Event(i, f"Name{i}", f"name{i}", lat, long, DUMMY_COUNTRY, 1)
+            for i, (lat, long) in enumerate([(0, 0), (0, 0), (50, 10), (-30, 100), (10, -120)])
+        ]
+        layer = voronoi_layer(events, lambda event: str(event.id_))
+        self.assertEqual([feature["properties"]["colour"] for feature in layer.data["features"]], ["0", "2", "3", "4"])
+
+    def test_layer_empty_with_too_few_locations(self):
+        events = [Event(i, f"Name{i}", f"name{i}", i, i, DUMMY_COUNTRY, 1) for i in range(3)]
+        with self.assertLogs("parkrun.maps.voronoi", "WARNING"):
+            layer = voronoi_layer(events, lambda event: "red")
+        self.assertEqual(layer.data["features"], [])
 
 if __name__ == "__main__":
     unittest.main()
