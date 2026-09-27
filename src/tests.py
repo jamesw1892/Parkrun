@@ -9,6 +9,7 @@ from parkrun.models.position import Position
 from parkrun.models.time import Time
 from parkrun.models.age_grade import AgeGrade
 from parkrun.models.country import Country
+from parkrun.models.country_collection import CountryCollection
 from parkrun.models.pb import PB
 from parkrun.api.cache import max_parkruns_in_year, most_recent_parkrun, HR_RESULT_START, HR_RESULT_END
 from parkrun.graphs.activity import _get_num_months
@@ -494,6 +495,45 @@ class TestPeriodicTable(unittest.TestCase):
         runner = Runner(1, "Name", DUMMY_AGE_CATEGORY, [], datetime.date.min, datetime.date.max)
         with patch("parkrun.tables.achievements.periodic_table.elements_by_rarity", return_value=["H", "He"]):
             self.assertEqual(periodic_table_achieved(runner), {})
+
+class TestEvent(unittest.TestCase):
+    COUNTRIES: CountryCollection = CountryCollection({"countries": {
+        "0": {"url": None, "bounds": [0, 0, 0, 0]},
+        "97": {"url": "www.example.com", "bounds": [0, 0, 0, 0]},
+    }})
+
+    @staticmethod
+    def make_event_dict(countrycode: int) -> dict:
+        # GeoJSON feature in the format of events.json
+        return {
+            "id": 7,
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [-1.25, 52.5]},
+            "properties": {
+                "eventname": "fakepark",
+                "EventShortName": "Fake Park",
+                "countrycode": countrycode,
+                "seriesid": 1,
+            },
+        }
+
+    def test_from_dict(self):
+        event = Event.from_dict(self.make_event_dict(97), self.COUNTRIES)
+        self.assertEqual(event.id_, 7)
+        self.assertEqual(event.name, "Fake Park")
+        self.assertEqual(event.url_name, "fakepark")
+        self.assertEqual(event.country.id_, 97)
+        self.assertTrue(event.is_adult())
+
+    def test_from_dict_coordinates_are_long_lat(self):
+        # GeoJSON coordinates are [longitude, latitude]
+        event = Event.from_dict(self.make_event_dict(97), self.COUNTRIES)
+        self.assertEqual(event.lat, 52.5)
+        self.assertEqual(event.long, -1.25)
+
+    def test_from_dict_unknown_country(self):
+        event = Event.from_dict(self.make_event_dict(12345), self.COUNTRIES)
+        self.assertEqual(event.country.id_, 0)
 
 if __name__ == "__main__":
     unittest.main()
