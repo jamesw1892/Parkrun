@@ -13,7 +13,10 @@ from parkrun.models.pb import PB
 from parkrun.api.cache import max_parkruns_in_year, most_recent_parkrun, HR_RESULT_START, HR_RESULT_END
 from parkrun.graphs.activity import _get_num_months
 from parkrun import _env_strtobool, projected_age_range
+from parkrun.tables.achievements.periodic_table import ELEMENTS, normalise, can_spell, elements_by_rarity, best_assignment, periodic_table_achieved
 import os
+import random
+from unittest.mock import patch
 
 DUMMY_COUNTRY: Country = Country(0, "url", [0, 0, 0, 0])
 DUMMY_EVENT: Event = Event(0, "Name", "name", 0.0, 0.0, DUMMY_COUNTRY, 0)
@@ -21,6 +24,7 @@ DUMMY_POSITION: Position = Position("1")
 DUMMY_TIME: Time = Time("00:00", datetime.timedelta())
 DUMMY_AGE_GRADE: AgeGrade = AgeGrade("50.00%")
 DUMMY_PB: PB = PB(False)
+DUMMY_AGE_CATEGORY: AgeCategory = AgeCategory("SM20-24")
 
 class TestStreaks(unittest.TestCase):
     @parameterized.expand([
@@ -32,7 +36,7 @@ class TestStreaks(unittest.TestCase):
         ([datetime.date(2026, 4, 11), datetime.date(2026, 3, 28), datetime.date(2026, 3, 21), datetime.date(2026, 3, 7)], (2, [(datetime.date(2026, 3, 21), datetime.date(2026, 3, 28))])),
     ])
     def test_floating_streak(self, dates: list[datetime.date], expected: tuple[int, list[tuple[datetime.date, datetime.date]]]):
-        runner = Runner(1, "Name", AgeCategory("SM20-24"), [RunnerResult(DUMMY_EVENT, date, 0, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB) for date in dates], datetime.date.min, datetime.date.max)
+        runner = Runner(1, "Name", DUMMY_AGE_CATEGORY, [RunnerResult(DUMMY_EVENT, date, 0, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB) for date in dates], datetime.date.min, datetime.date.max)
         self.assertEqual(runner.floating_streak, expected)
 
     @parameterized.expand([
@@ -45,7 +49,7 @@ class TestStreaks(unittest.TestCase):
         ([(1, datetime.date(2026, 4, 11)), (2, datetime.date(2026, 4, 4)), (1, datetime.date(2026, 3, 28)), (2, datetime.date(2026, 3, 21))], (2, [(datetime.date(2026, 4, 4), datetime.date(2026, 4, 11)), (datetime.date(2026, 3, 28), datetime.date(2026, 4, 4)), (datetime.date(2026, 3, 21), datetime.date(2026, 3, 28))])),
     ])
     def test_floating_tourist_streak2(self, results: list[tuple[int, datetime.date]], expected: tuple[int, list[tuple[datetime.date, datetime.date]]]):
-        runner = Runner(1, "Name", AgeCategory("SM20-24"), [RunnerResult(Event(loc_id, "Name", "name", 0.0, 0.0, DUMMY_COUNTRY, 0), date, 0, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB) for loc_id, date in results], datetime.date.min, datetime.date.max)
+        runner = Runner(1, "Name", DUMMY_AGE_CATEGORY, [RunnerResult(Event(loc_id, "Name", "name", 0.0, 0.0, DUMMY_COUNTRY, 0), date, 0, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB) for loc_id, date in results], datetime.date.min, datetime.date.max)
         self.assertEqual(runner.floating_tourist_streak2, expected)
 
     @parameterized.expand([
@@ -59,7 +63,7 @@ class TestStreaks(unittest.TestCase):
         ([(4, datetime.date(2026, 4, 25)), (3, datetime.date(2026, 4, 18)), (1, datetime.date(2026, 4, 11)), (5, datetime.date(2026, 4, 4)), (1, datetime.date(2026, 3, 28)), (2, datetime.date(2026, 3, 21)), (1, datetime.date(2026, 3, 14))], (2, [(datetime.date(2026, 3, 14), datetime.date(2026, 3, 21)), (datetime.date(2026, 4, 18), datetime.date(2026, 4, 25))])),
     ])
     def test_floating_tourist_streak(self, results: list[tuple[int, datetime.date]], expected: tuple[int, list[tuple[datetime.date, datetime.date]]]):
-        runner = Runner(1, "Name", AgeCategory("SM20-24"), [RunnerResult(Event(loc_id, "Name", "name", 0.0, 0.0, DUMMY_COUNTRY, 0), date, 0, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB) for loc_id, date in results], datetime.date.min, datetime.date.max)
+        runner = Runner(1, "Name", DUMMY_AGE_CATEGORY, [RunnerResult(Event(loc_id, "Name", "name", 0.0, 0.0, DUMMY_COUNTRY, 0), date, 0, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB) for loc_id, date in results], datetime.date.min, datetime.date.max)
         self.assertEqual(runner.floating_tourist_streak, expected)
 
 class TestMostRecentParkrun(unittest.TestCase):
@@ -370,6 +374,126 @@ class TestProjectedAgeRange(unittest.TestCase):
         )
         self.assertEqual(got_min_age, expected_min_age, f"Min age: {description}: expected {expected_min_age} but got {got_min_age}")
         self.assertEqual(got_max_age, expected_max_age, f"Max age: {description}: expected {expected_max_age} but got {got_max_age}")
+
+class TestPeriodicTable(unittest.TestCase):
+    @parameterized.expand([
+        ("Name", "name"),
+        ("  Spaced Name ", "spaced name"),
+        ("Émile Ölström", "emile olstrom"),
+    ])
+    def test_normalise(self, name: str, expected: str):
+        self.assertEqual(normalise(name), expected)
+
+    @parameterized.expand([
+        ("H", "Hilltop", True),
+        ("H", "Oakhill", False),
+        ("He", "Hollowe", True),
+        ("He", "Eastholm", False),
+        ("He", "H", False),
+        ("Cl", "Clay Fields", True),
+        ("Cl", "Coldwater", True),
+        ("Cl", "Crossways", False),
+        ("Er", "Érmitage", True),
+        ("Ni", "  nIGHTFIELD", True),
+        ("Er", "Emmet", False),
+        ("Xe", "Oxenmoor", True),
+        ("Xe", "Exmoor", True),
+        ("Xe", "Oxmoor", False),
+    ])
+    def test_can_spell(self, element: str, location_name: str, expected: bool):
+        self.assertEqual(can_spell(element, location_name), expected)
+
+    @parameterized.expand([
+        ("empty", [], [], {}),
+        ("no elements", [], ["Hill"], {}),
+        ("no locations", ["H"], [], {}),
+        ("cannot spell", ["O"], ["Park"], {}),
+        ("earlier element preferred", ["He", "H"], ["Heath"], {"He": "Heath"}),
+        ("earlier location preferred", ["H"], ["Hill", "Hall"], {"H": "Hill"}),
+        ("free element taken", ["H", "He"], ["Hill", "Heath"], {"H": "Hill", "He": "Heath"}),
+        ("location moved", ["H", "He"], ["Heath", "Hill"], {"He": "Heath", "H": "Hill"}),
+        ("chain of moves", ["B", "Be", "Br"], ["Bere", "Bee", "Bay"], {"Br": "Bere", "Be": "Bee", "B": "Bay"}),
+        ("unassignable left out", ["H", "He"], ["Heath", "Hill", "Hall"], {"He": "Heath", "H": "Hill"}),
+    ])
+    def test_best_assignment(self, _description: str, elements: list[str], location_names: list[str], expected: dict[str, str]):
+        self.assertEqual(best_assignment(elements, location_names), expected)
+
+    @staticmethod
+    def _max_assignment_size(elements: list[str], location_names: list[str]) -> int:
+        """
+        Brute force the size of the largest possible assignment.
+        """
+
+        def search(index: int, used: frozenset[str]) -> int:
+            if index == len(location_names):
+                return 0
+            best = search(index + 1, used)
+            for element in elements:
+                if element not in used and can_spell(element, location_names[index]):
+                    best = max(best, 1 + search(index + 1, used | {element}))
+            return best
+
+        return search(0, frozenset())
+
+    def test_best_assignment_random(self):
+        rng = random.Random(0)
+        elements = ["A", "Ab", "Ac", "B", "Ba", "Bc", "C", "Ca", "Cb"]
+        for _ in range(200):
+            location_names = list(dict.fromkeys("".join(rng.choice("abc") for _ in range(rng.randint(1, 4))).capitalize() for _ in range(rng.randint(0, 7))))
+            assignment = best_assignment(elements, location_names)
+
+            # Valid: each location used at most once and can spell its element
+            self.assertEqual(len(set(assignment.values())), len(assignment))
+            for element, location_name in assignment.items():
+                self.assertTrue(can_spell(element, location_name))
+
+            # Optimal
+            self.assertEqual(len(assignment), self._max_assignment_size(elements, location_names), f"{location_names}: {assignment}")
+
+            # Stable: adding a location never unassigns an existing one
+            for i in range(len(location_names)):
+                before = set(best_assignment(elements, location_names[:i]).values())
+                after = set(best_assignment(elements, location_names[:i + 1]).values())
+                self.assertLessEqual(before, after, f"{location_names[:i + 1]}")
+
+    def test_elements_by_rarity(self):
+        events = [
+            Event(1, "Hope", "hope", 0.0, 0.0, DUMMY_COUNTRY, 1),
+            Event(2, "Hill", "hill", 0.0, 0.0, DUMMY_COUNTRY, 1),
+            Event(3, "Hexley Juniors", "hexley-juniors", 0.0, 0.0, DUMMY_COUNTRY, 2),
+        ]
+        elements_by_rarity.cache_clear()
+        try:
+            with patch("parkrun.tables.achievements.periodic_table.fetch_events", return_value=events):
+                result = elements_by_rarity()
+        finally:
+            elements_by_rarity.cache_clear()
+
+        # Junior events are ignored and ties keep the order of ELEMENTS
+        self.assertEqual(result, [element for element in ELEMENTS if element not in {"H", "He", "Ho"}] + ["He", "Ho", "H"])
+
+    def test_periodic_table_achieved(self):
+        heath = Event(1, "Heath", "heath", 0.0, 0.0, DUMMY_COUNTRY, 1)
+        hill = Event(2, "Hill", "hill", 0.0, 0.0, DUMMY_COUNTRY, 1)
+        park = Event(3, "Park", "park", 0.0, 0.0, DUMMY_COUNTRY, 1)
+        # Most recent first
+        results = [
+            RunnerResult(park, datetime.date(2026, 4, 25), 4, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB),
+            RunnerResult(hill, datetime.date(2026, 4, 18), 3, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB),
+            RunnerResult(heath, datetime.date(2026, 4, 11), 2, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB),
+            RunnerResult(heath, datetime.date(2026, 4, 4), 1, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB),
+        ]
+        runner = Runner(1, "Name", DUMMY_AGE_CATEGORY, results, datetime.date.min, datetime.date.max)
+
+        # Heath is visited first so takes H, then moves to He so Hill can have
+        # H. Each element maps to the first result at its location.
+        with patch("parkrun.tables.achievements.periodic_table.elements_by_rarity", return_value=["H", "He"]):
+            self.assertEqual(periodic_table_achieved(runner), {"He": results[3], "H": results[1]})
+
+    def test_periodic_table_achieved_no_results(self):
+        runner = Runner(1, "Name", DUMMY_AGE_CATEGORY, [], datetime.date.min, datetime.date.max)
+        with patch("parkrun.tables.achievements.periodic_table.elements_by_rarity", return_value=["H", "He"]):
+            self.assertEqual(periodic_table_achieved(runner), {})
 
 if __name__ == "__main__":
     unittest.main()
