@@ -28,15 +28,25 @@ def normalise(name: str) -> str:
     return unidecode.unidecode(name).strip().lower()
 
 
+# No parkrun starts with X so these use the relaxed rule in can_spell
+ELEMENTS_ANYWHERE: set[str] = set(map(normalise, {"Xe"}))
+
+
 def can_spell(element: str, location_name: str) -> bool:
     """
     Return whether the location name can be used for the element. It can if it
     starts with the element's first letter and each of the element's remaining
-    letters appears somewhere in the rest of the name, in any order.
+    letters appears somewhere in the rest of the name, in any order. Elements
+    in ELEMENTS_ANYWHERE are an exception: all of their letters just need to
+    appear somewhere in the name, in any order.
     """
 
     element = normalise(element)
     location_name = normalise(location_name)
+
+    if element in ELEMENTS_ANYWHERE:
+        return all(letter in location_name for letter in element)
+
     return location_name.startswith(element[0]) and all(letter in location_name[1:] for letter in element[1:])
 
 
