@@ -66,9 +66,9 @@ Runner stats from all time
 +----------------------------+--------------------------------------------------------------------------------------+
 ```
 
-### World map of parkruns as multi-coloured dots
+### World map of parkruns with Voronoi
 
-![](img/World%20Map%20Parkruns%20Multicoloured%20Dots.png)
+![](img/World%20Map%20Parkruns%20Voronoi.png)
 
 ## Installation
 
