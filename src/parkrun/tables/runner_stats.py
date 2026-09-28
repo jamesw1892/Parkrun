@@ -74,6 +74,7 @@ def get_stats(start_date: datetime.date, end_date: datetime.date) -> tuple[tuple
         ("Floating Tourist Streak 2" , lambda runner: format_floating_streak(*runner.floating_tourist_streak2)),
         ("re-index"                  , lambda runner: f"{runner.re_index}"),
         ("p-index"                   , lambda runner: f"{runner.p_index}"),
+        ("pc-index"                  , lambda runner: f"{runner.pc_index}"),
     )
 
 def runner_stats(runner_ids: Iterable[int], start_date: datetime.date, end_date: datetime.date) -> None:

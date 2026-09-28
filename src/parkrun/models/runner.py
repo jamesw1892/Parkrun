@@ -1,5 +1,5 @@
 import datetime
-from collections import Counter
+from collections import Counter, defaultdict
 from functools import cached_property
 from parkrun.models.country import Country
 from parkrun.models.event import Event
@@ -375,6 +375,42 @@ class Runner:
                 p_index += 1
 
         return p_index
+
+    @cached_property
+    def pc_index(self) -> int:
+        """
+        The highest integer p such that the runner has done at least p events in
+        each of at least p countries, at least p times each. Discontinued events
+        are ignored since their country is unknown.
+        """
+
+        # Group the number of times each event was done by country, skipping
+        # discontinued events
+        location_counts_by_country: defaultdict[Country, list[int]] = defaultdict(list)
+        for location, location_count in self.locations_counter.items():
+            if location.country.id_ != 0:
+                location_counts_by_country[location.country].append(location_count)
+
+        # Calculate each country's own p-index (the highest p such that at
+        # least p events in that country were done at least p times each), in
+        # the same way as p_index
+        country_p_indices: list[int] = []
+        for location_counts in location_counts_by_country.values():
+            country_p_index: int = 0
+            for location_count in sorted(location_counts, reverse=True):
+                if location_count > country_p_index:
+                    country_p_index += 1
+            country_p_indices.append(country_p_index)
+
+        # Merge them: a country has at least p events done at least p times
+        # each exactly when its p-index is at least p, so pc-index is the
+        # highest p such that at least p countries have a p-index of at least p
+        pc_index: int = 0
+        for country_p_index in sorted(country_p_indices, reverse=True):
+            if country_p_index > pc_index:
+                pc_index += 1
+
+        return pc_index
 
     @cached_property
     def projected_age_category(self) -> AgeCategory | None:

@@ -70,6 +70,22 @@ class TestStreaks(unittest.TestCase):
         runner = Runner(1, "Name", DUMMY_AGE_CATEGORY, [RunnerResult(Event(loc_id, "Name", "name", 0.0, 0.0, DUMMY_COUNTRY, 0), date, 0, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB) for loc_id, date in results], datetime.date.min, datetime.date.max)
         self.assertEqual(runner.floating_tourist_streak, expected)
 
+class TestPcIndex(unittest.TestCase):
+    @parameterized.expand([
+        ("no_results", [], 0),
+        ("one_run", [(1, 1)], 1),
+        ("one_country_only", [(1, 1), (1, 1), (2, 1), (2, 1)], 1),
+        ("two_countries_once_each", [(1, 1), (2, 2)], 1),
+        ("two_countries_two_events_twice", [(1, 1), (1, 1), (2, 1), (2, 1), (3, 2), (3, 2), (4, 2), (4, 2)], 2),
+        ("two_countries_one_short", [(1, 1), (1, 1), (2, 1), (2, 1), (3, 2), (3, 2), (4, 2)], 1),
+        ("three_countries_limited_by_count", [(1, 1), (1, 1), (2, 1), (2, 1), (3, 2), (3, 2), (4, 2), (4, 2), (5, 3), (5, 3), (5, 3)], 2),
+        ("discontinued_ignored", [(1, 1), (1, 1), (2, 1), (2, 1), (3, 0), (3, 0), (4, 0), (4, 0)], 1),
+    ])
+    def test_pc_index(self, _name: str, results: list[tuple[int, int]], expected: int):
+        countries: dict[int, Country] = {country_id: Country(country_id, "url", [0, 0, 0, 0]) for _, country_id in results}
+        runner = Runner(1, "Name", DUMMY_AGE_CATEGORY, [RunnerResult(Event(loc_id, "Name", "name", 0.0, 0.0, countries[country_id], 0), datetime.date(2026, 4, 11), 0, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB) for loc_id, country_id in results], datetime.date.min, datetime.date.max)
+        self.assertEqual(runner.pc_index, expected)
+
 class TestMostRecentParkrun(unittest.TestCase):
 
     def test_today_is_saturday_before_start(self):
