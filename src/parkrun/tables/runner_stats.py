@@ -16,7 +16,7 @@ from texttable import Texttable
 def format_events(results: list[RunnerResult]) -> str:
     return "; ".join(sorted(map(lambda x: x.format_for_event(), results)))
 
-def format_iterable(iterable) -> str:
+def format_iterable(iterable: Iterable[Any]) -> str:
     return ", ".join(sorted(map(str, iterable)))
 
 def format_streak(streak: int, start: datetime.date, end: datetime.date) -> str:
