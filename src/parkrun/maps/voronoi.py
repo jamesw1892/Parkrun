@@ -72,7 +72,8 @@ def voronoi_cells(locations: list[tuple[float, float]]) -> list[list[Ring]]:
     Each cell is given as rings to draw on a Leaflet map. Leaflet only draws a
     polygon where its coordinates are, so rather than splitting cells that
     cross the antimeridian, each is a copy of the same ring shifted by each
-    whole turn of longitude that overlaps [-180, 180].
+    whole turn of longitude that overlaps [-180, 180]. The cells containing
+    the poles are instead one ring stretching across the whole map.
     """
 
     # Convert to 3D points on the unit sphere (x towards (0, 0), y towards
@@ -97,31 +98,21 @@ def voronoi_cells(locations: list[tuple[float, float]]) -> list[list[Ring]]:
     north_index: int = int(np.argmax(points[:, 2]))
     south_index: int = int(np.argmin(points[:, 2]))
 
-    cells: list[list[Ring]] = []
-    for i, ((_, centre_long), region) in enumerate(zip(locations, sv.regions)):
-        pole: float | None = 90 if i == north_index else -90 if i == south_index else None
-        ring: Ring = _cell_ring(sv.vertices[region], centre_long, pole)
-        # Shifting the ring by 360 * turns overlaps [-180, 180] when
-        # min + 360 * turns <= 180 and max + 360 * turns >= -180
-        longs: list[float] = [long for long, _ in ring]
-        cells.append([
-            [[long + 360 * turns, lat] for long, lat in ring]
-            for turns in range(
-                math.ceil((-180 - max(longs)) / 360),
-                math.floor((180 - min(longs)) / 360) + 1,
-            )
-        ])
-    return cells
+    return [
+        _cell_rings(sv.vertices[region], centre_long, 90 if i == north_index else -90 if i == south_index else None)
+        for i, ((_, centre_long), region) in enumerate(zip(locations, sv.regions))
+    ]
 
 
-def _cell_ring(vertices: np.ndarray, centre_long: float, pole: float | None) -> Ring:
+def _cell_rings(vertices: np.ndarray, centre_long: float, pole: float | None) -> list[Ring]:
     """
     Convert the vertices of a spherical polygon (unit vectors in order around
-    it) into a closed GeoJSON ring of [long, lat] in degrees, following the
-    great circle arcs between them. Longitudes are kept continuous rather than
-    wrapped into [-180, 180], starting near the given longitude, so the ring
-    may cross the antimeridian. If the polygon contains a pole, give its
-    latitude (90 or -90) so the ring can go round the edge of the map via it.
+    it) into closed GeoJSON rings of [long, lat] in degrees, following the
+    great circle arcs between them, that together cover it on the map
+    [-180, 180]. Longitudes are kept continuous rather than wrapped into
+    [-180, 180], starting near the given longitude, so a ring may cross the
+    antimeridian. If the polygon contains a pole, give its latitude (90 or
+    -90) so the ring can go round the edge of the map via it.
     """
 
     # Points along each edge, excluding its end which starts the next edge.
@@ -155,17 +146,40 @@ def _cell_ring(vertices: np.ndarray, centre_long: float, pole: float | None) -> 
         long += 360 * round((previous - long) / 360)
         ring.append([long, lat])
 
-    # Going round a pole, the longitude ends a whole turn away from where it
-    # started, so joining the ends would give a line across the world rather
-    # than a closed shape. On the map, the pole is the whole top (or bottom)
-    # edge, so close the ring by going from the end straight up to it, along
-    # it back a whole turn, and down to the start. Leaflet clips latitudes to
-    # about 85 degrees, where its (Web Mercator) map ends.
     first_long, first_lat = ring[0]
-    last_long: float = ring[-1][0]
-    wrapped_long: float = first_long + 360 * round((last_long - first_long) / 360)
-    if pole is not None and wrapped_long != first_long:
-        ring += [[wrapped_long, first_lat], [wrapped_long, pole], [first_long, pole]]
+    turn: float = 360 * round((ring[-1][0] - first_long) / 360)
+    if pole is not None and turn != 0:
+        # Going round a pole, the longitude ends a whole turn away from where
+        # it started, so the edge repeats every turn along the map. On the
+        # map, the pole is the whole top (or bottom) edge, so the cell is the
+        # area between the edge and it. Copies of the ring side by side would
+        # have their outlines drawn down from the pole where they meet,
+        # splitting the cell in two, so instead make one ring that repeats the
+        # edge enough to cross the whole map, then closes by going straight up
+        # to the pole, along it back, and down to the start, outside the map.
+        # Leaflet clips latitudes to about 85 degrees, where its (Web
+        # Mercator) map ends.
+        if turn < 0:
+            # Go round the other way so the longitude increases
+            ring = [[first_long + turn, first_lat]] + ring[:0:-1]
+            first_long += turn
+        # The edge starts at first_long + 360 * turns and ends a turn later,
+        # so start at or left of -180 and end at or right of 180
+        turns_range = range(math.floor((-180 - first_long) / 360), math.ceil((180 - first_long) / 360))
+        ring = [[long + 360 * turns, lat] for turns in turns_range for long, lat in ring]
+        start_long: float = ring[0][0]
+        end_long: float = first_long + 360 * turns_range.stop
+        ring += [[end_long, first_lat], [end_long, pole], [start_long, pole], ring[0]]
+        return [ring]
 
     ring.append(ring[0])
-    return ring
+    # Shifting the ring by 360 * turns overlaps [-180, 180] when
+    # min + 360 * turns <= 180 and max + 360 * turns >= -180
+    longs: list[float] = [long for long, _ in ring]
+    return [
+        [[long + 360 * turns, lat] for long, lat in ring]
+        for turns in range(
+            math.ceil((-180 - max(longs)) / 360),
+            math.floor((180 - min(longs)) / 360) + 1,
+        )
+    ]

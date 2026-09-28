@@ -582,6 +582,25 @@ class TestVoronoi(unittest.TestCase):
             containing = [i for i, cell in enumerate(paths) if any(path.contains_point((long, lat)) for path in cell)]
             self.assertEqual(containing, [nearest], f"({lat}, {long})")
 
+    @parameterized.expand([
+        ("north", 90),
+        ("south", -90),
+    ])
+    def test_pole_cell_one_ring_across_map(self, _, pole: float):
+        rng = np.random.default_rng(0)
+        locations = np.column_stack([rng.uniform(-60, 60, 20), rng.uniform(-180, 180, 20)])
+        cells = voronoi_cells([(lat, long) for lat, long in locations])
+        pole_index = int(np.argmax(np.sign(pole) * locations[:, 0]))
+        rings = cells[pole_index]
+        # Otherwise the outlines where copies meet would be drawn down from
+        # the pole, splitting the cell in two
+        self.assertEqual(len(rings), 1)
+        # Its sides going down from the pole are at the edges of the map or
+        # beyond
+        longs_at_pole = [long for long, lat in rings[0] if lat == pole]
+        self.assertLessEqual(min(longs_at_pole), -180)
+        self.assertGreaterEqual(max(longs_at_pole), 180)
+
     def test_layer_shares_cell_between_events_at_same_location(self):
         events = [
             Event(i, f"Name{i}", f"name{i}", lat, long, DUMMY_COUNTRY, 1)
