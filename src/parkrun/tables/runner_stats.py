@@ -75,6 +75,7 @@ def get_stats(start_date: datetime.date, end_date: datetime.date) -> tuple[tuple
         ("re-index"                  , lambda runner: f"{runner.re_index}"),
         ("p-index"                   , lambda runner: f"{runner.p_index}"),
         ("pc-index"                  , lambda runner: f"{runner.pc_index}"),
+        ("c-index"                   , lambda runner: f"{runner.c_index}"),
     )
 
 def runner_stats(runner_ids: Iterable[int], start_date: datetime.date, end_date: datetime.date) -> None:

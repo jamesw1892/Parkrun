@@ -413,6 +413,23 @@ class Runner:
         return pc_index
 
     @cached_property
+    def c_index(self) -> int:
+        """
+        The highest integer c such that the runner has done at least c events in
+        each of at least c countries. Discontinued events are ignored since
+        their country is unknown.
+        """
+
+        locations_per_country: Counter[Country] = Counter(location.country for location in self.unique_locations if location.country.id_ != 0)
+
+        c_index: int = 0
+        for _, location_count in locations_per_country.most_common():
+            if location_count > c_index:
+                c_index += 1
+
+        return c_index
+
+    @cached_property
     def projected_age_category(self) -> AgeCategory | None:
         """
         Return a (non-standard) age category of the same format as normal but
