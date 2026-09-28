@@ -21,6 +21,7 @@ import random
 from unittest.mock import patch
 from matplotlib.path import Path
 import numpy as np
+from typing import Any
 
 DUMMY_COUNTRY: Country = Country(0, "url", [0, 0, 0, 0])
 DUMMY_EVENT: Event = Event(0, "Name", "name", 0.0, 0.0, DUMMY_COUNTRY, 0)
@@ -538,7 +539,7 @@ class TestEvent(unittest.TestCase):
     }})
 
     @staticmethod
-    def make_event_dict(countrycode: int) -> dict:
+    def make_event_dict(countrycode: int) -> dict[str, Any]:
         # GeoJSON feature in the format of events.json
         return {
             "id": 7,

@@ -1,4 +1,6 @@
 from __future__ import annotations
+from typing import Any
+
 from parkrun.models.country import Country
 from parkrun.models.country_collection import CountryCollection
 
@@ -23,10 +25,10 @@ class Event:
         # series 1 is adults, 2 is juniors
 
     @staticmethod
-    def from_dict(event: dict, countries: CountryCollection) -> Event:
+    def from_dict(event: dict[str, Any], countries: CountryCollection) -> Event:
         country: Country | None = countries.get_country_by_id(event["properties"]["countrycode"])
         if country is None:
-            country = countries.get_country_by_id(0)
+            country = countries.get_default()
         return Event(
             id_=event["id"],
             name=event["properties"]["EventShortName"],
@@ -46,7 +48,7 @@ class Event:
     def __str__(self) -> str:
         return self.name
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
         if isinstance(other, Event):
             return self.id_ == other.id_
         return False
