@@ -11,7 +11,7 @@ import logging
 import parkrun
 from parkrun.graphs.activity import activity_graph
 from parkrun.graphs.times import time_graph
-from parkrun.maps.runners_map import runners_map
+from parkrun.maps.event_map import event_map
 from parkrun.tables.achievements import achievements
 from parkrun.tables.common_run_comparison import common_run_comparison
 from parkrun.tables.latest_update import latest_update
@@ -22,7 +22,7 @@ from parkrun.tables.runner_stats import runner_stats
 command_funcs: dict[str, Callable[[list[int], datetime.date, datetime.date], None]] = {
     "activity": activity_graph,
     "times": time_graph,
-    "event_map": runners_map,
+    "event_map": event_map,
     "achievements": achievements,
     "common_run_comparison": common_run_comparison,
     "latest_update": latest_update,
