@@ -11,6 +11,7 @@ import logging
 import parkrun
 from parkrun.graphs.activity import activity_graph
 from parkrun.graphs.times import time_graph
+from parkrun.maps.runners_map import runners_map
 from parkrun.tables.achievements import achievements
 from parkrun.tables.common_run_comparison import common_run_comparison
 from parkrun.tables.latest_update import latest_update
@@ -21,6 +22,7 @@ from parkrun.tables.runner_stats import runner_stats
 command_funcs: dict[str, Callable[[list[int], datetime.date, datetime.date], None]] = {
     "activity": activity_graph,
     "times": time_graph,
+    "event_map": runners_map,
     "achievements": achievements,
     "common_run_comparison": common_run_comparison,
     "latest_update": latest_update,
@@ -37,11 +39,11 @@ command_funcs: dict[str, Callable[[list[int], datetime.date, datetime.date], Non
 def cli():
 
     parser = argparse.ArgumentParser(
-        description="Print statistic tables or show graphs about parkrun results. The first positional argument must be the table or graph to show and all subsequent positional arguments must be integer parkrunner IDs of those to show. If no parkrunner IDs are given, use all environment variables starting with PARKRUNNER_ (e.g. those in the .env file)."
+        description="Print statistic tables or show graphs about parkrun results. The first positional argument must be the table or graph to show and all subsequent positional arguments must be integer parkrunner IDs of those to show. If no parkrunner IDs are given, use all environment variables starting with PARKRUNNER_ (e.g. those in the .env file), except for event_map which then shows no parkrunners."
     )
 
     parser.add_argument("command", choices=command_funcs.keys(), help="The table or graph to run")
-    parser.add_argument("runner", type=lambda arg: int(arg) if arg.isnumeric() else arg, nargs="*", help="Parkrunners to analyse. If none are given, use all environment variables starting with PARKRUNNER_ (e.g. those in the .env file). For each integer, use that as the parkrunner's ID. For each string, use the environment variable PARKRUNNER_<argument>.")
+    parser.add_argument("runner", type=lambda arg: int(arg) if arg.isnumeric() else arg, nargs="*", help="Parkrunners to analyse. If none are given, use all environment variables starting with PARKRUNNER_ (e.g. those in the .env file), except for event_map which then shows no parkrunners. For each integer, use that as the parkrunner's ID. For each string, use the environment variable PARKRUNNER_<argument>.")
     parser.add_argument("-s", "--start", type=datetime.date.fromisoformat, nargs="?", default=datetime.date.min, help="Date to start from, in any format accepted by datetime.date.fromisoformat, defaulting to forever")
     parser.add_argument("-e", "--end", type=datetime.date.fromisoformat, nargs="?", default=datetime.date.max, help="Date to end at, in any format accepted by datetime.date.fromisoformat, defaulting to forever")
     parser.add_argument("--cache-force-valid", action=argparse.BooleanOptionalAction, help="Force existing cache to be used even if out of date. This overrides the CACHE_FORCE_VALID environment variable, if it was set. This can be useful if you know it's up to date, but the current time is in the window where it's not certain results have come out yet so keeps refreshing.")
@@ -52,8 +54,8 @@ def cli():
 
     args = parser.parse_args()
 
-    # Default to all in environment variables
-    if len(args.runner) == 0:
+    # Default to all in environment variables, except the map can show none
+    if len(args.runner) == 0 and args.command != "event_map":
         runner_ids: list[int] = parkrun.ALL_PARKRUNNER_IDS
     else:
         runner_ids: list[int] = []
