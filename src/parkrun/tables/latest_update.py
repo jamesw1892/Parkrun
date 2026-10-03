@@ -99,7 +99,7 @@ def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: da
         rows.append([
             runner.format_identity(),
             f"{len(runner.results)}{get_ordinal_suffix(len(runner.results))}",
-            f"{times_at_location}{get_ordinal_suffix(times_at_location)} at {result.location} (event number {result.run_number})",
+            f"{times_at_location}{get_ordinal_suffix(times_at_location)} at {result.location}",
             f"{result.time}{time_extra}",
             f"{result.position}{position_extra}",
             f"{result.age_grade}{age_grade_extra}",
