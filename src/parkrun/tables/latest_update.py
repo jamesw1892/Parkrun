@@ -4,6 +4,7 @@ most recent parkrun between the given dates.
 """
 
 import datetime
+import math
 from texttable import Texttable
 from parkrun.api.cache import most_recent_parkrun
 from parkrun import get_table_max_width
@@ -52,15 +53,17 @@ def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: da
         # padding and vertical separator to the right of each column as well as
         # the vertical separator on the far left
         PARKRUN_COL_WIDTH: int = 7
-        REMAINING_WIDTH: int = get_table_max_width() - PARKRUN_COL_WIDTH - 3 * len(HEADERS) - 1
-        DENOMINATOR: int = 100
+        TIME_COL_WIDTH: int = 7
+        POSITION_COL_WIDTH: int = 8
+        AGE_GRADE_COL_WIDTH: int = 9
+        REMAINING_WIDTH: int = get_table_max_width() - PARKRUN_COL_WIDTH - TIME_COL_WIDTH - POSITION_COL_WIDTH - AGE_GRADE_COL_WIDTH - 3 * len(HEADERS) - 1
         table = Texttable().set_cols_width([
-            REMAINING_WIDTH * 22 // DENOMINATOR,
+            math.ceil(REMAINING_WIDTH / 2),
             PARKRUN_COL_WIDTH,
-            REMAINING_WIDTH * 35 // DENOMINATOR,
-            REMAINING_WIDTH * 14 // DENOMINATOR,
-            REMAINING_WIDTH * 14 // DENOMINATOR,
-            REMAINING_WIDTH * 14 // DENOMINATOR,
+            REMAINING_WIDTH // 2,
+            TIME_COL_WIDTH,
+            POSITION_COL_WIDTH,
+            AGE_GRADE_COL_WIDTH,
         ])
 
         # Print the header row without the bottom line (it adds a bottom border
