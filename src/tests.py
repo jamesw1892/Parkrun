@@ -13,6 +13,7 @@ from parkrun.models.country_collection import CountryCollection
 from parkrun.models.pb import PB
 from parkrun.api.cache import max_parkruns_in_year, most_recent_parkrun, HR_RESULT_START, HR_RESULT_END
 from parkrun.graphs.activity import _get_num_months
+from parkrun.maps.latest_update_map import latest_update_map
 from parkrun.maps.voronoi import voronoi_cells, voronoi_layer
 from parkrun import _env_strtobool, projected_age_range
 from parkrun.tables.achievements.periodic_table import ELEMENTS, normalise, can_spell, elements_by_rarity, best_assignment, periodic_table_achieved
@@ -647,6 +648,30 @@ class TestVoronoi(unittest.TestCase):
         with self.assertLogs("parkrun.maps.voronoi", "WARNING"):
             layer = voronoi_layer(events, lambda event: "red")
         self.assertEqual(layer.data["features"], [])
+
+class TestLatestUpdateMap(unittest.TestCase):
+    @staticmethod
+    def runner(name: str) -> Runner:
+        return Runner(1, name, DUMMY_AGE_CATEGORY, [], datetime.date.min, datetime.date.max)
+
+    def test_colours_legend_and_popups(self):
+        event1 = Event(1, "Park <1>", "park1", 51.0, 0.0, DUMMY_COUNTRY, 1)
+        event2 = Event(2, "Park 2", "park2", 52.0, 1.0, DUMMY_COUNTRY, 1)
+        event_runners = {event1: [self.runner("Alice"), self.runner("Bob & co")], event2: [self.runner("Carol")]}
+        with patch("parkrun.maps.latest_update_map.map_events") as map_events:
+            latest_update_map(event_runners, datetime.date(2026, 10, 17))
+        map_events.assert_called_once()
+        events, _, colour, popup_html = map_events.call_args.args
+        self.assertEqual(list(events), [event1, event2])
+        self.assertFalse(map_events.call_args.kwargs["voronoi"])
+        self.assertNotEqual(colour(event1), colour(event2))
+        self.assertEqual(map_events.call_args.kwargs["legend"], {"Alice, Bob & co": colour(event1), "Carol": colour(event2)})
+        self.assertEqual(popup_html(event1), "<b>Park &lt;1&gt;</b><br>Alice<br>Bob &amp; co")
+
+    def test_no_events_no_map(self):
+        with patch("parkrun.maps.latest_update_map.map_events") as map_events:
+            latest_update_map({}, datetime.date(2026, 10, 17))
+        map_events.assert_not_called()
 
 if __name__ == "__main__":
     unittest.main()

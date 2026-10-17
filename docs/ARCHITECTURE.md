@@ -46,6 +46,7 @@ Install the test dependency with `pip install -e '.[test]'`.
     - `maps/`:
         - `browser.py`: Serves a map page once from localhost, since OpenStreetMap tiles don't load from `file://`.
         - `event_map.py`: Map of all parkrun events in the world, coloured by which of several parkrunners have done them, with who did each and how many times.
+        - `latest_update_map.py`: Map of the events the parkrunners in the latest update table did, coloured by who did each.
         - `render.py`: Draws events on a folium map and shows it in the browser.
         - `voronoi.py`: Spherical Voronoi diagram of events, as a map layer.
     - `models/`:
@@ -63,7 +64,7 @@ Install the test dependency with `pip install -e '.[test]'`.
     - `tables/`:
         - `achievements.py`: Side-by-side achievement progress.
         - `common_run_comparison.py`: Side-by-side comparison of runs parkrunners did together.
-        - `latest_update.py`: Summary of each parkrunner's result at the most recent parkrun between the given dates.
+        - `latest_update.py`: Summary of each parkrunner's result at the most recent parkrun between the given dates, then a map of where they went (`maps/latest_update_map.py`).
         - `most_common.py`: A property of each parkrunner's runs, sorted by how often it occurred.
         - `pb_progress.py`: Each time each parkrunner improved their PB.
         - `runner_stats.py`: Statistics about parkrunners side by side.

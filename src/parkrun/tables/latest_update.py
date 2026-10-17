@@ -3,12 +3,15 @@ Print a table with a summary of the result of each given parkrunner that did the
 most recent parkrun between the given dates.
 """
 
+from collections import defaultdict
 import datetime
 import math
 from texttable import Texttable
 from parkrun.api.cache import most_recent_parkrun
 from parkrun import get_table_max_width
 from parkrun.api.scraper_runner import fetch_runner_results
+from parkrun.maps.latest_update_map import latest_update_map
+from parkrun.models.event import Event
 from parkrun.models.position import get_ordinal_suffix
 from parkrun.models.runner import Runner
 from parkrun.models.runner_result import RunnerResult
@@ -22,7 +25,7 @@ HEADERS: list[str] = [
     "Age Grade",
 ]
 
-def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: datetime.date, incremental: bool = True) -> None:
+def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: datetime.date, incremental: bool = True, show_map: bool = True) -> None:
     """
     Print a table with a summary of the result for each given parkrunner that
     did the most recent parkrun between the given dates. Parkrunners that did
@@ -30,7 +33,8 @@ def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: da
     later than today and the start date is ignored, otherwise the PB indicators
     and parkrun numbers don't make sense. If incremental then rather than
     fetching all results and printing the table at the end, it prints a row at
-    a time.
+    a time. If show_map then afterwards also show a map of the events the
+    parkrunners in the table did, coloured by who did each.
     """
 
     # We don't have results for parkruns in the future and consider all parkruns
@@ -44,6 +48,7 @@ def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: da
     print(f"Parkrunners who did the parkrun on {most_recent_parkrun_date}")
 
     rows: list[list[str]] = [HEADERS]
+    event_runners: defaultdict[Event, list[Runner]] = defaultdict(list)
 
     if incremental:
 
@@ -77,6 +82,8 @@ def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: da
         # Skip parkrunners who didn't do the most recent parkrun
         if result is None or result.date != most_recent_parkrun_date:
             continue
+
+        event_runners[result.location].append(runner)
 
         results_at_location: list[RunnerResult] = list(filter(lambda r: r.location == result.location, runner.results))
         times_at_location: int = len(results_at_location)
@@ -114,3 +121,6 @@ def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: da
 
     if not incremental:
         print(Texttable(get_table_max_width()).add_rows(rows).draw())
+
+    if show_map:
+        latest_update_map(dict(event_runners), most_recent_parkrun_date)
