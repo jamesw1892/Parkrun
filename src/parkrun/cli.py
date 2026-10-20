@@ -55,7 +55,7 @@ def cli():
     args = parser.parse_args()
 
     # Default to all in environment variables, except the map can show none
-    if len(args.runner) == 0 and args.command != "event_map":
+    if len(args.runner) == 0 and args.command != "map":
         runner_ids: list[int] = parkrun.ALL_PARKRUNNER_IDS
     else:
         runner_ids: list[int] = []
