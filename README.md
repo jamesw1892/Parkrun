@@ -9,7 +9,7 @@ This mainly uses Darren WOOD (parkrunner number 490) because he was the first pa
 ### Runner Stats
 
 ```text
-$ prcli runner_stats darren_wood 
+$ prcli stats darren_wood 
 Runner stats from all time
 +----------------------------+--------------------------------------------------------------------------------------+
 |         Parkrunner         |                              Darren WOOD (490) VM40-45                               |
@@ -95,7 +95,7 @@ Run `prcli` (same as running `python src/parkrun/cli.py`). It takes command-line
 You can use the names (case in-sensitive) in the `.env` file that you may have created as below to use their numbers, e.g.:
 
 ```bash
-prcli runner_stats me
+prcli stats me
 ```
 
 ### Editing Main.py to call library
