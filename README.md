@@ -9,7 +9,7 @@ This mainly uses Darren WOOD (parkrunner number 490) because he was the first pa
 ### Runner Stats
 
 ```text
-$ prcli stats darren_wood 
+$ prcli stats darren_wood
 Runner stats from all time
 +----------------------------+--------------------------------------------------------------------------------------+
 |         Parkrunner         |                              Darren WOOD (490) VM40-45                               |
@@ -72,7 +72,21 @@ Runner stats from all time
 
 ### World map of parkruns with Voronoi
 
+```text
+$ prcli map
+```
+
 ![](img/World%20Map%20Parkruns%20Voronoi.png)
+
+### World map of parkruns done by Darren WOOD
+
+```text
+$ prcli map darren_wood
+```
+
+![](img/World%20Map%20Parkruns%20Voronoi%20Darren%20WOOD.png)
+
+![](img/Local%20Map%20Parkruns%20Voronoi%20Darren%20WOOD.png)
 
 ## Installation
 
