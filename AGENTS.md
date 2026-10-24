@@ -16,4 +16,4 @@ Scrapes the parkrun website and prints stat tables / shows graphs about parkrunn
 ## Tests
 
 - All: `python src/tests.py`
-- One: `cd src && python -m unittest tests.TestStreaks` (or `tests.TestStreaks.<method>`)
+- One class: `python src/tests.py <class>`
