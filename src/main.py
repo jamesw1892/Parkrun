@@ -26,7 +26,7 @@ try:
     # Arguments
     runner_ids: list[int] = [
         get_parkrunner_id("PARKRUNNER_ME"),
-        get_parkrunner_id("PARKRUNNER_BOB"),
+        get_parkrunner_id("PARKRUNNER_DARREN_WOOD"),
     ]
     start_date: datetime.date = datetime.date(2025, 1, 1)
     end_date: datetime.date = datetime.date(2026, 1, 1)
