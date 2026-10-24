@@ -11,6 +11,7 @@ Scrapes the parkrun website and prints stat tables / shows graphs about parkrunn
 - Don't read the cache directory (`platformdirs` `user_cache_dir("parkrun")`, see `api/cache.py`); it contains real parkrunners' results.
 - Any new scraping must go through `fetch()` in `api/scraper.py` so it is cached and rate-limited.
 - Read settings via the getters in `parkrun/__init__.py` at call time, never at import (see `docs/ARCHITECTURE.md`).
+- When adding, moving, renaming or deleting a file, update the Files list in `docs/ARCHITECTURE.md` to match.
 
 ## Tests
 
