@@ -25,12 +25,35 @@ import numpy as np
 from typing import Any
 
 DUMMY_COUNTRY: Country = Country(0, "url", [0, 0, 0, 0])
-DUMMY_EVENT: Event = Event(0, "Name", "name", 0.0, 0.0, DUMMY_COUNTRY, 0)
 DUMMY_POSITION: Position = Position("1")
 DUMMY_TIME: Time = Time("00:00", datetime.timedelta())
 DUMMY_AGE_GRADE: AgeGrade = AgeGrade("50.00%")
 DUMMY_PB: PB = PB(False)
 DUMMY_AGE_CATEGORY: AgeCategory = AgeCategory("SM20-24")
+
+def make_event(id_: int = 0, name: str | None = None, lat: float = 0.0, long: float = 0.0, country: Country = DUMMY_COUNTRY, series: int = 1) -> Event:
+    """
+    Return an Event, with the name defaulting to "Name<id_>" and the URL name
+    being the lowercase name without spaces.
+    """
+    if name is None:
+        name = f"Name{id_}"
+    return Event(id_, name, name.lower().replace(" ", "-"), lat, long, country, series)
+
+DUMMY_EVENT: Event = make_event()
+
+def make_result(event: Event = DUMMY_EVENT, date: datetime.date = datetime.date(2026, 4, 11), run_number: int = 0) -> RunnerResult:
+    """
+    Return a RunnerResult with dummy position, time, age grade and PB.
+    """
+    return RunnerResult(event, date, run_number, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB)
+
+def make_runner(results: list[RunnerResult] | None = None, name: str = "Name") -> Runner:
+    """
+    Return a Runner with the given results (most recent first) and no date
+    limits.
+    """
+    return Runner(1, name, DUMMY_AGE_CATEGORY, results or [], datetime.date.min, datetime.date.max)
 
 class TestStreaks(unittest.TestCase):
     @parameterized.expand([
@@ -42,7 +65,7 @@ class TestStreaks(unittest.TestCase):
         ([datetime.date(2026, 4, 11), datetime.date(2026, 3, 28), datetime.date(2026, 3, 21), datetime.date(2026, 3, 7)], (2, [(datetime.date(2026, 3, 21), datetime.date(2026, 3, 28))])),
     ])
     def test_floating_streak(self, dates: list[datetime.date], expected: tuple[int, list[tuple[datetime.date, datetime.date]]]):
-        runner = Runner(1, "Name", DUMMY_AGE_CATEGORY, [RunnerResult(DUMMY_EVENT, date, 0, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB) for date in dates], datetime.date.min, datetime.date.max)
+        runner = make_runner([make_result(date=date) for date in dates])
         self.assertEqual(runner.floating_streak, expected)
 
     @parameterized.expand([
@@ -55,7 +78,7 @@ class TestStreaks(unittest.TestCase):
         ([(1, datetime.date(2026, 4, 11)), (2, datetime.date(2026, 4, 4)), (1, datetime.date(2026, 3, 28)), (2, datetime.date(2026, 3, 21))], (2, [(datetime.date(2026, 4, 4), datetime.date(2026, 4, 11)), (datetime.date(2026, 3, 28), datetime.date(2026, 4, 4)), (datetime.date(2026, 3, 21), datetime.date(2026, 3, 28))])),
     ])
     def test_floating_tourist_streak2(self, results: list[tuple[int, datetime.date]], expected: tuple[int, list[tuple[datetime.date, datetime.date]]]):
-        runner = Runner(1, "Name", DUMMY_AGE_CATEGORY, [RunnerResult(Event(loc_id, "Name", "name", 0.0, 0.0, DUMMY_COUNTRY, 0), date, 0, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB) for loc_id, date in results], datetime.date.min, datetime.date.max)
+        runner = make_runner([make_result(make_event(loc_id), date) for loc_id, date in results])
         self.assertEqual(runner.floating_tourist_streak2, expected)
 
     @parameterized.expand([
@@ -69,7 +92,7 @@ class TestStreaks(unittest.TestCase):
         ([(4, datetime.date(2026, 4, 25)), (3, datetime.date(2026, 4, 18)), (1, datetime.date(2026, 4, 11)), (5, datetime.date(2026, 4, 4)), (1, datetime.date(2026, 3, 28)), (2, datetime.date(2026, 3, 21)), (1, datetime.date(2026, 3, 14))], (2, [(datetime.date(2026, 3, 14), datetime.date(2026, 3, 21)), (datetime.date(2026, 4, 18), datetime.date(2026, 4, 25))])),
     ])
     def test_floating_tourist_streak(self, results: list[tuple[int, datetime.date]], expected: tuple[int, list[tuple[datetime.date, datetime.date]]]):
-        runner = Runner(1, "Name", DUMMY_AGE_CATEGORY, [RunnerResult(Event(loc_id, "Name", "name", 0.0, 0.0, DUMMY_COUNTRY, 0), date, 0, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB) for loc_id, date in results], datetime.date.min, datetime.date.max)
+        runner = make_runner([make_result(make_event(loc_id), date) for loc_id, date in results])
         self.assertEqual(runner.floating_tourist_streak, expected)
 
 class TestPcIndex(unittest.TestCase):
@@ -85,7 +108,7 @@ class TestPcIndex(unittest.TestCase):
     ])
     def test_pc_index(self, _name: str, results: list[tuple[int, int]], expected: int):
         countries: dict[int, Country] = {country_id: Country(country_id, "url", [0, 0, 0, 0]) for _, country_id in results}
-        runner = Runner(1, "Name", DUMMY_AGE_CATEGORY, [RunnerResult(Event(loc_id, "Name", "name", 0.0, 0.0, countries[country_id], 0), datetime.date(2026, 4, 11), 0, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB) for loc_id, country_id in results], datetime.date.min, datetime.date.max)
+        runner = make_runner([make_result(make_event(loc_id, country=countries[country_id])) for loc_id, country_id in results])
         self.assertEqual(runner.pc_index, expected)
 
 class TestCIndex(unittest.TestCase):
@@ -101,7 +124,7 @@ class TestCIndex(unittest.TestCase):
     ])
     def test_c_index(self, _name: str, results: list[tuple[int, int]], expected: int):
         countries: dict[int, Country] = {country_id: Country(country_id, "url", [0, 0, 0, 0]) for _, country_id in results}
-        runner = Runner(1, "Name", DUMMY_AGE_CATEGORY, [RunnerResult(Event(loc_id, "Name", "name", 0.0, 0.0, countries[country_id], 0), datetime.date(2026, 4, 11), 0, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB) for loc_id, country_id in results], datetime.date.min, datetime.date.max)
+        runner = make_runner([make_result(make_event(loc_id, country=countries[country_id])) for loc_id, country_id in results])
         self.assertEqual(runner.c_index, expected)
 
 class TestMostRecentParkrun(unittest.TestCase):
@@ -496,9 +519,9 @@ class TestPeriodicTable(unittest.TestCase):
 
     def test_elements_by_rarity(self):
         events = [
-            Event(1, "Hope", "hope", 0.0, 0.0, DUMMY_COUNTRY, 1),
-            Event(2, "Hill", "hill", 0.0, 0.0, DUMMY_COUNTRY, 1),
-            Event(3, "Hexley Juniors", "hexley-juniors", 0.0, 0.0, DUMMY_COUNTRY, 2),
+            make_event(1, "Hope"),
+            make_event(2, "Hill"),
+            make_event(3, "Hexley Juniors", series=2),
         ]
         elements_by_rarity.cache_clear()
         try:
@@ -511,17 +534,17 @@ class TestPeriodicTable(unittest.TestCase):
         self.assertEqual(result, [element for element in ELEMENTS if element not in {"H", "He", "Ho"}] + ["He", "Ho", "H"])
 
     def test_periodic_table_achieved(self):
-        heath = Event(1, "Heath", "heath", 0.0, 0.0, DUMMY_COUNTRY, 1)
-        hill = Event(2, "Hill", "hill", 0.0, 0.0, DUMMY_COUNTRY, 1)
-        park = Event(3, "Park", "park", 0.0, 0.0, DUMMY_COUNTRY, 1)
+        heath = make_event(1, "Heath")
+        hill = make_event(2, "Hill")
+        park = make_event(3, "Park")
         # Most recent first
         results = [
-            RunnerResult(park, datetime.date(2026, 4, 25), 4, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB),
-            RunnerResult(hill, datetime.date(2026, 4, 18), 3, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB),
-            RunnerResult(heath, datetime.date(2026, 4, 11), 2, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB),
-            RunnerResult(heath, datetime.date(2026, 4, 4), 1, DUMMY_POSITION, DUMMY_TIME, DUMMY_AGE_GRADE, DUMMY_PB),
+            make_result(park, datetime.date(2026, 4, 25), 4),
+            make_result(hill, datetime.date(2026, 4, 18), 3),
+            make_result(heath, datetime.date(2026, 4, 11), 2),
+            make_result(heath, datetime.date(2026, 4, 4), 1),
         ]
-        runner = Runner(1, "Name", DUMMY_AGE_CATEGORY, results, datetime.date.min, datetime.date.max)
+        runner = make_runner(results)
 
         # Heath is visited first so takes H, then moves to He so Hill can have
         # H. Each element maps to the first result at its location.
@@ -529,7 +552,7 @@ class TestPeriodicTable(unittest.TestCase):
             self.assertEqual(periodic_table_achieved(runner), {"He": results[3], "H": results[1]})
 
     def test_periodic_table_achieved_no_results(self):
-        runner = Runner(1, "Name", DUMMY_AGE_CATEGORY, [], datetime.date.min, datetime.date.max)
+        runner = make_runner()
         with patch("parkrun.tables.achievements.periodic_table.elements_by_rarity", return_value=["H", "He"]):
             self.assertEqual(periodic_table_achieved(runner), {})
 
@@ -637,27 +660,23 @@ class TestVoronoi(unittest.TestCase):
 
     def test_layer_shares_cell_between_events_at_same_location(self):
         events = [
-            Event(i, f"Name{i}", f"name{i}", lat, long, DUMMY_COUNTRY, 1)
+            make_event(i, lat=lat, long=long)
             for i, (lat, long) in enumerate([(0, 0), (0, 0), (50, 10), (-30, 100), (10, -120)])
         ]
         layer = voronoi_layer(events, lambda event: str(event.id_))
         self.assertEqual([feature["properties"]["colour"] for feature in layer.data["features"]], ["0", "2", "3", "4"])
 
     def test_layer_empty_with_too_few_locations(self):
-        events = [Event(i, f"Name{i}", f"name{i}", i, i, DUMMY_COUNTRY, 1) for i in range(3)]
+        events = [make_event(i, lat=i, long=i) for i in range(3)]
         with self.assertLogs("parkrun.maps.voronoi", "WARNING"):
             layer = voronoi_layer(events, lambda event: "red")
         self.assertEqual(layer.data["features"], [])
 
 class TestLatestUpdateMap(unittest.TestCase):
-    @staticmethod
-    def runner(name: str) -> Runner:
-        return Runner(1, name, DUMMY_AGE_CATEGORY, [], datetime.date.min, datetime.date.max)
-
     def test_colours_legend_and_popups(self):
-        event1 = Event(1, "Park <1>", "park1", 51.0, 0.0, DUMMY_COUNTRY, 1)
-        event2 = Event(2, "Park 2", "park2", 52.0, 1.0, DUMMY_COUNTRY, 1)
-        event_runners = {event1: [self.runner("Alice"), self.runner("Bob & co")], event2: [self.runner("Carol")]}
+        event1 = make_event(1, "Park <1>", 51.0, 0.0)
+        event2 = make_event(2, "Park 2", 52.0, 1.0)
+        event_runners = {event1: [make_runner(name="Alice"), make_runner(name="Bob & co")], event2: [make_runner(name="Carol")]}
         with patch("parkrun.maps.latest_update_map.map_events") as map_events:
             latest_update_map(event_runners, datetime.date(2026, 10, 17))
         map_events.assert_called_once()
