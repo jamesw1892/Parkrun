@@ -24,8 +24,9 @@ def map_events(
     If voronoi, also draw a Voronoi diagram: shade every point on the map in the
     colour of the event closest to it (by great circle distance).
 
-    If legend is given, show a key in the corner mapping each label to the
-    colour it's drawn in.
+    If legend is given, show a key in the corner mapping the HTML of each label
+    to the colour it's drawn in, so labels must also escape any data they
+    include.
     """
 
     # Draw on a canvas rather than as separate SVG elements so thousands of
@@ -66,11 +67,11 @@ def map_events(
 def legend_html(legend: dict[str, str]) -> str:
     """
     HTML for a box fixed to the top right of the page with a coloured dot next
-    to each label. Colours are trusted; labels are escaped.
+    to each label. Colours and labels are trusted HTML.
     """
 
     rows: str = "".join(
-        f'<div><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: {colour}; margin-right: 6px;"></span>{html.escape(label)}</div>'
+        f'<div><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: {colour}; margin-right: 6px;"></span>{label}</div>'
         for label, colour in legend.items()
     )
     return f'<div style="position: fixed; top: 10px; right: 10px; z-index: 1000; background: white; padding: 6px 10px; border-radius: 4px; box-shadow: 0 0 4px rgba(0, 0, 0, 0.4); font: 12px sans-serif;">{rows}</div>'

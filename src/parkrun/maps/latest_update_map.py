@@ -41,6 +41,6 @@ def latest_update_map(event_runners: dict[Event, list[Runner]], date: datetime.d
             *(html.escape(runner.name) for runner in event_runners[event]),
         ])
 
-    legend: dict[str, str] = {f"{event.name}: " + ", ".join(runner.name for runner in runners): event_colours[event] for event, runners in event_runners.items()}
+    legend: dict[str, str] = {f"<b>{html.escape(event.name)}:</b> " + html.escape(", ".join(runner.name for runner in runners)): event_colours[event] for event, runners in event_runners.items()}
 
     map_events(event_runners, f"Parkrun Events on {date}", colour, popup_html, voronoi=False, legend=legend)

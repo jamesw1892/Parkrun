@@ -73,7 +73,7 @@ def event_map(
             *(f"<b>{html.escape(runner.name)}:</b> {runner.locations_counter[event]}" for runner in runners_done(event)),
         ])
 
-    legend: dict[str, str] = {runner.format_identity(): runner_colours[runner] for runner in runners}
+    legend: dict[str, str] = {html.escape(runner.format_identity()): runner_colours[runner] for runner in runners}
     if runners:
         if len(runners) > 1:
             legend["Multiple"] = MULTIPLE_COLOUR
