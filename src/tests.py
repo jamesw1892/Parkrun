@@ -665,7 +665,7 @@ class TestLatestUpdateMap(unittest.TestCase):
         self.assertEqual(list(events), [event1, event2])
         self.assertFalse(map_events.call_args.kwargs["voronoi"])
         self.assertNotEqual(colour(event1), colour(event2))
-        self.assertEqual(map_events.call_args.kwargs["legend"], {"<b>Park &lt;1&gt;:</b> Alice, Bob &amp; co": colour(event1), "<b>Park 2:</b> Carol": colour(event2)})
+        self.assertEqual(map_events.call_args.kwargs["legend"], {"<b>Park &lt;1&gt;</b>: Alice, Bob &amp; co": colour(event1), "<b>Park 2</b>: Carol": colour(event2)})
         self.assertEqual(popup_html(event1), "<b>Park &lt;1&gt;</b><br>Alice<br>Bob &amp; co")
 
     def test_no_events_no_map(self):

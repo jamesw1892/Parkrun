@@ -70,7 +70,7 @@ def event_map(
     def popup_html(event: Event) -> str:
         return "<br>".join([
             f"<b>{html.escape(event.name)}</b>",
-            *(f"<b>{html.escape(runner.name)}:</b> {runner.locations_counter[event]}" for runner in runners_done(event)),
+            *(f"<b>{html.escape(runner.name)}</b>: {runner.locations_counter[event]}" for runner in runners_done(event)),
         ])
 
     legend: dict[str, str] = {html.escape(runner.format_identity()): runner_colours[runner] for runner in runners}
