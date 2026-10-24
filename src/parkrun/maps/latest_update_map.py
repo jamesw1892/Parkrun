@@ -18,9 +18,10 @@ EVENT_COLOURS: list[str] = [str(colour) for colour in TABLEAU_COLORS.values()]
 def latest_update_map(event_runners: dict[Event, list[Runner]], date: datetime.date) -> None:
     """
     Display a map in the browser of the events that the given parkrunners did
-    on the given date, each in its own colour, with a legend saying who did
-    each. Clicking one shows its name and who did it. event_runners maps each
-    event to the parkrunners who did it. Show nothing if there are no events.
+    on the given date, each in its own colour, with a legend saying which
+    event each is and who did it. Clicking one shows its name and who did it.
+    event_runners maps each event to the parkrunners who did it. Show nothing
+    if there are no events.
     """
 
     if not event_runners:
@@ -40,6 +41,6 @@ def latest_update_map(event_runners: dict[Event, list[Runner]], date: datetime.d
             *(html.escape(runner.name) for runner in event_runners[event]),
         ])
 
-    legend: dict[str, str] = {", ".join(runner.name for runner in runners): event_colours[event] for event, runners in event_runners.items()}
+    legend: dict[str, str] = {f"{event.name}: " + ", ".join(runner.name for runner in runners): event_colours[event] for event, runners in event_runners.items()}
 
     map_events(event_runners, f"Parkrun Events on {date}", colour, popup_html, voronoi=False, legend=legend)
