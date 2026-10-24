@@ -1,15 +1,12 @@
 import datetime
 import html
 from itertools import cycle
-import logging
 
 from matplotlib.colors import TABLEAU_COLORS
 
 from parkrun.maps.render import map_events
 from parkrun.models.event import Event
 from parkrun.models.runner import Runner
-
-logger = logging.getLogger(__name__)
 
 # One per event
 EVENT_COLOURS: list[str] = [str(colour) for colour in TABLEAU_COLORS.values()]
@@ -26,9 +23,6 @@ def latest_update_map(event_runners: dict[Event, list[Runner]], date: datetime.d
 
     if not event_runners:
         return
-
-    if len(event_runners) > len(EVENT_COLOURS):
-        logger.warning("More events (%d) than colours (%d), so some share a colour", len(event_runners), len(EVENT_COLOURS))
 
     event_colours: dict[Event, str] = dict(zip(event_runners, cycle(EVENT_COLOURS)))
 

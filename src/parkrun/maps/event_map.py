@@ -2,7 +2,6 @@ from collections.abc import Iterable
 import datetime
 import html
 from itertools import cycle
-import logging
 
 from matplotlib.colors import TABLEAU_COLORS
 
@@ -11,8 +10,6 @@ from parkrun.api.scraper_runner import fetch_runner_results
 from parkrun.maps.render import map_events
 from parkrun.models.event import Event
 from parkrun.models.runner import Runner
-
-logger = logging.getLogger(__name__)
 
 # One per runner, leaving out those that look like MULTIPLE_COLOUR or NOT_DONE_COLOUR
 RUNNER_COLOURS: list[str] = [str(colour) for name, colour in TABLEAU_COLORS.items() if name not in {"tab:red", "tab:green"}]
@@ -39,9 +36,6 @@ def event_map(
     If only_adult, don't show junior events, even ones the parkrunners did.
     If voronoi, also shade the area closest to each parkrun in its colour.
     """
-
-    if len(runner_ids) > len(RUNNER_COLOURS):
-        logger.warning("More runners (%d) than colours (%d), so some share a colour", len(runner_ids), len(RUNNER_COLOURS))
 
     runners: list[Runner] = [fetch_runner_results(runner_id, start_date, end_date) for runner_id in runner_ids]
 
