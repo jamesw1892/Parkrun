@@ -62,7 +62,9 @@ Install the test dependency with `pip install -e '.[test]'`.
         - `runner.py`: A runner with their number, name and all their runs.
         - `time.py`: A finish time or any other parkrun-related time, e.g. total/average.
     - `tables/`:
-        - `achievements.py`: Side-by-side achievement progress.
+        - `achievements/`:
+            - `__init__.py`: Side-by-side achievement progress.
+            - `periodic_table.py`: The Periodic Table achievement: matching chemical element symbols to locations that can spell them.
         - `common_run_comparison.py`: Side-by-side comparison of runs parkrunners did together.
         - `latest_update.py`: Summary of each parkrunner's result at the most recent parkrun between the given dates, then a map of where they went (`maps/latest_update_map.py`).
         - `most_common.py`: A property of each parkrunner's runs, sorted by how often it occurred.
