@@ -89,6 +89,13 @@ def activity_graph(
     for runner, counts in zip(runners, runner_counts):
         plt.plot(months, counts, marker="o", label=runner.format_identity())
     plt.plot(months, max_parkruns, marker="x", label="Max Possible")
+
+    # Make the minimum tick on the y-axis always be 0 by...
+    # Include 0 in the y-axis data limits so autoscaling always shows it, with
+    # the usual margin below. This must come before anything that calculates
+    # the axis limits (e.g. plt.xticks) or it will be ignored
+    plt.gca().update_datalim([(0, 0)], updatex=False)
+
     plt.xlabel("Month")
     plt.ylabel("Number of Runs")
     plt.xticks(rotation=45, ha="right")
