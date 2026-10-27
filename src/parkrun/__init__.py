@@ -74,9 +74,9 @@ def get_table_max_width() -> int:
 def get_min_secs_between_queries() -> int:
     return _MIN_SECS_BETWEEN_QUERIES
 
-# Log to stderr, only from this package
+# Log to stderr, only from this package and the script being run
 stderr_handler = logging.StreamHandler()
-stderr_handler.addFilter(lambda record: record.name.startswith(__name__))
+stderr_handler.addFilter(lambda record: record.name in (__name__, "__main__") or record.name.startswith(__name__ + "."))
 
 logging.basicConfig(
     level=os.getenv("MIN_LOG_LEVEL", "WARNING").upper(),
