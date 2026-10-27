@@ -152,8 +152,13 @@ def fetch_event_result(
     # Parse the HTML response
     soup = BeautifulSoup(html, "html.parser")
 
+    info_h3: Tag = soup.find("div", {"class": "Results-header"}).find("h3")
+
+    if info_h3.text.strip().upper().endswith("CANCELLED"):
+        raise ParkrunException("Cancelled")
+
     # Extract date
-    date_text: str = soup.find("div", {"class": "Results-header"}).find("h3").find("span", {"class": "format-date"}).text.strip()
+    date_text: str = info_h3.find("span", {"class": "format-date"}).text.strip()
     try:
         date: datetime.date = datetime.datetime.strptime(date_text, "%Y-%m-%d").date()
     except ValueError: # TODO: What if US format?
