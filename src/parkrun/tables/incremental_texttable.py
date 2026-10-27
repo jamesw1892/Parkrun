@@ -1,13 +1,18 @@
 import math
 from texttable import Texttable
-from typing import Any, Sequence, Union
+from types import TracebackType
+from typing import Any, Optional, Sequence, TextIO, Union
+
+# A fixed width as an int or a percentage of the remaining width like "50%"
+Width = Union[int, str]
 
 class IncrementalTexttable:
     """
-    A wrapper around texttable to print a row at a time rather than all at once
-    at the end. This means results can be printed as they are calculated, e.g.
-    from a generator so the user can start seeing results before they have all
-    been calculated.
+    A wrapper around texttable to print a table a row at a time rather than all
+    at once at the end. This means results can be printed as they are
+    calculated, e.g. from a generator so the user can start seeing results
+    before they have all been calculated. It can also print all at once so the
+    caller can choose either with the same code.
 
     Typical usage with time.sleep to emphasise incremental nature:
 
@@ -15,37 +20,82 @@ class IncrementalTexttable:
     from parkrun.tables.incremental_texttable import IncrementalTexttable
     import time
 
-    table = IncrementalTexttable.default_with_col_widths([2, 2])
-    print(table.draw_header(["x", "2x"]))
-
-    for x in range(10):
-        print(table.draw_row([x, 2 * x]))
-        time.sleep(0.1)
+    with IncrementalTexttable([("x", 2), ("2x", "100%")], 20) as table:
+        for x in range(10):
+            table.add_row([x, 2 * x])
+            time.sleep(0.1)
     ```
     """
 
-    def __init__(self, table: Texttable) -> None:
+    def __init__(
+        self,
+        columns: Sequence[tuple[str, Width]],
+        max_width: Optional[int],
+        incremental: bool = True,
+        file: Optional[TextIO] = None,
+    ) -> None:
         """
-        Use the given table, which allows full configuration (although its
-        header and rows will be ignored). It is recommended to set its column
-        widths otherwise different rows will have different column widths so
-        they may not line up.
+        Each column is a pair of its header and its width, which is either a
+        fixed width or a percentage of the remaining width (see
+        calc_col_widths). The whole table is at most max_width characters wide,
+        or texttable's default if None.
+
+        If incremental then the header is printed immediately and each row as
+        it is added, using the widths so the columns line up, and max_width
+        must be given if any are percentages. Otherwise everything is printed
+        by finish() and the widths are ignored so texttable can fit the columns
+        to their contents.
+
+        Print to file if given, otherwise stdout.
         """
 
-        self._table: Texttable = table
-        self._has_printed_something: bool = False
+        self._incremental: bool = incremental
+        self._file: Optional[TextIO] = file
+        self._rows: list[Sequence[Any]] = []
+        self._has_printed_row: bool = False
+        self._finished: bool = False
 
-    @classmethod
-    def default_with_col_widths(cls, col_widths: Sequence[int]) -> "IncrementalTexttable":
-        """
-        Return an instance whose table has the given column widths and
-        everything else default.
-        """
+        self._table: Texttable = Texttable()
+        if max_width is not None:
+            self._table.set_max_width(max_width)
 
-        return cls(Texttable().set_cols_width(col_widths))
+        self._headers: list[str] = []
+        widths: list[Width] = []
+        for header, width in columns:
+            if not isinstance(header, str):
+                raise TypeError(f"Header {header!r} is not a string")
+            if not isinstance(width, (int, str)):
+                raise TypeError(f"Width {width!r} is not an int or a string")
+            self._headers.append(header)
+            widths.append(width)
+
+        if not incremental:
+            return
+
+        if max_width is None:
+            if not all(isinstance(width, int) for width in widths):
+                raise ValueError("Percentage widths need a max width")
+            self._table.set_cols_width(widths)
+        else:
+            self._table.set_cols_width(self.calc_col_widths(max_width, widths))
+
+        # Print the header row without the bottom line (it adds a bottom border
+        # in addition to the header border despite there being no non-header
+        # rows), keeping the bottom line in case there are no rows
+        header_text, self._header_bottom_border = self._table.reset().header(self._headers).draw().rsplit("\n", 1)
+        self._print(header_text)
+
+    def __enter__(self) -> "IncrementalTexttable":
+        return self
+
+    def __exit__(self, exc_type: Optional[type[BaseException]], exc: Optional[BaseException], tb: Optional[TracebackType]) -> None:
+
+        # Don't print anything more if something went wrong
+        if exc_type is None:
+            self.finish()
 
     @staticmethod
-    def calc_col_widths(max_width: int, widths: Sequence[Union[int, str]]) -> list[int]:
+    def calc_col_widths(max_width: int, widths: Sequence[Width]) -> list[int]:
         """
         Return column widths such that the whole table is max_width characters
         wide, including padding and vertical lines. Each column in widths that
@@ -95,48 +145,50 @@ class IncrementalTexttable:
         flexible_iter = iter(flexible_widths)
         return [w if isinstance(w, int) else next(flexible_iter) for w in widths]
 
-    def _remove_top_border_if_required(self, text: str) -> str:
+    def _print(self, text: str) -> None:
+        print(text, file=self._file, flush=True)
 
-        if self._has_printed_something:
-            return text.split("\n", 1)[1]
-
-        self._has_printed_something = True
-        return text
-
-    def draw_header(self, headers: Sequence[Any]) -> str:
+    def add_row(self, row: Sequence[Any]) -> None:
         """
-        Return a string of just the headers to be printed. Must be called before
-        anything else is drawn.
+        Print the row now if incremental, otherwise store it to print in
+        finish().
         """
 
-        if self._has_printed_something:
-            raise RuntimeError("The header must be drawn before anything else")
+        if self._finished:
+            raise RuntimeError("Can't add a row after finishing")
+        if len(row) != len(self._headers):
+            raise ValueError(f"Row has {len(row)} cells but there are {len(self._headers)} columns")
 
-        header_text: str = self._table.reset().header(headers).draw()
-        self._has_printed_something = True
+        if not self._incremental:
+            self._rows.append(row)
+            return
 
-        # Print the header row without the bottom line (it adds a bottom border
-        # in addition to the header border despite there being no non-header rows)
-        return header_text.rsplit("\n", 1)[0]
+        # Print the row without the top border since it is the same as the
+        # bottom of the header or previous row
+        self._print(self._table.reset().add_row(row).draw().split("\n", 1)[1])
+        self._has_printed_row = True
 
-    def draw_row(self, row: Sequence[Any]) -> str:
+    def finish(self) -> None:
         """
-        Return a string of just this row to be printed
+        Print the whole table if not incremental, otherwise the bottom border
+        if there were no rows. Called automatically when used as a context
+        manager and nothing goes wrong.
         """
 
-        row_text: str = self._table.reset().add_row(row).draw()
+        if self._finished:
+            raise RuntimeError("Already finished")
+        self._finished = True
 
-        row_text = self._remove_top_border_if_required(row_text)
-
-        return row_text
+        if not self._incremental:
+            self._print(self._table.reset().header(self._headers).add_rows(self._rows, header=False).draw())
+        elif not self._has_printed_row:
+            self._print(self._header_bottom_border)
 
 
 if __name__ == "__main__":
     import time
 
-    table = IncrementalTexttable.default_with_col_widths([2, 2])
-    print(table.draw_header(["x", "2x"]))
-
-    for x in range(10):
-        print(table.draw_row([x, 2 * x]))
-        time.sleep(0.1)
+    with IncrementalTexttable([("x", 2), ("2x", "100%")], 20) as table:
+        for x in range(10):
+            table.add_row([x, 2 * x])
+            time.sleep(0.1)

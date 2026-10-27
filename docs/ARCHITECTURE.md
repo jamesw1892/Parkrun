@@ -68,7 +68,7 @@ Install the test dependency with `pip install -e '.[test]'`.
             - `__init__.py`: Side-by-side achievement progress.
             - `periodic_table.py`: The Periodic Table achievement: matching chemical element symbols to locations that can spell them.
         - `common_run_comparison.py`: Side-by-side comparison of runs parkrunners did together.
-        - `incremental_texttable.py`: Wrapper around `texttable` to print a table a row at a time, plus calculating column widths from fixed widths and percentages of the remaining width.
+        - `incremental_texttable.py`: Wrapper around `texttable` to print a table either a row at a time as rows are added or all at once at the end, with column widths given as fixed widths or percentages of the remaining width.
         - `latest_update.py`: Summary of each parkrunner's result at the most recent parkrun between the given dates, then a map of where they went (`maps/latest_update_map.py`).
         - `most_common.py`: A property of each parkrunner's runs, sorted by how often it occurred.
         - `pb_progress.py`: Each time each parkrunner improved their PB.

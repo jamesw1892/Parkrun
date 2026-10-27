@@ -5,7 +5,6 @@ most recent parkrun between the given dates.
 
 from collections import defaultdict
 import datetime
-from texttable import Texttable
 from parkrun.api.cache import most_recent_parkrun
 from parkrun import get_table_max_width
 from parkrun.api.scraper_runner import fetch_runner_results
@@ -15,15 +14,6 @@ from parkrun.models.position import get_ordinal_suffix
 from parkrun.models.runner import Runner
 from parkrun.models.runner_result import RunnerResult
 from parkrun.tables.incremental_texttable import IncrementalTexttable
-
-HEADERS: list[str] = [
-    "Parkrunner",
-    "Parkrun",
-    "Location",
-    "Time",
-    "Position",
-    "Age Grade",
-]
 
 def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: datetime.date, incremental: bool = True, show_map: bool = True) -> None:
     """
@@ -47,69 +37,58 @@ def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: da
 
     print(f"Parkrunners who did the parkrun on {most_recent_parkrun_date}")
 
-    rows: list[list[str]] = [HEADERS]
     event_runners: defaultdict[Event, list[Runner]] = defaultdict(list)
 
-    if incremental:
+    # If incremental, set reasonable column widths with the parkrunner and
+    # location sharing what's left after the fixed width columns. This must be
+    # pre-calculated so it's reasonable and stays consistent
+    with IncrementalTexttable([
+        ("Parkrunner", "50%"),
+        ("Parkrun", 7),
+        ("Location", "50%"),
+        ("Time", 7),
+        ("Position", 8),
+        ("Age Grade", 9),
+    ], get_table_max_width(), incremental) as table:
+        for runner_id in runner_ids:
+            runner: Runner = fetch_runner_results(runner_id, start_date, end_date)
+            result: RunnerResult = runner.latest_result
 
-        # Set reasonable column widths with the parkrunner and location
-        # sharing what's left after the fixed width columns. This must be
-        # pre-calculated so it's reasonable and stays consistent
-        table = IncrementalTexttable.default_with_col_widths(IncrementalTexttable.calc_col_widths(get_table_max_width(), [
-            "50%", # Parkrunner
-            7,     # Parkrun
-            "50%", # Location
-            7,     # Time
-            8,     # Position
-            9,     # Age Grade
-        ]))
-        print(table.draw_header(HEADERS))
+            # Skip parkrunners who didn't do the most recent parkrun
+            if result is None or result.date != most_recent_parkrun_date:
+                continue
 
-    for runner_id in runner_ids:
-        runner: Runner = fetch_runner_results(runner_id, start_date, end_date)
-        result: RunnerResult = runner.latest_result
+            event_runners[result.location].append(runner)
 
-        # Skip parkrunners who didn't do the most recent parkrun
-        if result is None or result.date != most_recent_parkrun_date:
-            continue
+            results_at_location: list[RunnerResult] = list(filter(lambda r: r.location == result.location, runner.results))
+            times_at_location: int = len(results_at_location)
 
-        event_runners[result.location].append(runner)
+            time_extra: str = ""
+            if result.time.timedelta == runner.best_times[0].time.timedelta:
+                time_extra = " (global PB)"
+            elif times_at_location > 1 and all(result.time.timedelta <= r.time.timedelta for r in results_at_location):
+                time_extra = " (event PB)"
 
-        results_at_location: list[RunnerResult] = list(filter(lambda r: r.location == result.location, runner.results))
-        times_at_location: int = len(results_at_location)
+            position_extra: str = ""
+            if result.position.value == runner.best_positions[0].position.value:
+                position_extra = " (global PB)"
+            elif times_at_location > 1 and all(result.position.value <= r.position.value for r in results_at_location):
+                position_extra = " (event PB)"
 
-        time_extra: str = ""
-        if result.time.timedelta == runner.best_times[0].time.timedelta:
-            time_extra = " (global PB)"
-        elif times_at_location > 1 and all(result.time.timedelta <= r.time.timedelta for r in results_at_location):
-            time_extra = " (event PB)"
+            age_grade_extra: str = ""
+            if result.age_grade.value == runner.best_age_grades[0].age_grade.value:
+                age_grade_extra = " (global PB)"
+            elif times_at_location > 1 and all(result.age_grade.value >= r.age_grade.value for r in results_at_location):
+                age_grade_extra = " (event PB)"
 
-        position_extra: str = ""
-        if result.position.value == runner.best_positions[0].position.value:
-            position_extra = " (global PB)"
-        elif times_at_location > 1 and all(result.position.value <= r.position.value for r in results_at_location):
-            position_extra = " (event PB)"
-
-        age_grade_extra: str = ""
-        if result.age_grade.value == runner.best_age_grades[0].age_grade.value:
-            age_grade_extra = " (global PB)"
-        elif times_at_location > 1 and all(result.age_grade.value >= r.age_grade.value for r in results_at_location):
-            age_grade_extra = " (event PB)"
-
-        rows.append([
-            runner.format_identity(),
-            f"{len(runner.results)}{get_ordinal_suffix(len(runner.results))}",
-            f"{times_at_location}{get_ordinal_suffix(times_at_location)} at {result.location}",
-            f"{result.time}{time_extra}",
-            f"{result.position}{position_extra}",
-            f"{result.age_grade}{age_grade_extra}",
-        ])
-
-        if incremental:
-            print(table.draw_row(rows[-1]))
-
-    if not incremental:
-        print(Texttable(get_table_max_width()).add_rows(rows).draw())
+            table.add_row([
+                runner.format_identity(),
+                f"{len(runner.results)}{get_ordinal_suffix(len(runner.results))}",
+                f"{times_at_location}{get_ordinal_suffix(times_at_location)} at {result.location}",
+                f"{result.time}{time_extra}",
+                f"{result.position}{position_extra}",
+                f"{result.age_grade}{age_grade_extra}",
+            ])
 
     if show_map:
         latest_update_map(dict(event_runners), most_recent_parkrun_date)
