@@ -5,7 +5,6 @@ most recent parkrun between the given dates.
 
 from collections import defaultdict
 import datetime
-import math
 from texttable import Texttable
 from parkrun.api.cache import most_recent_parkrun
 from parkrun import get_table_max_width
@@ -15,6 +14,7 @@ from parkrun.models.event import Event
 from parkrun.models.position import get_ordinal_suffix
 from parkrun.models.runner import Runner
 from parkrun.models.runner_result import RunnerResult
+from parkrun.tables.incremental_texttable import IncrementalTexttable
 
 HEADERS: list[str] = [
     "Parkrunner",
@@ -52,28 +52,18 @@ def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: da
 
     if incremental:
 
-        # Set reasonable column widths as proportions of the maximum width
-        # This must be pre-calculated so it's reasonable and stays consistent
-        # Remaining width after the fixed column's width must also subtract the
-        # padding and vertical separator to the right of each column as well as
-        # the vertical separator on the far left
-        PARKRUN_COL_WIDTH: int = 7
-        TIME_COL_WIDTH: int = 7
-        POSITION_COL_WIDTH: int = 8
-        AGE_GRADE_COL_WIDTH: int = 9
-        REMAINING_WIDTH: int = get_table_max_width() - PARKRUN_COL_WIDTH - TIME_COL_WIDTH - POSITION_COL_WIDTH - AGE_GRADE_COL_WIDTH - 3 * len(HEADERS) - 1
-        table = Texttable().set_cols_width([
-            math.ceil(REMAINING_WIDTH / 2),
-            PARKRUN_COL_WIDTH,
-            REMAINING_WIDTH // 2,
-            TIME_COL_WIDTH,
-            POSITION_COL_WIDTH,
-            AGE_GRADE_COL_WIDTH,
-        ])
-
-        # Print the header row without the bottom line (it adds a bottom border
-        # in addition to the header border despite there being no non-header rows)
-        print(table.header(HEADERS).draw()[::-1].split("\n", 1)[1][::-1])
+        # Set reasonable column widths with the parkrunner and location
+        # sharing what's left after the fixed width columns. This must be
+        # pre-calculated so it's reasonable and stays consistent
+        table = IncrementalTexttable.default_with_col_widths(IncrementalTexttable.calc_col_widths(get_table_max_width(), [
+            "50%", # Parkrunner
+            7,     # Parkrun
+            "50%", # Location
+            7,     # Time
+            8,     # Position
+            9,     # Age Grade
+        ]))
+        print(table.draw_header(HEADERS))
 
     for runner_id in runner_ids:
         runner: Runner = fetch_runner_results(runner_id, start_date, end_date)
@@ -115,9 +105,8 @@ def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: da
             f"{result.age_grade}{age_grade_extra}",
         ])
 
-        # Print the latest row (only) without the top border
         if incremental:
-            print(table.reset().add_row(rows[-1]).draw().split("\n", 1)[1])
+            print(table.draw_row(rows[-1]))
 
     if not incremental:
         print(Texttable(get_table_max_width()).add_rows(rows).draw())
