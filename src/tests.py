@@ -16,7 +16,7 @@ from parkrun.graphs.activity import _get_num_months
 from parkrun.maps.latest_update_map import latest_update_map
 from parkrun.maps.voronoi import voronoi_cells, voronoi_layer
 from parkrun import _env_strtobool, projected_age_range
-from parkrun.tables.incremental_texttable import IncrementalTexttable
+from parkrun.tables.table_printer import TablePrinter
 from parkrun.tables.achievements.periodic_table import ELEMENTS, normalise, can_spell, elements_by_rarity, best_assignment, periodic_table_achieved
 import io
 import os
@@ -695,13 +695,13 @@ class TestLatestUpdateMap(unittest.TestCase):
             latest_update_map({}, datetime.date(2026, 10, 17))
         map_events.assert_not_called()
 
-class TestIncrementalTexttable(unittest.TestCase):
+class TestTablePrinter(unittest.TestCase):
     COLUMNS: list[tuple[str, Any]] = [("Name", "60%"), ("Count", 6), ("Place", "40%")]
     ROWS: list[list[Any]] = [["A long made up name", 3, "Fakeville"], ["B", 12, "Nowhere"]]
 
     def draw(self, rows: list[list[Any]], incremental: bool) -> str:
         out = io.StringIO()
-        with IncrementalTexttable(self.COLUMNS, 40, incremental, file=out) as table:
+        with TablePrinter(self.COLUMNS, 40, incremental, file=out) as table:
             for row in rows:
                 table.add_row(row)
         return out.getvalue()
@@ -711,9 +711,10 @@ class TestIncrementalTexttable(unittest.TestCase):
         (61, ["50%", 7, "50%", 7], [17, 7, 17, 7]),
         (50, ["33.3%", "33.3%", "33.4%"], [13, 13, 14]),
         (20, [5, 6], [5, 6]),
+        (None, [5, 6], [5, 6]),
     ])
-    def test_calc_col_widths(self, max_width: int, widths: list[Any], expected: list[int]):
-        self.assertEqual(IncrementalTexttable.calc_col_widths(max_width, widths), expected)
+    def test_calc_col_widths(self, max_width: int | None, widths: list[Any], expected: list[int]):
+        self.assertEqual(TablePrinter.calc_col_widths(widths, max_width), expected)
         if any(isinstance(w, str) for w in widths):
             self.assertEqual(sum(expected) + 3 * len(expected) + 1, max_width)
 
@@ -723,14 +724,21 @@ class TestIncrementalTexttable(unittest.TestCase):
         (25, ["abc%", "100%"]),
         (25, ["50%", 15, "50%"]),
         (12, ["99%", "1%"]),
+        (40, ["-50%", "150%"]),
+        (40, ["0%", "100%"]),
+        (40, [-5, "100%"]),
+        (40, [0, "100%"]),
+        (10, [5, 6]),
+        (None, [0, 5]),
+        (None, [5, "100%"]),
     ])
-    def test_calc_col_widths_invalid(self, max_width: int, widths: list[Any]):
+    def test_calc_col_widths_invalid(self, max_width: int | None, widths: list[Any]):
         with self.assertRaises(ValueError):
-            IncrementalTexttable.calc_col_widths(max_width, widths)
+            TablePrinter.calc_col_widths(widths, max_width)
 
     @parameterized.expand([([],), (ROWS,)])
     def test_incremental_matches_whole_table(self, rows: list[list[Any]]):
-        widths = IncrementalTexttable.calc_col_widths(40, [w for _, w in self.COLUMNS])
+        widths = TablePrinter.calc_col_widths([w for _, w in self.COLUMNS], 40)
         expected = Texttable().set_cols_width(widths).header([h for h, _ in self.COLUMNS]).add_rows(rows, header=False).draw()
         self.assertEqual(self.draw(rows, True), expected + "\n")
 
@@ -741,14 +749,14 @@ class TestIncrementalTexttable(unittest.TestCase):
 
     def test_incremental_prints_as_it_goes(self):
         out = io.StringIO()
-        table = IncrementalTexttable(self.COLUMNS, 40, file=out)
+        table = TablePrinter(self.COLUMNS, 40, file=out)
         self.assertIn("Name", out.getvalue())
         table.add_row(self.ROWS[0])
         self.assertIn("Fakeville", out.getvalue())
 
     def test_all_at_once_prints_at_finish(self):
         out = io.StringIO()
-        table = IncrementalTexttable([("Name", 5), ("Count", "100%")], 40, False, file=out)
+        table = TablePrinter([("Name", 5), ("Count", "100%")], 40, False, file=out)
         table.add_row(["A", 1])
         self.assertEqual(out.getvalue(), "")
         table.finish()
@@ -756,35 +764,35 @@ class TestIncrementalTexttable(unittest.TestCase):
 
     def test_incremental_percentage_without_max_width(self):
         with self.assertRaises(ValueError):
-            IncrementalTexttable([("Name", "100%"), ("Count", 5)], None, file=io.StringIO())
+            TablePrinter([("Name", "100%"), ("Count", 5)], None, file=io.StringIO())
 
     @parameterized.expand([([(1, 5)],), ([("Name", None)],), ([("Name", 1.5)],)])
     def test_invalid_column_types(self, columns: list[Any]):
         for incremental in [True, False]:
             with self.assertRaises(TypeError):
-                IncrementalTexttable(columns, 40, incremental, file=io.StringIO())
+                TablePrinter(columns, 40, incremental, file=io.StringIO())
 
     def test_incremental_fixed_widths_without_max_width(self):
         out = io.StringIO()
-        with IncrementalTexttable([("Name", 50), ("Count", 50)], None, file=out) as table:
+        with TablePrinter([("Name", 50), ("Count", 50)], None, file=out) as table:
             table.add_row(["A", 1])
         expected = Texttable().set_cols_width([50, 50]).header(["Name", "Count"]).add_rows([["A", 1]], header=False).draw()
         self.assertEqual(out.getvalue(), expected + "\n")
 
     def test_all_at_once_without_max_width(self):
         out = io.StringIO()
-        with IncrementalTexttable([("Name", 5), ("Count", "100%")], None, False, file=out) as table:
+        with TablePrinter([("Name", 5), ("Count", "100%")], None, False, file=out) as table:
             table.add_row(["A " * 50, 1])
         expected = Texttable().header(["Name", "Count"]).add_rows([["A " * 50, 1]], header=False).draw()
         self.assertEqual(out.getvalue(), expected + "\n")
 
     def test_wrong_row_length(self):
-        table = IncrementalTexttable(self.COLUMNS, 40, file=io.StringIO())
+        table = TablePrinter(self.COLUMNS, 40, file=io.StringIO())
         with self.assertRaises(ValueError):
             table.add_row(["A", 1])
 
     def test_finished(self):
-        table = IncrementalTexttable(self.COLUMNS, 40, file=io.StringIO())
+        table = TablePrinter(self.COLUMNS, 40, file=io.StringIO())
         table.finish()
         with self.assertRaises(RuntimeError):
             table.add_row(self.ROWS[0])
@@ -794,7 +802,7 @@ class TestIncrementalTexttable(unittest.TestCase):
     def test_exception_does_not_finish(self):
         out = io.StringIO()
         with self.assertRaises(KeyError):
-            with IncrementalTexttable(self.COLUMNS, 40, False, file=out) as table:
+            with TablePrinter(self.COLUMNS, 40, False, file=out) as table:
                 table.add_row(self.ROWS[0])
                 raise KeyError
         self.assertEqual(out.getvalue(), "")

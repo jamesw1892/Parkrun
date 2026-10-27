@@ -13,7 +13,7 @@ from parkrun.models.event import Event
 from parkrun.models.position import get_ordinal_suffix
 from parkrun.models.runner import Runner
 from parkrun.models.runner_result import RunnerResult
-from parkrun.tables.incremental_texttable import IncrementalTexttable
+from parkrun.tables.table_printer import TablePrinter
 
 def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: datetime.date, incremental: bool = True, show_map: bool = True) -> None:
     """
@@ -42,7 +42,7 @@ def latest_update(runner_ids: list[int], start_date: datetime.date, end_date: da
     # If incremental, set reasonable column widths with the parkrunner and
     # location sharing what's left after the fixed width columns. This must be
     # pre-calculated so it's reasonable and stays consistent
-    with IncrementalTexttable([
+    with TablePrinter([
         ("Parkrunner", "50%"),
         ("Parkrun", 7),
         ("Location", "50%"),

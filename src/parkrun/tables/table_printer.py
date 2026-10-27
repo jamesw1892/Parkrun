@@ -6,7 +6,7 @@ from typing import Any, Optional, Sequence, TextIO, Union
 # A fixed width as an int or a percentage of the remaining width like "50%"
 Width = Union[int, str]
 
-class IncrementalTexttable:
+class TablePrinter:
     """
     A wrapper around texttable to print a table a row at a time rather than all
     at once at the end. This means results can be printed as they are
@@ -17,10 +17,10 @@ class IncrementalTexttable:
     Typical usage with time.sleep to emphasise incremental nature:
 
     ```python
-    from parkrun.tables.incremental_texttable import IncrementalTexttable
+    from parkrun.tables.table_printer import TablePrinter
     import time
 
-    with IncrementalTexttable([("x", 2), ("2x", "100%")], 20) as table:
+    with TablePrinter([("x", 2), ("2x", "100%")], 20) as table:
         for x in range(10):
             table.add_row([x, 2 * x])
             time.sleep(0.1)
@@ -72,12 +72,7 @@ class IncrementalTexttable:
         if not incremental:
             return
 
-        if max_width is None:
-            if not all(isinstance(width, int) for width in widths):
-                raise ValueError("Percentage widths need a max width")
-            self._table.set_cols_width(widths)
-        else:
-            self._table.set_cols_width(self.calc_col_widths(max_width, widths))
+        self._table.set_cols_width(self.calc_col_widths(widths, max_width))
 
         # Print the header row without the bottom line (it adds a bottom border
         # in addition to the header border despite there being no non-header
@@ -85,7 +80,7 @@ class IncrementalTexttable:
         header_text, self._header_bottom_border = self._table.reset().header(self._headers).draw().rsplit("\n", 1)
         self._print(header_text)
 
-    def __enter__(self) -> "IncrementalTexttable":
+    def __enter__(self) -> "TablePrinter":
         return self
 
     def __exit__(self, exc_type: Optional[type[BaseException]], exc: Optional[BaseException], tb: Optional[TracebackType]) -> None:
@@ -95,15 +90,16 @@ class IncrementalTexttable:
             self.finish()
 
     @staticmethod
-    def calc_col_widths(max_width: int, widths: Sequence[Width]) -> list[int]:
+    def calc_col_widths(widths: Sequence[Width], max_width: Optional[int]) -> list[int]:
         """
         Return column widths such that the whole table is max_width characters
         wide, including padding and vertical lines. Each column in widths that
-        is an int has that fixed width. The remaining width is shared between
-        the other columns, which must be percentages of the form "50%" that
-        add up to 100.
+        is an int has that fixed width, which must be at least 1. The remaining
+        width is shared between the other columns, which must be positive
+        percentages of the form "50%" that add up to 100. If max_width is None
+        then there must be no percentages.
 
-        For example, `calc_col_widths(60, ["50%", 7, "50%", 7])`
+        For example, `calc_col_widths(["50%", 7, "50%", 7], 60)`
         returns `[17, 7, 16, 7]`.
         """
 
@@ -111,16 +107,25 @@ class IncrementalTexttable:
         percentages: list[float] = []
         for width in widths:
             if isinstance(width, int):
+                if width < 1:
+                    raise ValueError(f"Fixed width {width} is not at least 1")
                 fixed_widths.append(width)
             elif width.endswith("%"):
                 try:
-                    percentages.append(float(width[:-1]))
+                    percentage: float = float(width[:-1])
                 except ValueError:
                     raise ValueError(f"Invalid percentage {width!r}") from None
+                if not percentage > 0:
+                    raise ValueError(f"Percentage {width!r} is not positive")
+                percentages.append(percentage)
             else:
                 raise ValueError(f"Width {width!r} is not an int or a percentage like '50%'")
 
         num_flexible: int = len(percentages)
+        if max_width is None:
+            if num_flexible > 0:
+                raise ValueError("Percentage widths need a max width")
+            return fixed_widths
         if num_flexible > 0 and not math.isclose(sum(percentages), 100):
             raise ValueError(f"Percentages add up to {sum(percentages)} not 100")
 
@@ -188,7 +193,7 @@ class IncrementalTexttable:
 if __name__ == "__main__":
     import time
 
-    with IncrementalTexttable([("x", 2), ("2x", "100%")], 20) as table:
+    with TablePrinter([("x", 2), ("2x", "100%")], 20) as table:
         for x in range(10):
             table.add_row([x, 2 * x])
             time.sleep(0.1)
