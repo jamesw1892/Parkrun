@@ -42,7 +42,9 @@ Install the test dependency with `pip install -e '.[test]'`.
         - `utils.py`: Utility functions used by the rest of the package.
     - `graphs/`:
         - `activity.py`: Number of parkruns each parkrunner did each month.
+        - `age_grades.py`: Age grades of parkrunners.
         - `times.py`: Finish times of parkrunners.
+        - `utils.py`: Shared graph helpers, including a line graph of any value from each parkrunner's results over time.
     - `maps/`:
         - `browser.py`: Serves a map page once from localhost, since OpenStreetMap tiles don't load from `file://`.
         - `event_map.py`: Map of all parkrun events in the world, coloured by which of several parkrunners have done them, with who did each and how many times.

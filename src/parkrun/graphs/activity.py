@@ -2,6 +2,7 @@ from parkrun import get_table_max_width
 from parkrun.api.cache import parkrun_before
 from parkrun.api.scraper_runner import fetch_runner_results
 from parkrun.api.utils import date_description
+from parkrun.graphs.utils import show_graph
 from parkrun.models.runner import Runner
 from collections import Counter
 import datetime
@@ -88,11 +89,8 @@ def activity_graph(
     for runner, counts in zip(runners, runner_counts):
         plt.plot(months, counts, marker="o", label=runner.format_identity())
     plt.plot(months, max_parkruns, marker="x", label="Max Possible")
-    plt.title(f"Parkruns Per Month {date_desc}")
     plt.xlabel("Month")
     plt.ylabel("Number of Runs")
     plt.xticks(rotation=45, ha="right")
     plt.gca().yaxis.set_major_locator(MaxNLocator(integer=True))
-    plt.legend()
-    plt.tight_layout()
-    plt.show()
+    show_graph(f"Parkruns Per Month {date_desc}")

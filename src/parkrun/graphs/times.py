@@ -1,10 +1,6 @@
-from parkrun.models.runner import Runner
-from parkrun.api.scraper_runner import fetch_runner_results
-from parkrun.api.utils import date_description
+from parkrun.graphs.utils import results_graph
 import datetime
-import matplotlib.pyplot as plt
-from matplotlib.ticker import AutoLocator
-from matplotlib.dates import AutoDateFormatter, AutoDateLocator
+from matplotlib.ticker import FuncFormatter
 
 def _format_time(seconds, _):
     """Convert seconds to MM:SS format for y-axis labels"""
@@ -23,34 +19,10 @@ def time_graph(
     ran).
     """
 
-    runners: list[Runner] = [fetch_runner_results(runner_id, start_date, end_date) for runner_id in runner_ids]
-
-    # Plot each parkrunner separately but on the same axis - `dates` will be
-    # different for each parkrunner but MatPlotLib will work it out.
-    plt.clf()
-    for runner in runners:
-        dates: list[datetime.date] = []
-        times: list[int] = []
-        for result in runner.results:
-            dates.append(result.date)
-
-            # Plot the time as an integer number of seconds and use
-            # `_format_time` to format the chosen times for the y-axis.
-            times.append(round(result.time.timedelta.total_seconds()))
-
-        # Plot the data with legend labelled with the runner's identity string
-        plt.plot(dates, times, marker="o", label=runner.format_identity())
-
-    plt.xlabel("Date")
-    xaxis_locator = AutoDateLocator()
-    plt.gca().xaxis.set_major_locator(xaxis_locator)
-    plt.gca().xaxis.set_major_formatter(AutoDateFormatter(xaxis_locator))
-
-    plt.ylabel("Time")
-    plt.gca().yaxis.set_major_locator(AutoLocator())
-    plt.gca().yaxis.set_major_formatter(plt.FuncFormatter(_format_time))
-
-    plt.title(f"Parkrun Finish Times {date_description(start_date, end_date)}")
-    plt.legend()
-    plt.tight_layout()
-    plt.show()
+    # Plot the time as an integer number of seconds and use `_format_time` to
+    # format the chosen times for the y-axis.
+    results_graph(
+        runner_ids, start_date, end_date,
+        lambda result: round(result.time.timedelta.total_seconds()),
+        "Time", FuncFormatter(_format_time), "Parkrun Finish Times",
+    )

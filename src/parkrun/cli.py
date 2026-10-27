@@ -10,6 +10,7 @@ import logging
 
 import parkrun
 from parkrun.graphs.activity import activity_graph
+from parkrun.graphs.age_grades import age_grade_graph
 from parkrun.graphs.times import time_graph
 from parkrun.maps.event_map import event_map
 from parkrun.tables.achievements import achievements
@@ -21,6 +22,7 @@ from parkrun.tables.runner_stats import runner_stats
 
 command_funcs: dict[str, Callable[[list[int], datetime.date, datetime.date], None]] = {
     "activity": activity_graph,
+    "age_grades": age_grade_graph,
     "times": time_graph,
     "map": event_map,
     "achievements": achievements,

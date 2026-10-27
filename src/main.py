@@ -33,9 +33,11 @@ try:
 
     # Graphs
     from parkrun.graphs.activity import activity_graph
+    from parkrun.graphs.age_grades import age_grade_graph
     from parkrun.graphs.times import time_graph
 
     #activity_graph(runner_ids, start_date, end_date)
+    #age_grade_graph(runner_ids, start_date, end_date)
     #time_graph(runner_ids, start_date, end_date)
 
     # Stats
