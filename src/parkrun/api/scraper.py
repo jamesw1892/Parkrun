@@ -43,9 +43,10 @@ def fetch(url: str, type_name: str, file_name: str, is_cache_valid_forever: bool
     """
     Get the data of given type and file names from the given URL, checking and
     updating the cache and handling errors. If given, raise a ParkrunException
-    with the given error message upon 404. Also raises ParkrunException if fail
-    to connect and nothing (even old) is in the cache. And raise HTTPError if
-    any other 4xx or 5xx status code is received.
+    with the given error message upon 404. If any other 4xx or 5xx status code
+    is received or there is a network error (e.g. failing to connect, timing out
+    or the connection dropping part way through) then return any old cache, or
+    raise ParkrunException if nothing (even old) is in the cache.
     """
 
     # If it's in the cache, return that
@@ -77,8 +78,18 @@ def fetch(url: str, type_name: str, file_name: str, is_cache_valid_forever: bool
         # Raise a HTTPError for bad responses (4xx and 5xx)
         response.raise_for_status()
 
-    # If can't connect then check the cache again, using any cached results
-    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.HTTPError) as e:
+    # If can't connect, the connection drops part way through or the server
+    # misbehaves then check the cache again, using any cached results. Errors
+    # from our own bad URLs or headers aren't caught so bugs aren't hidden
+    except (
+        requests.exceptions.ConnectionError,
+        requests.exceptions.Timeout,
+        requests.exceptions.HTTPError,
+        requests.exceptions.ChunkedEncodingError,
+        requests.exceptions.ContentDecodingError,
+        requests.exceptions.TooManyRedirects,
+        requests.exceptions.RetryError,
+    ) as e:
         original_cache_force_valid: bool = parkrun._CACHE_FORCE_VALID
         parkrun._CACHE_FORCE_VALID = True
         contents: str | None = check_cache_str(type_name, file_name, is_cache_valid_forever)
