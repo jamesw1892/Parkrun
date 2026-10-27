@@ -126,12 +126,14 @@ def fetch_countries() -> CountryCollection:
 @cache
 def fetch_event_result(
     location_name: str,
-    event_number: int,
+    event_date: datetime.date,
 ) -> EventResult:
     """
     Return an EventResult object containing all results at the given location
-    for the given event number.
+    on the given date.
     """
+
+    event_date_str: str = event_date.strftime("%Y-%m-%d")
 
     # The URL depends on which country the location is in
     events: EventCollection = fetch_events()
@@ -140,11 +142,11 @@ def fetch_event_result(
         raise ValueError("Event discontinued so can't fetch its results")
 
     html: str = fetch(
-        url=f"https://{event.country.url}/{event.url_name}/results/{event_number}/",
+        url=f"https://{event.country.url}/{event.url_name}/results/{event_date_str}/",
         type_name="event_result",
-        file_name=f"{event.url_name}-{event_number}.html",
+        file_name=f"{event.url_name}-{event_date_str}.html",
         is_cache_valid_forever=True,
-        err_msg_404=f"No event result exists at location '{location_name}' with event number {event_number}",
+        err_msg_404=f"No event result exists at location '{location_name}' on {event_date_str}",
     )
 
     # Parse the HTML response
@@ -157,9 +159,12 @@ def fetch_event_result(
     except ValueError: # TODO: What if US format?
         date: datetime.date = datetime.datetime.strptime(date_text, "%d/%m/%Y").date()
 
+    # Extract run number
+    event_number: int = int(info_h3.find_all("span")[2].text.strip().removeprefix("#"))
+
     # Extract the tables with finishers and volunteers in
     tables: list[Tag] = soup.find_all("table")
-    assert len(tables) == 2, f"Unexpectedly found {len(tables)} rather than 2 tables in event result page for location '{location_name}' with event number {event_number}"
+    assert len(tables) == 2, f"Unexpectedly found {len(tables)} rather than 2 tables in event result page for location '{location_name}' on {event_date_str}"
     finishers_table, volunteers_table = tables
 
     # Extract rows from the table
