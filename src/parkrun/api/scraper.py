@@ -11,6 +11,8 @@ from parkrun.models.age_category import AgeCategory
 from parkrun.api.parkrun_exception import ParkrunException
 from parkrun.api.cache import check_cache_str, write_cache_str
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from bs4 import BeautifulSoup, Tag
 from functools import cache
 import logging
@@ -35,6 +37,17 @@ session.headers = {
     "Sec-Fetch-Site": "none",
     "Sec-Fetch-User": "?1"
 }
+
+# Retry once (immediately) upon a network error before the response headers
+# arrive or a status code that might not happen again, unlike e.g. 405.
+# If it still has a bad status, return the last response rather than
+# raising RetryError so raise_for_status gives the status code
+session.mount("https://", HTTPAdapter(max_retries=Retry(
+    total=1,
+    status_forcelist=[429, 500, 502, 503, 504],
+    raise_on_status=False,
+    retry_after_max=60,
+)))
 
 last_query: datetime.datetime = datetime.datetime.min
 
