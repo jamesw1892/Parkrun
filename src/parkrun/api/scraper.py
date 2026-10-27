@@ -68,7 +68,7 @@ def fetch(url: str, type_name: str, file_name: str, is_cache_valid_forever: bool
 
     # Otherwise, try to fetch from the URL
     try:
-        response: requests.Response = session.get(url)
+        response: requests.Response = session.get(url, timeout=parkrun.get_request_timeout_secs())
 
         # If provided, handle 404s with a special error message
         if response.status_code == 404 and err_msg_404 is not None:

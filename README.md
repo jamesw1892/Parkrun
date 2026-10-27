@@ -131,6 +131,7 @@ Settings are read from `.env` (copy `.env.example`) and most can be overridden w
 | `CACHE_FORCE_VALID` | false | Use cached pages even if they may be out of date |
 | `CACHE_FORCE_INVALID` | false | Re-fetch pages even if the cache is up to date |
 | `MIN_SECS_BETWEEN_QUERIES` | 5 | Minimum seconds between requests to the parkrun website |
+| `REQUEST_TIMEOUT_SECS` | 5 | Seconds to wait for the parkrun website to connect or send data before falling back to the cache |
 | `MIN_LOG_LEVEL` | WARNING | Minimum level of log messages to show |
 
 ## How it works

@@ -52,6 +52,7 @@ def cli():
     parser.add_argument("--cache-force-invalid", action=argparse.BooleanOptionalAction, help="Force cache to be updated even if existing up to date cache exists. This overrides the CACHE_FORCE_INVALID environment variable, if it was set. This can be useful if results came out outside the window where it thinks they should have.")
     parser.add_argument("--table-max-width", type=int, help="The maximum number of characters wide that tables to be printed should be so they fit in your terminal. This overrides the TABLE_MAX_WIDTH environment variable, if it was set.")
     parser.add_argument("--min-secs-between-queries", type=int, help="The minimum number of seconds between queries to the parkrun website to not overwealm the website. Defaults to 5.")
+    parser.add_argument("--request-timeout-secs", type=float, help="The number of seconds to wait for the parkrun website to connect or send data before giving up and falling back to any old cache. This overrides the REQUEST_TIMEOUT_SECS environment variable, if it was set. Defaults to 5.")
     parser.add_argument("--min-log-level", choices=logging.getLevelNamesMapping().keys(), help="Override the logger and set the minimum level to log to this. Defaults to WARNING.")
 
     args = parser.parse_args()
@@ -83,6 +84,8 @@ def cli():
         parkrun._TABLE_MAX_WIDTH = args.table_max_width
     if args.min_secs_between_queries is not None:
         parkrun._MIN_SECS_BETWEEN_QUERIES = args.min_secs_between_queries
+    if args.request_timeout_secs is not None:
+        parkrun._REQUEST_TIMEOUT_SECS = args.request_timeout_secs
     if args.min_log_level is not None:
         logging.getLogger().setLevel(args.min_log_level)
 

@@ -61,6 +61,7 @@ _TABLE_MAX_WIDTH: int = int(os.getenv("TABLE_MAX_WIDTH", 180))
 _CACHE_FORCE_VALID: bool = _env_strtobool("CACHE_FORCE_VALID", False)
 _CACHE_FORCE_INVALID: bool = _env_strtobool("CACHE_FORCE_INVALID", False)
 _MIN_SECS_BETWEEN_QUERIES: int = int(os.getenv("MIN_SECS_BETWEEN_QUERIES", 5))
+_REQUEST_TIMEOUT_SECS: float = float(os.getenv("REQUEST_TIMEOUT_SECS", 5))
 
 def get_cache_force_valid() -> bool:
     return _CACHE_FORCE_VALID
@@ -73,6 +74,9 @@ def get_table_max_width() -> int:
 
 def get_min_secs_between_queries() -> int:
     return _MIN_SECS_BETWEEN_QUERIES
+
+def get_request_timeout_secs() -> float:
+    return _REQUEST_TIMEOUT_SECS
 
 # Log to stderr, only from this package and the script being run
 stderr_handler = logging.StreamHandler()
